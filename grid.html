@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>BulkTracker: Grid</title>
+
+    <link href="bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="bootstrap.min.js"></script>
+  <div style="background:#F26711; padding: 20px">
+  <div class="pull-left" style="padding-right: 20px">
+    <img src="pkgsrc-white.png" width="64px" height="64px">
+  </div>
+  <h1 style="color: white">BulkTracker
+    <small style="color: white">pkgsrc bulk build status</small>
+  </h1>
+  </div>
+  <div class="container">
+  <div class="row">
+    <h2>Build Status Grid</h2>
+
+
+    <table class="table table-bordered">
+      <thead>
+	<tr>
+	  <th>Package Name</th>
+	  <th><small>NetBSD 6.99.14<br />i386<br />2014-05-20</small></th>
+	  <th><small>NetBSD 6.1.4<br />x86_64<br />2014-05-20</small></th>
+	  <th><small>Mac OS 10.9.3<br />amd64<br />2014-05-21</small></th>
+	  <th><small>IllumOS<br />amd64<br />2014-05-24</small></th>
+	  <th><small>MirBSD 10<br />i386<br />2014-05-26</small></th>
+	</tr>
+      </thead>
+      <tbody>
+
+	<tr>
+	  <td>devel/autoconf</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-warning">indirect-failed</td>
+	  <td class="bg-danger">failed</td>
+	  <td class="bg-success">OK</td>
+	</tr>
+	<tr>
+	  <td>devel/autoconf213</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-danger">failed</td>
+	</tr>
+	<tr>
+	  <td>devel/automake</td>
+	  <td class="bg-danger">failed</td>
+	  <td class="bg-warning">indirect-failed</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-success">OK</td>
+	  <td class="bg-success">OK</td>
+	</tr>
+
+
+      </tbody>
+    </table>
+  </div>
+  </div>
+  </body>
+</html>
