@@ -151,8 +151,8 @@ func get(pkgs []Pkg, pkgname string) (*Pkg, bool) {
 
 func PkgsFromReport(c appengine.Context, r io.Reader) ([]Pkg, error) {
 	var pkgs []Pkg
-	var failedPkgs = make(map[string]*Pkg)
-	var indFailed []*Pkg
+	// Failed packages. The key is the name, the value an index into pkgs.
+	var failedPkgs = make(map[string]int)
 	var p *Pkg
 	n := 0
 
@@ -171,10 +171,10 @@ func PkgsFromReport(c appengine.Context, r io.Reader) ([]Pkg, error) {
 			if p != nil {
 				switch p.BuildStatus {
 				case IndirectFailed, IndirectPrefailed:
-					indFailed = append(indFailed, p)
+					// Nothing.
 				case Failed, Prefailed:
-					p.FailedDeps = p.FailedDeps[:0]
-					failedPkgs[p.PkgName] = p
+					failedPkgs[p.PkgName] = n-1
+					fallthrough
 				default:
 					p.FailedDeps = p.FailedDeps[:0]
 				}
@@ -194,12 +194,15 @@ func PkgsFromReport(c appengine.Context, r io.Reader) ([]Pkg, error) {
 	}
 	// Do another run over all indirect-failed packages, only keep
 	// dependencies that actually failed.
-	for _, p = range indFailed {
-		f := make([]string, 0, len(p.FailedDeps))
-		for _, dep := range p.FailedDeps {
+	for i := range pkgs {
+		if pkgs[i].BuildStatus != IndirectFailed && pkgs[i].BuildStatus != IndirectPrefailed {
+			continue
+		}
+		f := make([]string, 0, len(pkgs[i].FailedDeps))
+		for _, dep := range pkgs[i].FailedDeps {
 			if fp, ok := failedPkgs[dep]; ok {
 				f = append(f, dep)
-				fp.Breaks++
+				pkgs[fp].Breaks++
 			}
 		}
 		p.FailedDeps = f
