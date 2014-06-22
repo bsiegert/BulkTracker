@@ -60,24 +60,22 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	io.WriteString(w, PageHeader)
-	io.WriteString(w, "<pre>")
 	defer func() {
-		io.WriteString(w, "</pre>")
 		io.WriteString(w, PageFooter)
 	}()
 	key, err := datastore.DecodeKey(path.Base(r.URL.Path))
 	if err != nil {
-		fmt.Fprintf(w, "error decoding key: %s", err)
+		c.Warningf("error decoding key: %s", err)
 		return
 	}
 	b := &bulk.Build{}
 	err = datastore.Get(c, key, b)
 	if err != nil {
-		fmt.Fprintf(w, "getting build record: %s", err)
+		c.Warningf("getting build record: %s", err)
 		return
 	}
-	fmt.Fprintf(w, "%#v", b)
-	if false {// r.URL.Query().Get("a") == "reindex" {
+	BulkBuildInfo.Execute(w, b)
+	if r.URL.Query().Get("a") == "reindex" {
 		// Delete all current entries.
 		current, err := datastore.NewQuery("pkg").Ancestor(key).KeysOnly().GetAll(c, nil)
 		if err != nil {
@@ -94,9 +92,10 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "\nok\n")
 		return
 	}
-	io.WriteString(w, "</pre><h2>Packages the breaking most other packages</h2><pre>")
+	io.WriteString(w, "<h2>Packages the breaking most other packages</h2>")
 
-	it := datastore.NewQuery("pkg").Ancestor(key).Order("-Breaks").Limit(50).Run(c)
+	TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
+	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Run(c)
 	p := &bulk.Pkg{}
 	for {
 		_, err := it.Next(p)
@@ -107,8 +106,9 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(500)
 			return
 		}
-		fmt.Fprintf(w, "%#v\n\n", p)
+		TablePkgs.Execute(w, p)
 	}
+	io.WriteString(w, TableEnd)
 }
 
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {

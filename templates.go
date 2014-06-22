@@ -28,7 +28,8 @@ const PageHeader = `
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="/static/bootstrap.min.js"></script>
-  <div style="background:#F26711; padding: 20px">
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <div style="background:#F26711; padding: 20px; margin-bottom: 20px">
   <div class="pull-left" style="padding-right: 20px">
     <img src="/static/pkgsrc-white.png" width="64px" height="64px">
   </div>
@@ -72,7 +73,7 @@ const tableBegin = `
     <tbody>`
 
 var TableBegin = template.Must(template.New("TableBegin").Parse(tableBegin))
-  
+
 const TableEnd = `
     </tbody>
   </table>
@@ -95,3 +96,82 @@ const tableBuilds = `
       </tr>`
 
 var TableBuilds = template.Must(template.New("TableBuilds").Parse(tableBuilds))
+
+const tablePkgs = `
+      <tr>
+	<td>
+	  {{.Category}}{{.Dir}}
+	</td>
+	<td>
+	  {{.PkgName}}
+	</td>
+	{{if eq .BuildStatus 0}}
+	<td class="success text-success">ok</td>
+	{{else if eq .BuildStatus 1}}
+	<td class="info text-info">prefailed</td>
+	{{else if eq .BuildStatus 2}}
+	<td class="danger text-danger">failed</td>
+	{{else if eq .BuildStatus 3}}
+	<td class="warning text-warning">indirect-failed</td>
+	{{else if eq .BuildStatus 4}}
+	<td class="info text-info">indirect-prefailed</td>
+	{{end}}
+	<td>
+	  {{.Breaks}}
+	</td>
+      </tr>`
+
+var TablePkgs = template.Must(template.New("TablePkgs").Parse(tablePkgs))
+
+const bulkBuildInfo = `
+      <div class="col-md-8">
+        <dl class="dl-horizontal" style="font-size: 120%">
+	  <dt>Platform</dt>
+	  <dd>{{.Platform}}</dd>
+	  <dt>Compiler</dt>
+	  <dd>{{.Compiler}}</dd>
+	  <dt>Timestamp</dt>
+	  <dd>{{.Date}}</dd>
+	  <dt>User</dt>
+	  <dd>{{.User}}</dd>
+	</dl>
+      </div>
+      <div class="col-md-4"><div id="bulk-pie"></div></div>
+    </div>
+    <div class="row">
+      <script type="text/javascript">
+	google.load('visualization', '1.0', {'packages':['corechart']});
+
+	function drawBulkPiechart() {
+	  // Create and populate the data table.
+	  var data = google.visualization.arrayToDataTable([
+	    ['Number', 'Status'],
+	    ['ok', {{.NumOK}}],
+	    ['prefailed', {{.NumPrefailed}}],
+	    ['indirect-failed', {{.NumIndirectFailed}}],
+	    ['failed', {{.NumFailed}}],
+	  ]);
+
+	  // Create and draw the visualization.
+	  new google.visualization.PieChart(document.getElementById('bulk-pie')).
+	    draw(data, {
+	      pieHole: 0.4,
+	      pieSliceText: 'value',
+	      chartArea: {
+		width: 120,
+		height: 120,
+	      },
+	      title: 'Build Status',
+	      legend: { position: 'none' },
+	      slices: {
+		0: { color: 'green' },
+		1: { color: 'blue' },
+		2: { color: 'red' },
+		3: { color: 'orange' },
+	      },
+	    });
+	}
+	google.setOnLoadCallback(drawBulkPiechart);
+      </script>`
+
+var BulkBuildInfo = template.Must(template.New("BulkBuildInfo").Parse(bulkBuildInfo))
