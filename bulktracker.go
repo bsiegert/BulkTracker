@@ -57,6 +57,24 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, PageFooter)
 }
 
+// writePackageList writes a table of package results from the iterator it to w.
+func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
+	TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
+	p := &bulk.Pkg{}
+	for {
+		_, err := it.Next(p)
+		if err == datastore.Done {
+			break
+		} else if err != nil {
+			c.Errorf("failed to read pkg: %s", err)
+			w.WriteHeader(500)
+			return
+		}
+		TablePkgs.Execute(w, p)
+	}
+	io.WriteString(w, TableEnd)
+}
+
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	io.WriteString(w, PageHeader)
@@ -94,21 +112,8 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	io.WriteString(w, "<h2>Packages the breaking most other packages</h2>")
 
-	TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
 	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Run(c)
-	p := &bulk.Pkg{}
-	for {
-		_, err := it.Next(p)
-		if err == datastore.Done {
-			break
-		} else if err != nil {
-			c.Errorf("failed to read pkg: %s", err)
-			w.WriteHeader(500)
-			return
-		}
-		TablePkgs.Execute(w, p)
-	}
-	io.WriteString(w, TableEnd)
+	writePackageList(c, w, it)
 }
 
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
