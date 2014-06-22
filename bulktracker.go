@@ -27,6 +27,7 @@ const maxRec = 500
 func init() {
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/build/", BuildDetails)
+	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
 }
 
@@ -62,7 +63,7 @@ func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.
 	TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
 	p := &bulk.Pkg{}
 	for {
-		_, err := it.Next(p)
+		key, err := it.Next(p)
 		if err == datastore.Done {
 			break
 		} else if err != nil {
@@ -70,7 +71,10 @@ func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.
 			w.WriteHeader(500)
 			return
 		}
-		TablePkgs.Execute(w, p)
+		TablePkgs.Execute(w, struct {
+			Key string
+			Pkg *bulk.Pkg
+		}{key.Encode(), p})
 	}
 	io.WriteString(w, TableEnd)
 }
@@ -114,6 +118,69 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Run(c)
 	writePackageList(c, w, it)
+}
+
+func PkgDetails(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+	io.WriteString(w, PageHeader)
+	defer io.WriteString(w, PageFooter)
+
+	pkgKey, err := datastore.DecodeKey(path.Base(r.URL.Path))
+	if err != nil {
+		c.Warningf("error decoding pkg key: %s", err)
+		return
+	}
+	buildKey := pkgKey.Parent()
+
+	p := &bulk.Pkg{}
+	b := &bulk.Build{}
+	if err = datastore.Get(c, pkgKey, p); err != nil {
+		c.Warningf("getting pkg record: %s", err)
+		return
+	}
+	if buildKey != nil {
+		if err = datastore.Get(c, buildKey, b); err != nil {
+			c.Warningf("getting build record: %s", err)
+			return
+		}
+	}
+
+	PkgInfo.Execute(w, struct{
+		PkgKey, BuildKey string
+		Pkg *bulk.Pkg
+		Build *bulk.Build
+	}{pkgKey.Encode(), buildKey.Encode(), p, b})
+
+	// Failed, breaking other packages.
+	if p.Breaks > 0 {
+		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", p.Breaks)
+		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Run(c)
+		writePackageList(c, w, it)
+	}
+
+	// Failed to build because of dependencies.
+	if p.FailedDeps == nil {
+		return
+	}
+	fmt.Fprintf(w, "<h2>This package has %d failed dependencies:</h2>", len(p.FailedDeps))
+	// TODO(bsiegert) Unfortunately, we save a list of package names, not a
+	// list of corresponding datastore keys. So we need to fetch them one by
+	// one.
+	TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
+	dp := &bulk.Pkg{}
+	for _, dep := range p.FailedDeps {
+		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(c)
+		key, err := it.Next(dp)
+		if err != nil {
+			continue
+		}
+		TablePkgs.Execute(w, struct {
+			Key string
+			Pkg *bulk.Pkg
+		}{key.Encode(), dp})
+	}
+	io.WriteString(w, TableEnd)
+
 }
 
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {

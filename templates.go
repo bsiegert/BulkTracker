@@ -100,24 +100,24 @@ var TableBuilds = template.Must(template.New("TableBuilds").Parse(tableBuilds))
 const tablePkgs = `
       <tr>
 	<td>
-	  {{.Category}}{{.Dir}}
+	  <a href="/pkg/{{.Key}}">{{.Pkg.Category}}{{.Pkg.Dir}}</a>
 	</td>
 	<td>
-	  {{.PkgName}}
+	  <a href="/pkg/{{.Key}}">{{.Pkg.PkgName}}</a>
 	</td>
-	{{if eq .BuildStatus 0}}
+	{{if eq .Pkg.BuildStatus 0}}
 	<td class="success text-success">ok</td>
-	{{else if eq .BuildStatus 1}}
+	{{else if eq .Pkg.BuildStatus 1}}
 	<td class="info text-info">prefailed</td>
-	{{else if eq .BuildStatus 2}}
+	{{else if eq .Pkg.BuildStatus 2}}
 	<td class="danger text-danger">failed</td>
-	{{else if eq .BuildStatus 3}}
+	{{else if eq .Pkg.BuildStatus 3}}
 	<td class="warning text-warning">indirect-failed</td>
-	{{else if eq .BuildStatus 4}}
+	{{else if eq .Pkg.BuildStatus 4}}
 	<td class="info text-info">indirect-prefailed</td>
 	{{end}}
 	<td>
-	  {{.Breaks}}
+	  {{.Pkg.Breaks}}
 	</td>
       </tr>`
 
@@ -175,3 +175,37 @@ const bulkBuildInfo = `
       </script>`
 
 var BulkBuildInfo = template.Must(template.New("BulkBuildInfo").Parse(bulkBuildInfo))
+
+const pkgInfo = `
+    <dl class="dl-horizontal" style="font-size: 120%">
+      <dt>Package location</dt>
+      <dd>
+        {{.Pkg.Category}}{{.Pkg.Dir}}
+	<a href="http://pkgsrc.se/{{.Pkg.Category}}{{.Pkg.Dir}}" class="btn btn-default">pkgsrc.se</a>
+      </dd>
+      <dt>Package name</dt>
+      <dd>{{.Pkg.PkgName}}</dd>
+      <dt>Build Status</dt>
+      {{if eq .Pkg.BuildStatus 0}}
+      <dd class="text-success">ok</dd>
+      {{else if eq .Pkg.BuildStatus 1}}
+      <dd class="text-info">prefailed</dd>
+      {{else if eq .Pkg.BuildStatus 2}}
+      <dd class="text-danger">failed</dd>
+      {{else if eq .Pkg.BuildStatus 3}}
+      <dd class="text-warning">indirect-failed</dd>
+      {{else if eq .Pkg.BuildStatus 4}}
+      <dd class="text-info">indirect-prefailed</dd>
+      {{end}}
+      <dt>Platform</dt>
+      <dd>{{.Build.Platform}}</dd>
+      <dt>Compiler</dt>
+      <dd>{{.Build.Compiler}}</dd>
+      <dt>Built on</dt>
+      <dd>{{.Build.Date}}</dd>
+      <dt>Built by</dt>
+      <dd>{{.Build.User}}</dd>
+    </dl>
+  </div><div class="row">`
+
+var PkgInfo = template.Must(template.New("PkgInfo").Parse(pkgInfo))

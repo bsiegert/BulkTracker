@@ -16,3 +16,10 @@ indexes:
   - name: BuildStatus
   - name: Breaks
     direction: desc
+
+- kind: pkg
+  ancestor: yes
+  properties:
+  - name: FailedDeps
+  - name: Category
+  - name: Dir
