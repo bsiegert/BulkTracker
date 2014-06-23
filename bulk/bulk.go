@@ -23,7 +23,7 @@ type Build struct {
 	ReportURL string
 	// The following are aggregate statistics giving
 	// the number of packages with each status.
-	NumOK, NumPrefailed, NumFailed, NumIndirectFailed int64
+	NumOK, NumPrefailed, NumFailed, NumIndirectFailed, NumIndirectPrefailed int64
 }
 
 // Date returns the date part of the build timestamp.
@@ -112,6 +112,8 @@ func BuildFromReport(r io.Reader) (*Build, error) {
 			b.NumIndirectFailed, _ = strconv.ParseInt(val, 10, 64)
 		case "Explicitly broken or masked":
 			b.NumPrefailed, _ = strconv.ParseInt(val, 10, 64)
+		case "Depending on masked package":
+			b.NumIndirectPrefailed, _ = strconv.ParseInt(val, 10, 64)
 		}
 	}
 	return b, s.Err()
