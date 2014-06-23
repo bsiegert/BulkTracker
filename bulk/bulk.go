@@ -196,7 +196,7 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 	// dependencies that actually failed.
 	for i := range pkgs {
 		if pkgs[i].BuildStatus != IndirectFailed && pkgs[i].BuildStatus != IndirectPrefailed {
-			continue
+			pkgs[i].FailedDeps = nil
 		}
 		f := make([]string, 0, len(pkgs[i].FailedDeps))
 		for _, dep := range pkgs[i].FailedDeps {
@@ -205,7 +205,10 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 				pkgs[fp].Breaks++
 			}
 		}
-		p.FailedDeps = f
+		if len(f) == 0 {
+			f = nil
+		}
+		pkgs[i].FailedDeps = f
 	}
 	return pkgs, s.Err()
 }
