@@ -235,7 +235,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	if strings.HasSuffix(url, ".bz2") {
 		r = bzip2.NewReader(resp.Body)
 	}
-	pkgs, err := bulk.PkgsFromReport(c, r)
+	pkgs, err := bulk.PkgsFromReport(r)
 	if err != nil {
 		c.Errorf("failed to parse report at %q: %s", url, err)
 		return

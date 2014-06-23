@@ -1,13 +1,12 @@
+// Package bulk contains data types for handling bulk build reports and their
+// metadata. It is not supposed to depend on any App Engine package.
 package bulk
 
 import (
-	"appengine"
-
 	"bufio"
 	"bytes"
 	"errors"
 	"io"
-	//"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -149,7 +148,7 @@ func get(pkgs []Pkg, pkgname string) (*Pkg, bool) {
 	return nil, false
 }
 
-func PkgsFromReport(c appengine.Context, r io.Reader) ([]Pkg, error) {
+func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 	var pkgs []Pkg
 	// Failed packages. The key is the name, the value an index into pkgs.
 	var failedPkgs = make(map[string]int)
@@ -187,7 +186,6 @@ func PkgsFromReport(c appengine.Context, r io.Reader) ([]Pkg, error) {
 			p.Category, p.Dir = path.Split(string(val))
 		case bytes.Equal(key, []byte("BUILD_STATUS")):
 			p.BuildStatus = statuses[string(val)]
-			//c.Infof("%s, %d", val, p.BuildStatus)
 		case bytes.Equal(key, []byte("DEPENDS")):
 			p.FailedDeps = strings.Fields(string(val))
 		}
