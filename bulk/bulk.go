@@ -169,17 +169,6 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 		switch {
 		case bytes.Equal(key, []byte("PKGNAME")):
 			// Next package, finish the one before.
-			if p != nil {
-				switch p.BuildStatus {
-				case IndirectFailed, IndirectPrefailed:
-					// Nothing.
-				case Failed, Prefailed:
-					failedPkgs[p.PkgName] = n-1
-					fallthrough
-				default:
-					p.FailedDeps = p.FailedDeps[:0]
-				}
-			}
 			pkgs = append(pkgs, Pkg{})
 			p = &pkgs[n]
 			n++
@@ -188,6 +177,10 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 			p.Category, p.Dir = path.Split(string(val))
 		case bytes.Equal(key, []byte("BUILD_STATUS")):
 			p.BuildStatus = statuses[string(val)]
+			switch p.BuildStatus {
+			case Failed, Prefailed:
+				failedPkgs[p.PkgName] = n-1
+			}
 		case bytes.Equal(key, []byte("DEPENDS")):
 			p.FailedDeps = strings.Fields(string(val))
 		}
