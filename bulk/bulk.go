@@ -205,3 +205,18 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 	}
 	return pkgs, s.Err()
 }
+
+// PkgsByName allows sorting a list of Pkgs by their package names.
+type PkgsByName []Pkg
+
+func (p PkgsByName) Len() int {
+	return len(p)
+}
+
+func (p PkgsByName) Less(i, j int) bool {
+	return p[i].PkgName < p[j].PkgName
+}
+
+func (p PkgsByName) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}

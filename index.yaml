@@ -23,3 +23,8 @@ indexes:
   - name: FailedDeps
   - name: Category
   - name: Dir
+
+- kind: pkg
+  ancestor: yes
+  properties:
+  - name: PkgName
