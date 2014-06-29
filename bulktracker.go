@@ -2,6 +2,7 @@ package bulktracker
 
 import (
 	"bulk"
+	"dsbatch"
 
 	"appengine"
 	"appengine/datastore"
@@ -21,8 +22,6 @@ import (
 	"time"
 )
 
-// Maximum number of records per call to PutMulti.
-const maxRec = 500
 
 func init() {
 	http.HandleFunc("/", StartPage)
@@ -98,18 +97,6 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	BulkBuildInfo.Execute(w, b)
 	if r.URL.Query().Get("a") == "reindex" {
-		// Delete all current entries.
-		current, err := datastore.NewQuery("pkg").Ancestor(key).KeysOnly().GetAll(c, nil)
-		if err != nil {
-			fmt.Fprintf(w, "getting current records: %s", err)
-			return
-		}
-		fmt.Fprintf(w, "Deleting %d current records.", len(current))
-		err = datastore.DeleteMulti(c, current)
-		if err != nil {
-			fmt.Fprintf(w, "deleting current records: %s", err)
-			return
-		}
 		FetchReport.Call(c, key, b.ReportURL)
 		fmt.Fprintf(w, "\nok\n")
 		return
@@ -240,21 +227,16 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 		c.Errorf("failed to parse report at %q: %s", url, err)
 		return
 	}
-	keys := make([]*datastore.Key, maxRec)
-	for n := 0; n < len(pkgs); n += maxRec {
-		m := n + maxRec
-		if m > len(pkgs) {
-			m = len(pkgs)
-		}
-		keys = keys[:m-n]
-		for i := range keys {
-			keys[i] = datastore.NewIncompleteKey(c, "pkg", build)
-		}
-		c.Infof("inserting records %d-%d", n, m)
-		_, err = datastore.PutMulti(c, keys, pkgs[n:m])
-		if err != nil {
-			c.Warningf("writing pkgs: %s", err)
-		}
+	keys, err := datastore.NewQuery("pkg").Ancestor(build).KeysOnly().GetAll(c, nil)
+	if err != nil {
+		c.Errorf("getting current records: %s", err)
+		return
+	}
+	for i := len(keys); i < len(pkgs); i++ {
+		keys = append(keys, datastore.NewIncompleteKey(c, "pkg", build))
+	}
+	if err = dsbatch.PutMulti(c, keys, pkgs); err != nil {
+		c.Warningf("%s", err)
 	}
 })
 
