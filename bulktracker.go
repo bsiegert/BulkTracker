@@ -235,6 +235,10 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	for i := len(keys); i < len(pkgs); i++ {
 		keys = append(keys, datastore.NewIncompleteKey(c, "pkg", build))
 	}
+	if k, p := len(keys), len(pkgs); k > p {
+		dsbatch.DeleteMulti(c, keys[p:k])
+		keys = keys[:p]
+	}
 	if err = dsbatch.PutMulti(c, keys, pkgs); err != nil {
 		c.Warningf("%s", err)
 	}
