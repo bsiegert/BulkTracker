@@ -23,14 +23,12 @@ import (
 	"time"
 )
 
-
 func init() {
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/build/", BuildDetails)
 	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
 }
-
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, PageHeader)
@@ -49,8 +47,8 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(500)
 			return
 		}
-		TableBuilds.Execute(w, struct{
-			Key string
+		TableBuilds.Execute(w, struct {
+			Key   string
 			Build *bulk.Build
 		}{key.Encode(), b})
 	}
@@ -133,10 +131,10 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	PkgInfo.Execute(w, struct{
+	PkgInfo.Execute(w, struct {
 		PkgKey, BuildKey string
-		Pkg *bulk.Pkg
-		Build *bulk.Build
+		Pkg              *bulk.Pkg
+		Build            *bulk.Build
 	}{pkgKey.Encode(), buildKey.Encode(), p, b})
 
 	// Failed, breaking other packages.
@@ -205,11 +203,11 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 }
 
 // FetchReport fetches the machine-readable build report, hands it off to the
-// parser and writes the result into the datastore. 
+// parser and writes the result into the datastore.
 var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *datastore.Key, url string) {
 	client := http.Client{
 		Transport: &urlfetch.Transport{
-			Context: c,
+			Context:  c,
 			Deadline: time.Minute,
 		},
 	}
@@ -283,5 +281,5 @@ func ParseMultipartMail(msg *mail.Message) (io.Reader, error) {
 			return rr, nil
 		}
 	}
-	return nil, nil  // XXX
+	return nil, nil // XXX
 }

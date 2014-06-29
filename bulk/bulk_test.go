@@ -18,9 +18,9 @@ BUILD_STATUS=failed
 DEPENDS=
 `
 
-var pkgsFromReportTests = []struct{
+var pkgsFromReportTests = []struct {
 	report string
-	want []Pkg
+	want   []Pkg
 }{
 	{
 		pkgFoo,
@@ -38,7 +38,7 @@ var pkgsFromReportTests = []struct{
 func TestPkgsFromReport(t *testing.T) {
 	for _, test := range pkgsFromReportTests {
 		got, _ := PkgsFromReport(strings.NewReader(test.report))
-		if !reflect.DeepEqual(got,test.want) {
+		if !reflect.DeepEqual(got, test.want) {
 			t.Errorf("PkgsFromReport(%q): got %#v, want %#v", test.report, got, test.want)
 		}
 	}

@@ -47,10 +47,10 @@ const (
 )
 
 var statuses = map[string]int8{
-	"done": OK,
-	"prefailed": Prefailed,
-	"failed": Failed,
-	"indirect-failed": IndirectFailed,
+	"done":               OK,
+	"prefailed":          Prefailed,
+	"failed":             Failed,
+	"indirect-failed":    IndirectFailed,
 	"indirect-prefailed": IndirectPrefailed,
 }
 
@@ -87,7 +87,9 @@ func BuildFromReport(r io.Reader) (*Build, error) {
 		if !s.Scan() {
 			break
 		}
-		if strings.Index(s.Text(), ":") == -1 { continue }
+		if strings.Index(s.Text(), ":") == -1 {
+			continue
+		}
 		parts := strings.SplitN(s.Text(), ":", 2)
 		val := strings.TrimSpace(parts[1])
 		switch strings.TrimSpace(parts[0]) {
@@ -164,7 +166,9 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 		}
 		b := s.Bytes()
 		split := bytes.IndexRune(b, '=')
-		if split == -1 { continue }
+		if split == -1 {
+			continue
+		}
 		key, val := b[:split], b[split+1:]
 		switch {
 		case bytes.Equal(key, []byte("PKGNAME")):
@@ -179,7 +183,7 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 			p.BuildStatus = statuses[string(val)]
 			switch p.BuildStatus {
 			case Failed, Prefailed:
-				failedPkgs[p.PkgName] = n-1
+				failedPkgs[p.PkgName] = n - 1
 			}
 		case bytes.Equal(key, []byte("DEPENDS")):
 			p.FailedDeps = strings.Fields(string(val))
