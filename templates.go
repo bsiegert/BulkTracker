@@ -166,8 +166,8 @@ const bulkBuildInfo = `
 	      slices: {
 		0: { color: 'green' },
 		1: { color: 'blue' },
-		2: { color: 'red' },
-		3: { color: 'orange' },
+		2: { color: 'orange' },
+		3: { color: 'red' },
 	      },
 	    });
 	}
