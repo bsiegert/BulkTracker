@@ -58,7 +58,7 @@ const StartPageLead = `
     </p>
   </div>
 
-  <h2>Recent Builds</h2>
+  <h2>Recent Builds &nbsp; <a href="/builds" class="btn btn-primary">Show all</a></h2>
 `
 
 const tableBegin = `
@@ -223,3 +223,25 @@ const pkgInfo = `
   </div><div class="row">`
 
 var PkgInfo = template.Must(template.New("PkgInfo").Parse(pkgInfo))
+
+const ReindexOK = `<div class="alert alert-success" role="alert">
+  Re-index now in progress. This will take about one minute.</div>`
+
+const NoDetails = `<div class="alert alert-danger" role="alert">
+  No build details found. Try
+  <a href="#" class="alert-link">recreating the index.</a>
+</div>`
+
+const categoryList = `<h2>Results by category</h2>
+  <ul class="list-inline">
+  {{$url := .CurrentURL}}{{range $c := .Categories}}
+    <li style="width: 14em"><a href="{{$url}}/{{.Category}}">{{.Category}}</a></li>
+  {{end}}
+  </ul>
+`
+
+var CategoryList = template.Must(template.New("CategoryList").Parse(categoryList))
+
+const heading = `<h2>{{.}}</h2>`
+
+var Heading = template.Must(template.New("Heading").Parse(heading))

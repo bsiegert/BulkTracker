@@ -20,6 +20,18 @@ indexes:
 - kind: pkg
   ancestor: yes
   properties:
+  - name: Category
+
+- kind: pkg
+  ancestor: yes
+  properties:
+  - name: Category
+  - name: Dir
+  - name: PkgName
+
+- kind: pkg
+  ancestor: yes
+  properties:
   - name: FailedDeps
   - name: Category
   - name: Dir

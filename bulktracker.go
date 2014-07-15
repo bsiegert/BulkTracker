@@ -80,14 +80,18 @@ func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	io.WriteString(w, PageHeader)
-	defer func() {
-		io.WriteString(w, PageFooter)
-	}()
-	key, err := datastore.DecodeKey(path.Base(r.URL.Path))
+	defer io.WriteString(w, PageFooter)
+
+	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/build/"), "/")
+	if len(paths) == 0 {
+		return
+	}
+	key, err := datastore.DecodeKey(paths[0])
 	if err != nil {
 		c.Warningf("error decoding key: %s", err)
 		return
 	}
+
 	b := &bulk.Build{}
 	err = datastore.Get(c, key, b)
 	if err != nil {
@@ -97,10 +101,32 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	BulkBuildInfo.Execute(w, b)
 	if r.URL.Query().Get("a") == "reindex" {
 		FetchReport.Call(c, key, b.ReportURL)
-		fmt.Fprintf(w, "\nok\n")
+		fmt.Fprintf(w, ReindexOK)
 		return
 	}
-	io.WriteString(w, "<h2>Packages the breaking most other packages</h2>")
+
+	if len(paths) > 1 {
+		category := paths[1] + "/"
+		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Run(c)
+		Heading.Execute(w, category)
+		writePackageList(c, w, it)
+		return
+	}
+
+
+	var categories []bulk.Pkg
+	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(c, &categories)
+	if len(categories) == 0 {
+		fmt.Fprintf(w, NoDetails)
+		return
+	}
+	CategoryList.Execute(w, struct {
+		Categories []bulk.Pkg
+		CurrentURL string
+	}{categories, r.URL.Path})
+	//fmt.Fprintf(w, "<pre>%s</pre>", err)
+
+	Heading.Execute(w, "Packages the breaking most other packages")
 
 	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Run(c)
 	writePackageList(c, w, it)
