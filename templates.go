@@ -187,15 +187,29 @@ const pkgInfo = `
       <dd>{{.Pkg.PkgName}}</dd>
       <dt>Build Status</dt>
       {{if eq .Pkg.BuildStatus 0}}
-      <dd class="text-success">ok</dd>
+      <dd><span class="label label-success">ok</span></dd>
       {{else if eq .Pkg.BuildStatus 1}}
-      <dd class="text-info">prefailed</dd>
+      <dd><span class="label label-info">prefailed</span></dd>
       {{else if eq .Pkg.BuildStatus 2}}
-      <dd class="text-danger">failed</dd>
+      <dd><span class="label label-danger">failed</span></dd>
       {{else if eq .Pkg.BuildStatus 3}}
-      <dd class="text-warning">indirect-failed</dd>
+      <dd><span class="label label-warning">indirect-failed</span></dd>
       {{else if eq .Pkg.BuildStatus 4}}
-      <dd class="text-info">indirect-prefailed</dd>
+      <dd><span class="label label-info">indirect-prefailed</span></dd>
+      {{end}}
+      {{if eq .Pkg.BuildStatus 2}}
+      <dt>Build Logs</dt>
+      <dd>
+        <div class="btn-group btn-group-sm">
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/work.log" class="btn btn-default">work</a>
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/depends.log" class="btn btn-default">depends</a>
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/configure.log" class="btn btn-default">configure</a>
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/build.log" class="btn btn-default">build</a>
+	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/install.log" class="btn btn-default">install</a>
+	</div>
+      </dd>
       {{end}}
       <dt>Platform</dt>
       <dd>{{.Build.Platform}}</dd>

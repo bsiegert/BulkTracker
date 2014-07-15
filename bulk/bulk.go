@@ -31,6 +31,14 @@ func (b *Build) Date() string {
 	return b.Timestamp.Format("2006-01-02")
 }
 
+func (b *Build) BaseURL() string {
+	if n := strings.Index(b.ReportURL, "meta/"); n != -1 {
+		return b.ReportURL[:n]
+	}
+	return path.Base(b.ReportURL)
+}
+
+
 // Status of a package build.
 const (
 	// The package was successfully built.
