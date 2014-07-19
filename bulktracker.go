@@ -132,7 +132,7 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	var categories []bulk.Pkg
 	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(c, &categories)
 	if len(categories) == 0 {
-		fmt.Fprintf(w, NoDetails)
+		NoDetails.Execute(w, r.URL.Path)
 		return
 	}
 	CategoryList.Execute(w, struct {

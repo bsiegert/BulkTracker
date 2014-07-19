@@ -227,10 +227,13 @@ var PkgInfo = template.Must(template.New("PkgInfo").Parse(pkgInfo))
 const ReindexOK = `<div class="alert alert-success" role="alert">
   Re-index now in progress. This will take about one minute.</div>`
 
-const NoDetails = `<div class="alert alert-danger" role="alert">
+const noDetails = `<div class="alert alert-danger" role="alert">
   No build details found. Try
-  <a href="#" class="alert-link">recreating the index.</a>
+  <a href="{{.}}?a=reindex" rel="nofollow" class="alert-link">recreating
+  the index.</a>
 </div>`
+
+var NoDetails = template.Must(template.New("NoDetails").Parse(noDetails)) 
 
 const categoryList = `<h2>Results by category</h2>
   <ul class="list-inline">
