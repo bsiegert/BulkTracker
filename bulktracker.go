@@ -215,7 +215,6 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	body, err := ParseMultipartMail(msg)
 	if err != nil {
 		c.Errorf("failed to read mail body: %s", err)
-		w.WriteHeader(500)
 		return
 	}
 	build, err := bulk.BuildFromReport(body)
