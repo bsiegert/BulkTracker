@@ -25,6 +25,7 @@ import (
 
 func init() {
 	http.HandleFunc("/", StartPage)
+	http.HandleFunc("/builds", ShowBuilds)
 	http.HandleFunc("/build/", BuildDetails)
 	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
@@ -32,12 +33,27 @@ func init() {
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, PageHeader)
+	defer io.WriteString(w, PageFooter)
 	io.WriteString(w, StartPageLead)
-	TableBegin.Execute(w, []string{"Date", "Platform", "Stats", "User"})
+
 	c := appengine.NewContext(r)
-	// TODO(bsiegert) Integrate this better with the template.
-	b := &bulk.Build{}
 	it := datastore.NewQuery("build").Order("-Timestamp").Limit(10).Run(c)
+	writeBuildList(c, w, it)
+}
+
+func ShowBuilds(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, PageHeader)
+	defer io.WriteString(w, PageFooter)
+	Heading.Execute(w, "List of Builds")
+
+	c := appengine.NewContext(r)
+	it := datastore.NewQuery("build").Order("-Timestamp").Run(c)
+	writeBuildList(c, w, it)
+}
+
+func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
+	TableBegin.Execute(w, []string{"Date", "Platform", "Stats", "User"})
+	b := &bulk.Build{}
 	for {
 		key, err := it.Next(b)
 		if err == datastore.Done {
@@ -53,7 +69,6 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 		}{key.Encode(), b})
 	}
 	io.WriteString(w, TableEnd)
-	io.WriteString(w, PageFooter)
 }
 
 // writePackageList writes a table of package results from the iterator it to w.
