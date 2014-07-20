@@ -250,10 +250,14 @@ const heading = `<h2>{{.}}</h2>`
 
 var Heading = template.Must(template.New("Heading").Parse(heading))
 
-const DataTable = `
+const dataTable = `
   <script type="text/javascript">
     $(document).ready(function() {
-	$('.table').dataTable();
+	$('.table').dataTable({{if .}}{
+	  {{.}}
+	}{{end}});
     } );
   </script>
 `
+
+var DataTable = template.Must(template.New("DataTable").Parse(dataTable))

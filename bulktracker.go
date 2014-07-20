@@ -12,6 +12,7 @@ import (
 	"compress/bzip2"
 	"encoding/base64"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -49,7 +50,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	it := datastore.NewQuery("build").Order("-Timestamp").Run(c)
 	writeBuildList(c, w, it)
-	io.WriteString(w, DataTable)
+	DataTable.Execute(w, nil)
 }
 
 func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
@@ -121,7 +122,7 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	io.WriteString(w, DataTable)
+	DataTable.Execute(w, template.JS(`"order": [3, "desc"]`))
 
 	if len(paths) > 1 {
 		category := paths[1] + "/"
@@ -181,7 +182,7 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 		Build            *bulk.Build
 	}{pkgKey.Encode(), buildKey.Encode(), p, b})
 
-	io.WriteString(w, DataTable)
+	DataTable.Execute(w, nil)
 
 	// Failed, breaking other packages.
 	if p.Breaks > 0 {
