@@ -49,6 +49,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	it := datastore.NewQuery("build").Order("-Timestamp").Run(c)
 	writeBuildList(c, w, it)
+	io.WriteString(w, DataTable)
 }
 
 func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
@@ -120,6 +121,8 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	io.WriteString(w, DataTable)
+
 	if len(paths) > 1 {
 		category := paths[1] + "/"
 		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Run(c)
@@ -177,6 +180,8 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 		Pkg              *bulk.Pkg
 		Build            *bulk.Build
 	}{pkgKey.Encode(), buildKey.Encode(), p, b})
+
+	io.WriteString(w, DataTable)
 
 	// Failed, breaking other packages.
 	if p.Breaks > 0 {

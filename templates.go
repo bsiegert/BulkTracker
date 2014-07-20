@@ -15,6 +15,7 @@ const PageHeader = `
     <title>BulkTracker</title>
 
     <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/dataTables.bootstrap.css" rel="stylesheet">
     <!--<style type="text/css">
       .btn-primary {
         color: #fff;
@@ -24,10 +25,10 @@ const PageHeader = `
     </style>-->
   </head>
   <body>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script src="/static/bootstrap.min.js"></script>
+  <script src="//cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js"></script>
+  <script src="/static/dataTables.bootstrap.js"></script>
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
   <div style="background:#F26711; padding: 20px; margin-bottom: 20px">
   <div class="pull-left" style="padding-right: 20px">
@@ -248,3 +249,11 @@ var CategoryList = template.Must(template.New("CategoryList").Parse(categoryList
 const heading = `<h2>{{.}}</h2>`
 
 var Heading = template.Must(template.New("Heading").Parse(heading))
+
+const DataTable = `
+  <script type="text/javascript">
+    $(document).ready(function() {
+	$('.table').dataTable();
+    } );
+  </script>
+`
