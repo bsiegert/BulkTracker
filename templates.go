@@ -262,7 +262,7 @@ const dataTable = `
 
 var DataTable = template.Must(template.New("DataTable").Parse(dataTable))
 
-var gridHeader = `<a href="/build/{{.Key}}"<small>{{.Build.Platform}}<br />{{.Build.Date}}</small></a>`
+var gridHeader = `<a href="/build/{{.Key}}"><small>{{.Build.Platform}}<br />{{.Build.Date}}</small></a>`
 
 var GridHeader = template.Must(template.New("GridHeader").Parse(gridHeader))
 

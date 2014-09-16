@@ -7,6 +7,7 @@ import (
 	"appengine/datastore"
 
 	"bytes"
+	"html/template"
 	"io"
 	"net/http"
 )
@@ -23,9 +24,9 @@ func ShowGrid(w http.ResponseWriter, r *http.Request) {
 	// an id of a new BuildIDList entity maybe? Or a memcache datastore
 	// key?
 	it := datastore.NewQuery("build").Order("-Timestamp").Limit(5).Run(c)
-	columns := []string{"Location", "Package Name"}
+	columns := []template.HTML{"Location", "Package Name"}
 	b := &bulk.Build{}
-	buf := bytes.Buffer{}
+	buf := &bytes.Buffer{}
 	buildkeys := []*datastore.Key{}
 	for {
 		key, err := it.Next(b)
@@ -36,25 +37,32 @@ func ShowGrid(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		buf.Reset()
-		GridHeader.Execute(&buf, struct {
+		c.Debugf("%p %p %p", b, buf, key)
+		GridHeader.Execute(buf, struct {
 			Key   string
 			Build *bulk.Build
 		}{key.Encode(), b})
-		columns = append(columns, buf.String())
+		columns = append(columns, template.HTML(buf.String()))
 		buildkeys = append(buildkeys, key)
 	}
 	TableBegin.Execute(w, columns)
 
-	m := NewMultiIterator(c, buildkeys)
+	/*m := NewMultiIterator(c, buildkeys)
 	for {
 		row, done := m.Next()
+		_, done := m.Next()
 		if done {
 			break
 		}
 		GridEntry.Execute(w, row)
-	}
+	}*/
 
 	io.WriteString(w, TableEnd)
+}
+
+// iterator is the interface fulfilled by a datastore.Iterator.
+type iterator interface {
+	Next(dst interface{}) (*datastore.Key, error)
 }
 
 // PkgResult holds a Pkg and the coresponding datastore key.
@@ -68,7 +76,7 @@ type PkgResult struct {
 // return Pkg elements. All of the queries must be sorted by the same
 // criteria.
 type MultiIterator []struct {
-	it  *datastore.Iterator
+	it  iterator
 	key *datastore.Key
 	Pkg bulk.Pkg
 }
