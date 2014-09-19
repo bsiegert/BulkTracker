@@ -226,10 +226,13 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fromAddr, err := msg.Header.AddressList("From")
-	if err == nil && len(fromAddr) > 0 {
-		c.Infof("new mail from %s", fromAddr[0])
+	if err != nil || len(fromAddr) > 0 {
+		c.Warningf("unable to parse From header: %s", err)
+		return
 	}
-	if strings.Index(fromAddr[0].Address, "majordomo") != -1 {
+	from := fromAddr[0]
+	c.Infof("new mail from %s", from)
+	if strings.Index(from.Address, "majordomo") != -1 {
 		body, _ := ioutil.ReadAll(msg.Body)
 		c.Infof("%s", body)
 		return
@@ -239,8 +242,12 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 		c.Errorf("failed to read mail body: %s", err)
 		return
 	}
-	build, err := bulk.BuildFromReport(body)
-	c.Infof("%#v, %s", build, err)
+	fromName := from.Name
+	if fromName == "" {
+		fromName = strings.SplitN(from.Address, "@", 2)[0]
+	}
+	build, err := bulk.BuildFromReport(fromName, body)
+	c.Debugf("%#v, %s", build, err)
 
 	if build != nil {
 		key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "build", nil), build)
