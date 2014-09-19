@@ -1,7 +1,7 @@
 package bulktracker
 
 import (
-	"bulk"
+	"github.com/bsiegert/bulktracker/bulk"
 
 	"appengine"
 	"appengine/datastore"
@@ -96,19 +96,6 @@ func NewMultiIterator(c appengine.Context, ancestors []*datastore.Key) MultiIter
 func (m MultiIterator) lowestPkgName() string {
 	l := ""
 	for i := range m {
-		if m[i].key == nil {
-			if m[i].it == nil {
-				continue
-			}
-			var err error
-			m[i].key, err = m[i].it.Next(&m[i].Pkg)
-			if err != nil {
-				// TODO(bsiegert) This swallows errors other than
-				// datastore.Done. However, we would need a context
-				// to log errors.
-				m[i].it = nil
-			}
-		}
 		current := m[i].Pkg.PkgName
 		if l == "" || current < l {
 			l = current
@@ -120,15 +107,36 @@ func (m MultiIterator) lowestPkgName() string {
 // Next returns a row of results. Some of the elements may be nil. The second
 // value is true if the iteration is done.
 func (m MultiIterator) Next() ([]PkgResult, bool) {
+	for i := range m {
+		// If the key is not nil, we did not use that value
+		// in the last round.
+		if m[i].key != nil {
+			continue
+		}
+		// If it is nil, this column is exhausted.
+		if m[i].it == nil {
+			continue
+		}
+		var err error
+		m[i].key, err = m[i].it.Next(&m[i].Pkg)
+		if err != nil {
+			// TODO(bsiegert) This swallows errors other than
+			// datastore.Done. However, we would need a context
+			// to log errors.
+			m[i].it = nil
+			m[i].Pkg.PkgName = ""
+		}
+	}
 	l := m.lowestPkgName()
 	if l == "" {
 		return nil, true
 	}
 	result := make([]PkgResult, len(m))
 	for i := range m {
-		if m[i].Pkg.PkgName == l {
+		if m[i].Pkg.PkgName == l && m[i].key != nil {
 			result[i].Pkg = &m[i].Pkg
 			result[i].Key = m[i].key.Encode()
+			m[i].key = nil
 		}
 	}
 	return result, false
