@@ -47,15 +47,14 @@ func ShowGrid(w http.ResponseWriter, r *http.Request) {
 	}
 	TableBegin.Execute(w, columns)
 
-	/*m := NewMultiIterator(c, buildkeys)
+	m := NewMultiIterator(c, buildkeys)
 	for {
 		row, done := m.Next()
-		_, done := m.Next()
 		if done {
 			break
 		}
 		GridEntry.Execute(w, row)
-	}*/
+	}
 
 	io.WriteString(w, TableEnd)
 }
