@@ -222,11 +222,14 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fromAddr, err := msg.Header.AddressList("From")
-	if err != nil || len(fromAddr) > 0 {
+	if err != nil {
 		c.Warningf("unable to parse From header: %s", err)
 		return
 	}
-	from := fromAddr[0]
+	from := &mail.Address{}
+	if len(fromAddr) > 0 {
+		from = fromAddr[0]
+	}
 	c.Infof("new mail from %s", from)
 	if strings.Index(from.Address, "majordomo") != -1 {
 		body, _ := ioutil.ReadAll(msg.Body)
