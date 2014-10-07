@@ -37,7 +37,6 @@ func ShowGrid(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		buf.Reset()
-		c.Debugf("%p %p %p", b, buf, key)
 		GridHeader.Execute(buf, struct {
 			Key   string
 			Build *bulk.Build
@@ -50,6 +49,7 @@ func ShowGrid(w http.ResponseWriter, r *http.Request) {
 	m := NewMultiIterator(c, buildkeys)
 	for {
 		row, done := m.Next()
+		c.Debugf("%#v %v", row, done)
 		if done {
 			break
 		}
@@ -75,6 +75,7 @@ type PkgResult struct {
 // return Pkg elements. All of the queries must be sorted by the same
 // criteria.
 type MultiIterator []struct {
+	c   appengine.Context
 	it  iterator
 	key *datastore.Key
 	Pkg bulk.Pkg
@@ -85,7 +86,8 @@ type MultiIterator []struct {
 func NewMultiIterator(c appengine.Context, ancestors []*datastore.Key) MultiIterator {
 	m := make(MultiIterator, len(ancestors))
 	for i := range ancestors {
-		m[i].it = datastore.NewQuery("pkg").Ancestor(ancestors[i]).Order("Category").Order("Dir").Order("PkgName").Run(c)
+		m[i].c = c
+		m[i].it = datastore.NewQuery("pkg").Ancestor(ancestors[i]).Filter("Category =", "x11/").Order("Category").Order("Dir").Order("PkgName").Run(c)
 	}
 	return m
 }
@@ -96,7 +98,7 @@ func (m MultiIterator) lowestPkgName() string {
 	l := ""
 	for i := range m {
 		current := m[i].Pkg.PkgName
-		if l == "" || current < l {
+		if l == "" || (current != "" && current < l) {
 			l = current
 		}
 	}
@@ -118,6 +120,7 @@ func (m MultiIterator) Next() ([]PkgResult, bool) {
 		}
 		var err error
 		m[i].key, err = m[i].it.Next(&m[i].Pkg)
+		m[i].c.Debugf("Next[%v] returned %#v", i, m[i].Pkg)
 		if err != nil {
 			// TODO(bsiegert) This swallows errors other than
 			// datastore.Done. However, we would need a context
@@ -127,6 +130,7 @@ func (m MultiIterator) Next() ([]PkgResult, bool) {
 		}
 	}
 	l := m.lowestPkgName()
+	m[0].c.Debugf("lowestPkgName == %q", l)
 	if l == "" {
 		return nil, true
 	}

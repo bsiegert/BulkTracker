@@ -266,21 +266,25 @@ var gridHeader = `<a href="/build/{{.Key}}"><small>{{.Build.Platform}}<br />{{.B
 
 var GridHeader = template.Must(template.New("GridHeader").Parse(gridHeader))
 
-var gridEntry = `{{$first := index . 0}}<td>{{$first.Category}}/{{$first.Dir}}</td>
-  <td>{{$first.PkgName}}</td>
-  {{range .}}
-    {{if .Pkg ne nil}}
-	{{if eq .Pkg.BuildStatus 0}}
-	<td class="success text-success">ok</td>
-	{{else if eq .Pkg.BuildStatus 1}}
-	<td class="info text-info">prefailed</td>
-	{{else if eq .Pkg.BuildStatus 2}}
-	<td class="danger text-danger">failed</td>
-	{{else if eq .Pkg.BuildStatus 3}}
-	<td class="warning text-warning">indirect-failed</td>
-	{{else if eq .Pkg.BuildStatus 4}}
-	<td class="info text-info">indirect-prefailed</td>
-	{{end}}
+var gridEntry = `{{$s := .}}{{with $first := (index . 0).Pkg}}
+    <tr><td>{{$first.Category}}{{$first.Dir}}</td>
+    <td>{{$first.PkgName}}</td>
+    {{range $r := $s}}
+      {{if $r.Pkg}}
+	  {{if eq $r.Pkg.BuildStatus 0}}
+	  <td class="success text-success">ok</td>
+	  {{else if eq $r.Pkg.BuildStatus 1}}
+	  <td class="info text-info">prefailed</td>
+	  {{else if eq $r.Pkg.BuildStatus 2}}
+	  <td class="danger text-danger">failed</td>
+	  {{else if eq $r.Pkg.BuildStatus 3}}
+	  <td class="warning text-warning">indirect-failed</td>
+	  {{else if eq $r.Pkg.BuildStatus 4}}
+	  <td class="info text-info">indirect-prefailed</td>
+	  {{end}}
+      {{else}}<td></td>
+      {{end}}
+    </tr>
     {{end}}
   {{end}}
 `
