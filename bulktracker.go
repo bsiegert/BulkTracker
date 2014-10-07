@@ -3,6 +3,7 @@ package bulktracker
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dsbatch"
+	"github.com/bsiegert/BulkTracker/json"
 
 	"appengine"
 	"appengine/datastore"
@@ -31,6 +32,8 @@ func init() {
 	http.HandleFunc("/grid", ShowGrid) // in grid.go
 	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
+
+	http.HandleFunc("/json/build/", json.BuildDetails)
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
