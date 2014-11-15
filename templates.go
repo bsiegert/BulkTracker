@@ -83,17 +83,17 @@ const TableEnd = `
 const tableBuilds = `
       <tr>
 	<td>
-	  <a href="/build/{{.Key}}">{{.Build.Date}}</a>
+	  <a href="/build/{{.Key}}">{{.Date}}</a>
 	</td>
 	<td>
-	  <a href="/build/{{.Key}}">{{.Build.Platform}}</a>
+	  <a href="/build/{{.Key}}">{{.Platform}}</a>
 	</td>
 	<td>
-	  <span class="text-danger">{{.Build.NumFailed}} failed</span> /
-	  <span class="text-warning">{{.Build.NumIndirectFailed}} indirect-failed</span> /
-	  <span class="text-success">{{.Build.NumOK}} ok</span>
+	  <span class="text-danger">{{.NumFailed}} failed</span> /
+	  <span class="text-warning">{{.NumIndirectFailed}} indirect-failed</span> /
+	  <span class="text-success">{{.NumOK}} ok</span>
 	</td>
-	<td>{{.Build.User}}</td>
+	<td>{{.User}}</td>
       </tr>`
 
 var TableBuilds = template.Must(template.New("TableBuilds").Parse(tableBuilds))
@@ -101,24 +101,24 @@ var TableBuilds = template.Must(template.New("TableBuilds").Parse(tableBuilds))
 const tablePkgs = `
       <tr>
 	<td>
-	  <a href="/pkg/{{.Key}}">{{.Pkg.Category}}{{.Pkg.Dir}}</a>
+	  <a href="/pkg/{{.Key}}">{{.Category}}{{.Dir}}</a>
 	</td>
 	<td>
-	  <a href="/pkg/{{.Key}}">{{.Pkg.PkgName}}</a>
+	  <a href="/pkg/{{.Key}}">{{.PkgName}}</a>
 	</td>
-	{{if eq .Pkg.BuildStatus 0}}
+	{{if eq .BuildStatus 0}}
 	<td class="success text-success">ok</td>
-	{{else if eq .Pkg.BuildStatus 1}}
+	{{else if eq .BuildStatus 1}}
 	<td class="info text-info">prefailed</td>
-	{{else if eq .Pkg.BuildStatus 2}}
+	{{else if eq .BuildStatus 2}}
 	<td class="danger text-danger">failed</td>
-	{{else if eq .Pkg.BuildStatus 3}}
+	{{else if eq .BuildStatus 3}}
 	<td class="warning text-warning">indirect-failed</td>
-	{{else if eq .Pkg.BuildStatus 4}}
+	{{else if eq .BuildStatus 4}}
 	<td class="info text-info">indirect-prefailed</td>
 	{{end}}
 	<td>
-	  {{.Pkg.Breaks}}
+	  {{.Breaks}}
 	</td>
       </tr>`
 
@@ -262,24 +262,24 @@ const dataTable = `
 
 var DataTable = template.Must(template.New("DataTable").Parse(dataTable))
 
-var gridHeader = `<a href="/build/{{.Key}}"><small>{{.Build.Platform}}<br />{{.Build.Date}}</small></a>`
+var gridHeader = `<a href="/build/{{.Key}}"><small>{{.Platform}}<br />{{.Date}}</small></a>`
 
 var GridHeader = template.Must(template.New("GridHeader").Parse(gridHeader))
 
-var gridEntry = `{{$s := .}}{{with $first := (index . 0).Pkg}}
+var gridEntry = `{{$s := .}}{{with $first := (index . 0)}}
     <tr><td>{{$first.Category}}{{$first.Dir}}</td>
     <td>{{$first.PkgName}}</td>
     {{range $r := $s}}
-      {{if $r.Pkg}}
-	  {{if eq $r.Pkg.BuildStatus 0}}
+      {{if $r}}
+	  {{if eq $r.BuildStatus 0}}
 	  <td class="success text-success">ok</td>
-	  {{else if eq $r.Pkg.BuildStatus 1}}
+	  {{else if eq $r.BuildStatus 1}}
 	  <td class="info text-info">prefailed</td>
-	  {{else if eq $r.Pkg.BuildStatus 2}}
+	  {{else if eq $r.BuildStatus 2}}
 	  <td class="danger text-danger">failed</td>
-	  {{else if eq $r.Pkg.BuildStatus 3}}
+	  {{else if eq $r.BuildStatus 3}}
 	  <td class="warning text-warning">indirect-failed</td>
-	  {{else if eq $r.Pkg.BuildStatus 4}}
+	  {{else if eq $r.BuildStatus 4}}
 	  <td class="info text-info">indirect-prefailed</td>
 	  {{end}}
       {{else}}<td></td>

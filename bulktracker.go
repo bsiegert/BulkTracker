@@ -66,10 +66,8 @@ func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.It
 			w.WriteHeader(500)
 			return
 		}
-		TableBuilds.Execute(w, struct {
-			Key   string
-			Build *bulk.Build
-		}{key.Encode(), b})
+		b.Key = key.Encode()
+		TableBuilds.Execute(w, b)
 	}
 	io.WriteString(w, TableEnd)
 }
@@ -87,10 +85,8 @@ func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.
 			w.WriteHeader(500)
 			return
 		}
-		TablePkgs.Execute(w, struct {
-			Key string
-			Pkg *bulk.Pkg
-		}{key.Encode(), p})
+		p.Key = key.Encode()
+		TablePkgs.Execute(w, p)
 	}
 	io.WriteString(w, TableEnd)
 }

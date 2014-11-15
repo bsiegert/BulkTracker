@@ -107,7 +107,7 @@ func (m MultiIterator) lowestPkgName() string {
 
 // Next returns a row of results. Some of the elements may be nil. The second
 // value is true if the iteration is done.
-func (m MultiIterator) Next() ([]PkgResult, bool) {
+func (m MultiIterator) Next() ([]*bulk.Pkg, bool) {
 	for i := range m {
 		// If the key is not nil, we did not use that value
 		// in the last round.
@@ -130,14 +130,16 @@ func (m MultiIterator) Next() ([]PkgResult, bool) {
 		}
 	}
 	l := m.lowestPkgName()
-	m[0].c.Debugf("lowestPkgName == %q", l)
+	if len(m) > 0 {
+		m[0].c.Debugf("lowestPkgName == %q", l)
+	}
 	if l == "" {
 		return nil, true
 	}
-	result := make([]PkgResult, len(m))
+	result := make([]*bulk.Pkg, len(m))
 	for i := range m {
 		if m[i].Pkg.PkgName == l && m[i].key != nil {
-			result[i].Pkg = &m[i].Pkg
+			result[i] = &m[i].Pkg
 			result[i].Key = m[i].key.Encode()
 			m[i].key = nil
 		}

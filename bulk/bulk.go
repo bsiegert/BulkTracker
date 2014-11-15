@@ -15,6 +15,8 @@ import (
 
 // Build holds aggregate information about a single bulk build.
 type Build struct {
+	// Key is the string representation of the datastore key of this record.
+	Key       string `datastore:"-"`
 	Platform  string
 	Timestamp time.Time
 	Branch    string
@@ -133,7 +135,8 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 // TODO(bsiegert) Does this need a field for the build key,
 // or is the datastore "ancestor" enough?
 type Pkg struct {
-	//Build *datastore.Key
+	// Key is the string representation of the datastore key of this record.
+	Key           string `datastore:"-"`
 	// The first and last part of the package location. For example,
 	// if the location is "devel/libtool", Category would be "devel"
 	// and Dir "libtool".
