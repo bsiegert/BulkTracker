@@ -234,7 +234,7 @@ const noDetails = `<div class="alert alert-danger" role="alert">
   the index.</a>
 </div>`
 
-var NoDetails = template.Must(template.New("NoDetails").Parse(noDetails)) 
+var NoDetails = template.Must(template.New("NoDetails").Parse(noDetails))
 
 const categoryList = `<h2>Results by category</h2>
   <ul class="list-inline">
@@ -290,5 +290,3 @@ var gridEntry = `{{$s := .}}{{with $first := (index . 0)}}
 `
 
 var GridEntry = template.Must(template.New("GridEntry").Parse(gridEntry))
-
-

@@ -40,7 +40,6 @@ func (b *Build) BaseURL() string {
 	return path.Base(b.ReportURL)
 }
 
-
 // Status of a package build.
 const (
 	// The package was successfully built.
@@ -136,7 +135,7 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 // or is the datastore "ancestor" enough?
 type Pkg struct {
 	// Key is the string representation of the datastore key of this record.
-	Key           string `datastore:"-"`
+	Key string `datastore:"-"`
 	// The first and last part of the package location. For example,
 	// if the location is "devel/libtool", Category would be "devel"
 	// and Dir "libtool".

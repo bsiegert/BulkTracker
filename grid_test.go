@@ -21,7 +21,6 @@ func (it *testingIterator) Next(dst interface{}) (*datastore.Key, error) {
 	return &datastore.Key{}, nil
 }
 
-
 func TestMultiIterator(t *testing.T) {
 	m := make(MultiIterator, 1)
 	m[0].it = &testingIterator{4}

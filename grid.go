@@ -12,7 +12,6 @@ import (
 	"net/http"
 )
 
-
 func ShowGrid(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, PageHeader)
 	defer io.WriteString(w, PageFooter)

@@ -28,7 +28,7 @@ func init() {
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/builds", ShowBuilds)
 	http.HandleFunc("/build/", BuildDetails)
-	http.HandleFunc("/grid", ShowGrid)  // in grid.go
+	http.HandleFunc("/grid", ShowGrid) // in grid.go
 	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
 }
@@ -128,7 +128,6 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		writePackageList(c, w, it)
 		return
 	}
-
 
 	var categories []bulk.Pkg
 	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(c, &categories)
