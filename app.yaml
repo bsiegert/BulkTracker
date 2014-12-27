@@ -9,6 +9,9 @@ inbound_services:
 handlers:
 - url: /static
   static_dir: static
+- url: /robots.txt
+  static_files: robots.txt
+  upload: robots.txt
 - url: /.*
   script: _go_app
 
