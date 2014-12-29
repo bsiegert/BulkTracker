@@ -8,7 +8,7 @@ before_install:
 - popd
 install:
 - cd $TRAVIS_BUILD_DIR
-- export GOPATH=$TRAVIS_BUILD_DIR
+- export GOPATH=$HOME/gopath
 - export GOHOME=$GAE
 - export PATH=$GAE:$PATH
 - which goapp
