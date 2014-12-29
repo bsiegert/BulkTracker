@@ -1,8 +1,8 @@
 package bulktracker
 
 import (
-	//"github.com/bsiegert/bulktracker"
-	"github.com/bsiegert/bulktracker/bulk"
+	//"github.com/bsiegert/BulkTracker"
+	"github.com/bsiegert/BulkTracker/bulk"
 
 	"appengine/datastore"
 	"testing"
