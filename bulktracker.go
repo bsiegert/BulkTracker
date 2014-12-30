@@ -203,10 +203,8 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue
 		}
-		TablePkgs.Execute(w, struct {
-			Key string
-			Pkg *bulk.Pkg
-		}{key.Encode(), dp})
+		dp.Key = key.Encode()
+		TablePkgs.Execute(w, dp)
 	}
 	io.WriteString(w, TableEnd)
 
