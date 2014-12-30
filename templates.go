@@ -180,10 +180,7 @@ var BulkBuildInfo = template.Must(template.New("BulkBuildInfo").Parse(bulkBuildI
 const pkgInfo = `
     <dl class="dl-horizontal" style="font-size: 120%">
       <dt>Package location</dt>
-      <dd>
-        {{.Pkg.Category}}{{.Pkg.Dir}}
-	<a href="http://pkgsrc.se/{{.Pkg.Category}}{{.Pkg.Dir}}" class="btn btn-default">pkgsrc.se</a>
-      </dd>
+      <dd><a href="http://pkgsrc.se/{{.Pkg.Category}}{{.Pkg.Dir}}">{{.Pkg.Category}}{{.Pkg.Dir}}</a></dd>
       <dt>Package name</dt>
       <dd>{{.Pkg.PkgName}}</dd>
       <dt>Build Status</dt>
