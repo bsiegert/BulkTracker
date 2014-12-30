@@ -139,7 +139,6 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		Categories []bulk.Pkg
 		CurrentURL string
 	}{categories, r.URL.Path})
-	//fmt.Fprintf(w, "<pre>%s</pre>", err)
 
 	Heading.Execute(w, "Packages the breaking most other packages")
 
@@ -173,10 +172,9 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	PkgInfo.Execute(w, struct {
-		PkgKey, BuildKey string
-		Pkg              *bulk.Pkg
-		Build            *bulk.Build
-	}{pkgKey.Encode(), buildKey.Encode(), p, b})
+		Pkg   *bulk.Pkg
+		Build *bulk.Build
+	}{p, b})
 
 	DataTable.Execute(w, nil)
 
