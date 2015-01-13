@@ -130,6 +130,8 @@ var TablePkgs = template.Must(template.New("TablePkgs").Parse(tablePkgs))
 const bulkBuildInfo = `
       <div class="col-md-8">
         <dl class="dl-horizontal" style="font-size: 120%">
+	  <dt>Branch</dt>
+	  <dd>{{.Branch}}</dd>
 	  <dt>Platform</dt>
 	  <dd>{{.Platform}}</dd>
 	  <dt>Compiler</dt>
