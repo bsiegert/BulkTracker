@@ -208,6 +208,13 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// All these names mean HEAD.
+var headAliases = map[string]bool{
+	"current":          true,
+	"upstream-trunk32": true,
+	"upstream-trunk64": true,
+}
+
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	msg, err := mail.ReadMessage(r.Body)
@@ -241,13 +248,26 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 		fromName = strings.SplitN(from.Address, "@", 2)[0]
 	}
 	build, err := bulk.BuildFromReport(fromName, body)
+
+	if build == nil {
+		return
+	}
+
+	subj := msg.Header.Get("Subject")
+	s := strings.SplitN(subj, " ", 2)[0]
+	if s == "pkgsrc" {
+		build.Branch = "HEAD"
+	} else if strings.HasPrefix(s, "pkgsrc-") {
+		build.Branch = strings.TrimPrefix(s, "pkgsrc-")
+	}
+	if headAliases[build.Branch] {
+		build.Branch = "HEAD"
+	}
 	c.Debugf("%#v, %s", build, err)
 
-	if build != nil {
-		key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "build", nil), build)
-		c.Infof("wrote entry %v: %s", key, err)
-		FetchReport.Call(c, key, build.ReportURL)
-	}
+	key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "build", nil), build)
+	c.Infof("wrote entry %v: %s", key, err)
+	FetchReport.Call(c, key, build.ReportURL)
 }
 
 // FetchReport fetches the machine-readable build report, hands it off to the
