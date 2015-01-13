@@ -55,7 +55,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
-	TableBegin.Execute(w, []string{"Date", "Platform", "Stats", "User"})
+	TableBegin.Execute(w, []string{"Date", "Branch", "Platform", "Stats", "User"})
 	b := &bulk.Build{}
 	for {
 		key, err := it.Next(b)

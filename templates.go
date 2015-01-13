@@ -86,6 +86,9 @@ const tableBuilds = `
 	  <a href="/build/{{.Key}}">{{.Date}}</a>
 	</td>
 	<td>
+	  <a href="/build/{{.Key}}">{{.Branch}}</a>
+	</td>
+	<td>
 	  <a href="/build/{{.Key}}">{{.Platform}}</a>
 	</td>
 	<td>
