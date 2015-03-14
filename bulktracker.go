@@ -140,9 +140,9 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		CurrentURL string
 	}{categories, r.URL.Path})
 
-	Heading.Execute(w, "Packages the breaking most other packages")
+	Heading.Execute(w, "Packages breaking most other packages")
 
-	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Run(c)
+	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(c)
 	writePackageList(c, w, it)
 }
 
