@@ -123,7 +123,7 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	if len(paths) > 1 {
 		category := paths[1] + "/"
-		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Run(c)
+		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000).Run(c)
 		Heading.Execute(w, category)
 		writePackageList(c, w, it)
 		return
@@ -181,7 +181,7 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	// Failed, breaking other packages.
 	if p.Breaks > 0 {
 		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", p.Breaks)
-		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Run(c)
+		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(c)
 		writePackageList(c, w, it)
 	}
 
