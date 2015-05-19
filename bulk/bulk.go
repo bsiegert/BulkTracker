@@ -142,9 +142,6 @@ type Pkg struct {
 	Category, Dir string
 	PkgName       string
 	BuildStatus   int8
-	// This is probably not needed, Category+Dir+PkgName should be unique.
-	//MultiVersion string
-	//Depends []string `datastore:",noindex"`
 	// Dependencies are not important, only the failed ones for
 	// indirect-failed packages, and the _number_ of breaking packages for
 	// failed ones.
