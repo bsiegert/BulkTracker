@@ -34,6 +34,7 @@ func init() {
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
 
 	http.HandleFunc("/json/build/", json.BuildDetails)
+	http.HandleFunc("/json/pkgresults/", json.PkgResults)
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {

@@ -35,3 +35,44 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(b)
 }
+
+type PkgResult struct {
+	Build bulk.Build
+	Pkg   bulk.Pkg
+}
+
+func PkgResults(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+
+	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/build/"), "/")
+	if len(paths) < 2 {
+		return
+	}
+	category, dir := paths[0]+"/", paths[1]
+	it := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(10).Run(c)
+	results := make([]PkgResult, 10)
+	var i int
+	for {
+		r := &results[i]
+		i++
+		key, err := it.Next(&r.Pkg)
+		if err == datastore.Done {
+			break
+		} else if err != nil {
+			c.Warningf("failed to read package result: %s", err)
+			continue
+		}
+		r.Pkg.Key = key.Encode()
+		buildID := key.Parent()
+		// TODO(bsiegert) cache builds by key to avoid repeated Get
+		// calls.
+		err = datastore.Get(c, buildID, &r.Build)
+		if err != nil {
+			c.Warningf("failed to read build: %s", err)
+			continue
+		}
+		r.Build.Key = buildID.Encode()
+	}
+	results = results[:i]
+	json.NewEncoder(w).Encode(results)
+}
