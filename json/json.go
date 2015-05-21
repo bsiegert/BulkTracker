@@ -52,11 +52,9 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 	}
 	category, dir := paths[0]+"/", paths[1]
 	it := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(10).Run(c)
-	results := make([]PkgResult, 10)
-	var i int
+	var results []*PkgResult
 	for {
-		r := &results[i]
-		i++
+		r := PkgResult{}
 		key, err := it.Next(&r.Pkg)
 		if err == datastore.Done {
 			break
@@ -74,7 +72,7 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		r.Build.Key = buildID.Encode()
+		results = append(results, &r)
 	}
-	results = results[:i]
 	json.NewEncoder(w).Encode(results)
 }
