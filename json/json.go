@@ -46,7 +46,7 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := appengine.NewContext(r)
 
-	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/build/"), "/")
+	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/pkgresults/"), "/")
 	if len(paths) < 2 {
 		return
 	}
