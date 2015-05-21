@@ -12,6 +12,7 @@ import (
 )
 
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	c := appengine.NewContext(r)
 
 	// begin copy+paste
@@ -42,6 +43,7 @@ type PkgResult struct {
 }
 
 func PkgResults(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	c := appengine.NewContext(r)
 
 	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/build/"), "/")
