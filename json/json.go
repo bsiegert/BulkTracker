@@ -26,7 +26,7 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b := &bulk.Build{}
+	b := &bulk.Build{Key: key.Encode()}
 	err = datastore.Get(c, key, b)
 	if err != nil {
 		c.Warningf("getting build record: %s", err)
