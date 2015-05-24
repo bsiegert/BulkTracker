@@ -9,6 +9,8 @@ inbound_services:
 handlers:
 - url: /static
   static_dir: static
+- url: /mock
+  static_dir: mock
 - url: /robots.txt
   static_files: robots.txt
   upload: robots.txt
