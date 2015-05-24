@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>BulkTracker: Grid</title>
+
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/dataTables.bootstrap.css" rel="stylesheet">
+  </head>
+  <body>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="/static/bootstrap.min.js"></script>
+  <script src="//cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js"></script>
+  <script src="/static/dataTables.bootstrap.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <div style="background:#F26711; padding: 20px">
+  <div class="pull-left" style="padding-right: 20px">
+    <img src="/static/pkgsrc-white.png" width="64px" height="64px">
+  </div>
+  <h1 style="color: white">BulkTracker
+    <small style="color: white">pkgsrc bulk build status</small>
+  </h1>
+  </div>
+  <div class="container">
+  <div class="row">
+    <h2>Build results for www/firefox</h2>
+
+    <table class="table table-bordered">
+      <thead>
+	<tr>
+	  <th>Package Name</th>
+	  <th>Status</th>
+	  <th>Build Timestamp</th>
+	  <th>Branch</th>
+	  <th>Platform</th>
+	  <th>Compiler</th>
+	</tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+    <script type="text/javascript">
+
+      var statuses = {
+	0: "ok",
+	1: "prefailed",
+	2: "failed",
+	3: "indirect-failed",
+	4: "indirect-prefailed"
+      };
+      var classes = {
+	0: "success text-success",
+	1: "info text-info",
+	2: "danger text-danger",
+	3: "warning text-warning",
+	4: "info text-info"
+      };
+
+      $(document).ready(function() {
+      	$('.table').dataTable({
+	  ajax: {
+	    url:     "/json/pkgresults/www/firefox",
+	    dataSrc: ""
+	  },
+	  columns: [
+	    {data: "Pkg.PkgName"},
+	    {
+	      data:   "Pkg.BuildStatus",
+	      render: function(data, type, row, meta) {
+	      	return statuses[data];
+	      }
+	    },
+	    {
+	      data:   "Build.Timestamp",
+	      render: function(data, type, row, meta) {
+	      	return data.split("T")[0];
+	      }
+	    },
+	    {data: "Build.Branch"},
+	    {data: "Build.Platform"},
+	    {data: "Build.Compiler"}
+	  ],
+	  createdRow: function(row, data, dataIndex) {
+	    $('td:eq(1)', row).addClass(classes[data.Pkg.BuildStatus]);
+	  }
+     	});
+      });
+
+    </script>
+
+  </div>
+  </div>
+  </body>
+</html>
