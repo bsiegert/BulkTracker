@@ -29,7 +29,6 @@ func init() {
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/builds", ShowBuilds)
 	http.HandleFunc("/build/", BuildDetails)
-	http.HandleFunc("/grid", ShowGrid) // in grid.go
 	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", HandleIncomingMail)
 
