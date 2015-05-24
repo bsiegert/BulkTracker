@@ -1,5 +1,7 @@
 # BulkTracker
 
+[![Build Status](https://travis-ci.org/bsiegert/BulkTracker.svg?branch=master)](https://travis-ci.org/bsiegert/BulkTracker)
+
 BulkTracker is a web application to track the status of bulk builds in NetBSD 
 [pkgsrc](http://www.pkgsrc.org) on various platforms. It is written in Go and
 runs on Google App Engine. The production instance is running at
