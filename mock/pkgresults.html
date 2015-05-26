@@ -26,7 +26,8 @@
   </div>
   <div class="container">
   <div class="row">
-    <h2>Build results for www/firefox</h2>
+
+    <h2>Build results for <span id="pkgname-header">www/firefox</span></h2>
 
     <table class="table table-bordered">
       <thead>
@@ -61,9 +62,16 @@
       };
 
       $(document).ready(function() {
+	var pkgname = "www/firefox";
+	var pkgname_re = /^#[A-Za-z0-9+-]+\/[A-Za-z0-9+-]+$/;
+	if (pkgname_re.test(window.location.hash)) {
+	  pkgname = window.location.hash.substring(1);
+	}
+	$('#pkgname-header').text(pkgname);
+
       	$('.table').dataTable({
 	  ajax: {
-	    url:     "/json/pkgresults/www/firefox",
+	    url:     "/json/pkgresults/"+pkgname,
 	    dataSrc: ""
 	  },
 	  columns: [
@@ -85,7 +93,9 @@
 	    {data: "Build.Compiler"}
 	  ],
 	  createdRow: function(row, data, dataIndex) {
+	    $('td:eq(0)', row).wrapInner('<a href="/pkg/'+data.Pkg.Key+'"></a>');
 	    $('td:eq(1)', row).addClass(classes[data.Pkg.BuildStatus]);
+	    $('td:eq(4)', row).wrapInner('<a href="/build/'+data.Build.Key+'"></a>');
 	  }
      	});
       });
