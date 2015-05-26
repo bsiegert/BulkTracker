@@ -7,6 +7,7 @@ import (
 	"appengine/datastore"
 
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -73,6 +74,10 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 		}
 		r.Build.Key = buildID.Encode()
 		results = append(results, &r)
+	}
+	if len(results) == 0 {
+		io.WriteString(w, "[]")
+		return
 	}
 	json.NewEncoder(w).Encode(results)
 }
