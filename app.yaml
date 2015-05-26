@@ -14,6 +14,9 @@ handlers:
 - url: /robots.txt
   static_files: robots.txt
   upload: robots.txt
+- url: /pkgresults.*
+  static_files: static/pkgresults.html
+  upload: static/pkgresults.html
 - url: /.*
   script: _go_app
 
