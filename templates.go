@@ -59,6 +59,22 @@ const StartPageLead = `
     </p>
   </div>
 
+  <script type="text/javascript" src="/static/select-pkgresult.js"></script>
+
+  <h2>Search for package results (Beta)</h2>
+  <form id="pkgresults" class="form-inline col-lg-6">
+    <div class="form-group">
+      <div class="input-group">
+	<input id="results-pkg" type="text" class="form-control" placeholder="category/package">
+	<span class="input-group-btn">
+	  <button id="results-submit" class="btn btn-warning" type="submit">Show results</button>
+	</span>
+      </div>
+    </div>
+  </form>
+
+  </div><div class="row">
+
   <h2>Recent Builds &nbsp; <a href="/builds" class="btn btn-primary">Show all</a></h2>
 `
 
