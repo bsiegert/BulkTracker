@@ -20,4 +20,4 @@ handlers:
 - url: /.*
   script: _go_app
 
-nobuild_files: (bulk|dsbatch|json)/
+nobuild_files: (bulk|dsbatch|json|templates)/
