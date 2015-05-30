@@ -1,4 +1,4 @@
-package bulktracker
+package templates
 
 import (
 	"html/template"
