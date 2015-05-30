@@ -1,0 +1,7 @@
+  <h2>Results by category</h2>
+
+  <ul class="list-inline">
+  {{$url := .CurrentURL}}{{range $c := .Categories}}
+    <li style="width: 14em"><a href="{{$url}}/{{.Category}}">{{.Category}}</a></li>
+  {{end}}
+  </ul>

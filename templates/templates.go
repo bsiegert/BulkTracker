@@ -1,281 +1,84 @@
 package templates
 
 import (
+	"github.com/bsiegert/BulkTracker/bulk"
+
 	"html/template"
+	"io"
+	"io/ioutil"
 )
 
-const PageHeader = `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>BulkTracker</title>
-
-    <link href="/static/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/dataTables.bootstrap.css" rel="stylesheet">
-    <!--<style type="text/css">
-      .btn-primary {
-        color: #fff;
-	background-color: #f62711;
-	border-color: #e6230b;
-      }
-    </style>-->
-  </head>
-  <body>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <script src="/static/bootstrap.min.js"></script>
-  <script src="//cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js"></script>
-  <script src="/static/dataTables.bootstrap.js"></script>
-  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-  <div style="background:#F26711; padding: 20px; margin-bottom: 20px">
-  <div class="pull-left" style="padding-right: 20px">
-    <img src="/static/pkgsrc-white.png" width="64px" height="64px">
-  </div>
-  <h1 style="color: white">BulkTracker
-    <small style="color: white">pkgsrc bulk build status</small>
-  </h1>
-  </div>
-  <div class="container">
-  <div class="row">
-`
-
-const PageFooter = `
-  </div>
-  </div>
-  </body>
-</html>
-`
-
-const StartPageLead = `
-  <div class="jumbotron">
-    <p>BulkTracker is a web app to follow bulk build status in pkgsrc,
-      the <a href="http://www.NetBSD.org/">NetBSD</a> package collection.
-    </p>
-    <p>
-      <a class="btn btn-primary btn-lg" role="button" href="http://www.pkgsrc.org/">Learn more about pkgsrc</a>
-    </p>
-  </div>
-
-  <script type="text/javascript" src="/static/select-pkgresult.js"></script>
-
-  <h2>Search for package results (Beta)</h2>
-  <form id="pkgresults" class="form-inline col-lg-6">
-    <div class="form-group">
-      <div class="input-group">
-	<input id="results-pkg" type="text" class="form-control" placeholder="category/package">
-	<span class="input-group-btn">
-	  <button id="results-submit" class="btn btn-warning" type="submit">Show results</button>
-	</span>
-      </div>
-    </div>
-  </form>
-
-  </div><div class="row">
-
-  <h2>Recent Builds &nbsp; <a href="/builds" class="btn btn-primary">Show all</a></h2>
-`
-
-const tableBegin = `
-  <table class="table">
-    <thead>
-      <tr>
-	{{range .}}
-	<th>{{.}}</th>
-	{{end}}
-      </tr>
-    </thead>
-    <tbody>`
-
-var TableBegin = template.Must(template.New("TableBegin").Parse(tableBegin))
-
-const TableEnd = `
-    </tbody>
-  </table>
-`
-
-const tableBuilds = `
-      <tr>
-	<td>
-	  <a href="/build/{{.Key}}">{{.Date}}</a>
-	</td>
-	<td>
-	  <a href="/build/{{.Key}}">{{.Branch}}</a>
-	</td>
-	<td>
-	  <a href="/build/{{.Key}}">{{.Platform}}</a>
-	</td>
-	<td>
-	  <span class="text-danger">{{.NumFailed}} failed</span> /
-	  <span class="text-warning">{{.NumIndirectFailed}} indirect-failed</span> /
-	  <span class="text-success">{{.NumOK}} ok</span>
-	</td>
-	<td>{{.User}}</td>
-      </tr>`
-
-var TableBuilds = template.Must(template.New("TableBuilds").Parse(tableBuilds))
-
-const tablePkgs = `
-      <tr>
-	<td>
-	  <a href="/pkg/{{.Key}}">{{.Category}}{{.Dir}}</a>
-	</td>
-	<td>
-	  <a href="/pkg/{{.Key}}">{{.PkgName}}</a>
-	</td>
-	{{if eq .BuildStatus 0}}
-	<td class="success text-success">ok</td>
-	{{else if eq .BuildStatus 1}}
-	<td class="info text-info">prefailed</td>
-	{{else if eq .BuildStatus 2}}
-	<td class="danger text-danger">failed</td>
-	{{else if eq .BuildStatus 3}}
-	<td class="warning text-warning">indirect-failed</td>
-	{{else if eq .BuildStatus 4}}
-	<td class="info text-info">indirect-prefailed</td>
-	{{end}}
-	<td>
-	  {{.Breaks}}
-	</td>
-      </tr>`
-
-var TablePkgs = template.Must(template.New("TablePkgs").Parse(tablePkgs))
-
-const bulkBuildInfo = `
-      <div class="col-md-8">
-        <dl class="dl-horizontal" style="font-size: 120%">
-	  {{if .Branch}}<dt>Branch</dt>
-	  <dd>{{.Branch}}</dd>{{end}}
-	  <dt>Platform</dt>
-	  <dd>{{.Platform}}</dd>
-	  <dt>Compiler</dt>
-	  <dd>{{.Compiler}}</dd>
-	  <dt>Timestamp</dt>
-	  <dd>{{.Date}}</dd>
-	  <dt>User</dt>
-	  <dd>{{.User}}</dd>
-	</dl>
-      </div>
-      <div class="col-md-4"><div id="bulk-pie"></div></div>
-    </div>
-    <div class="row">
-      <script type="text/javascript">
-	google.load('visualization', '1.0', {'packages':['corechart']});
-
-	function drawBulkPiechart() {
-	  // Create and populate the data table.
-	  var data = google.visualization.arrayToDataTable([
-	    ['Number', 'Status'],
-	    ['ok', {{.NumOK}}],
-	    ['prefailed', {{.NumPrefailed}}],
-	    ['indirect-failed', {{.NumIndirectFailed}}],
-	    ['failed', {{.NumFailed}}],
-	  ]);
-
-	  // Create and draw the visualization.
-	  new google.visualization.PieChart(document.getElementById('bulk-pie')).
-	    draw(data, {
-	      pieHole: 0.4,
-	      pieSliceText: 'value',
-	      chartArea: {
-		width: 120,
-		height: 120,
-	      },
-	      title: 'Build Status',
-	      legend: { position: 'none' },
-	      slices: {
-		0: { color: 'green' },
-		1: { color: 'blue' },
-		2: { color: 'orange' },
-		3: { color: 'red' },
-	      },
-	    });
+func readFile(name string) string {
+	s, err := ioutil.ReadFile("templates/" + name)
+	if err != nil {
+		panic(err)
 	}
-	google.setOnLoadCallback(drawBulkPiechart);
-      </script>`
+	return string(s)
+}
 
-var BulkBuildInfo = template.Must(template.New("BulkBuildInfo").Parse(bulkBuildInfo))
+var (
+	PageHeader    = readFile("header.html")
+	PageFooter    = readFile("footer.html")
+	ReindexOK     = readFile("reindex_ok.html")
+	StartPageLead = readFile("start_page_lead.html")
+	TableEnd      = readFile("table_end.html")
+)
 
-const pkgInfo = `
-    <dl class="dl-horizontal" style="font-size: 120%">
-      <dt>Package location</dt>
-      <dd><a href="http://pkgsrc.se/{{.Pkg.Category}}{{.Pkg.Dir}}">{{.Pkg.Category}}{{.Pkg.Dir}}</a></dd>
-      <dt>Package name</dt>
-      <dd>{{.Pkg.PkgName}}</dd>
-      <dt>Build Status</dt>
-      {{if eq .Pkg.BuildStatus 0}}
-      <dd><span class="label label-success">ok</span></dd>
-      {{else if eq .Pkg.BuildStatus 1}}
-      <dd><span class="label label-info">prefailed</span></dd>
-      {{else if eq .Pkg.BuildStatus 2}}
-      <dd><span class="label label-danger">failed</span></dd>
-      {{else if eq .Pkg.BuildStatus 3}}
-      <dd><span class="label label-warning">indirect-failed</span></dd>
-      {{else if eq .Pkg.BuildStatus 4}}
-      <dd><span class="label label-info">indirect-prefailed</span></dd>
-      {{end}}
-      {{if eq .Pkg.BuildStatus 2}}
-      <dt>Build Logs</dt>
-      <dd>
-        <div class="btn-group btn-group-sm">
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/work.log" class="btn btn-default">work</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/depends.log" class="btn btn-default">depends</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/configure.log" class="btn btn-default">configure</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/build.log" class="btn btn-default">build</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/install.log" class="btn btn-default">install</a>
-	</div>
-      </dd>
-      {{end}}
-      <dt>Platform</dt>
-      <dd>{{.Build.Platform}}</dd>
-      <dt>Compiler</dt>
-      <dd>{{.Build.Compiler}}</dd>
-      <dt>Built on</dt>
-      <dd>{{.Build.Date}}</dd>
-      <dt>Built by</dt>
-      <dd>{{.Build.User}}</dd>
-    </dl>
-  </div><div class="row">`
+// t is the top-level template object.
+var t = template.Must(template.ParseFiles(
+	"templates/table_begin.html",
+	"templates/table_builds.html",
+	"templates/table_pkgs.html",
+	"templates/bulk_build_info.html",
+	"templates/pkg_info.html",
+	"templates/no_details.html",
+	"templates/category_list.html",
+	"templates/heading.html",
+	"templates/data_table.html"))
 
-var PkgInfo = template.Must(template.New("PkgInfo").Parse(pkgInfo))
+func TableBegin(w io.Writer, columns ...string) {
+	t.ExecuteTemplate(w, "table_begin.html", columns)
+}
 
-const ReindexOK = `<div class="alert alert-success" role="alert">
-  Re-index now in progress. This will take about one minute.</div>`
+func TableBuilds(w io.Writer, b *bulk.Build) {
+	t.ExecuteTemplate(w, "table_builds.html", b)
+}
 
-const noDetails = `<div class="alert alert-danger" role="alert">
-  No build details found. Try
-  <a href="{{.}}?a=reindex" rel="nofollow" class="alert-link">recreating
-  the index.</a>
-</div>`
+func TablePkgs(w io.Writer, p *bulk.Pkg) {
+	t.ExecuteTemplate(w, "table_pkgs.html", p)
+}
 
-var NoDetails = template.Must(template.New("NoDetails").Parse(noDetails))
+func BulkBuildInfo(w io.Writer, b *bulk.Build) {
+	t.ExecuteTemplate(w, "bulk_build_info.html", b)
+}
 
-const categoryList = `<h2>Results by category</h2>
-  <ul class="list-inline">
-  {{$url := .CurrentURL}}{{range $c := .Categories}}
-    <li style="width: 14em"><a href="{{$url}}/{{.Category}}">{{.Category}}</a></li>
-  {{end}}
-  </ul>
-`
+func PkgInfo(w io.Writer, p *bulk.Pkg, b *bulk.Build) {
+	t.ExecuteTemplate(w, "pkg_info.html", struct {
+		Pkg   *bulk.Pkg
+		Build *bulk.Build
+	}{p, b})
+}
 
-var CategoryList = template.Must(template.New("CategoryList").Parse(categoryList))
+func NoDetails(w io.Writer, path string) {
+	t.ExecuteTemplate(w, "no_details.html", path)
+}
 
-const heading = `<h2>{{.}}</h2>`
+func CategoryList(w io.Writer, categories []bulk.Pkg, path string) {
+	t.ExecuteTemplate(w, "category_list.html", struct {
+		Categories []bulk.Pkg
+		CurrentURL string
+	}{categories, path})
+}
 
-var Heading = template.Must(template.New("Heading").Parse(heading))
+func Heading(w io.Writer, text string) {
+	t.ExecuteTemplate(w, "heading.html", text)
+}
 
-const dataTable = `
-  <script type="text/javascript">
-    $(document).ready(function() {
-	$('.table').dataTable({{if .}}{
-	  {{.}}
-	}{{end}});
-    } );
-  </script>
-`
-
-var DataTable = template.Must(template.New("DataTable").Parse(dataTable))
+func DataTable(w io.Writer, settings string) {
+	var js *template.JS
+	if settings != "" {
+		s := template.JS(settings)
+		js = &s
+	}
+	t.ExecuteTemplate(w, "data_table.html", js)
+}

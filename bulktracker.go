@@ -14,7 +14,6 @@ import (
 	"compress/bzip2"
 	"encoding/base64"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -50,16 +49,16 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
-	templates.Heading.Execute(w, "List of Builds")
+	templates.Heading(w, "List of Builds")
 
 	c := appengine.NewContext(r)
 	it := datastore.NewQuery("build").Order("-Timestamp").Run(c)
 	writeBuildList(c, w, it)
-	templates.DataTable.Execute(w, nil)
+	templates.DataTable(w, "")
 }
 
 func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
-	templates.TableBegin.Execute(w, []string{"Date", "Branch", "Platform", "Stats", "User"})
+	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
 	b := &bulk.Build{}
 	for {
 		key, err := it.Next(b)
@@ -71,14 +70,14 @@ func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.It
 			return
 		}
 		b.Key = key.Encode()
-		templates.TableBuilds.Execute(w, b)
+		templates.TableBuilds(w, b)
 	}
 	io.WriteString(w, templates.TableEnd)
 }
 
 // writePackageList writes a table of package results from the iterator it to w.
 func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
-	templates.TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
+	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	p := &bulk.Pkg{}
 	for {
 		key, err := it.Next(p)
@@ -90,7 +89,7 @@ func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.
 			return
 		}
 		p.Key = key.Encode()
-		templates.TablePkgs.Execute(w, p)
+		templates.TablePkgs(w, p)
 	}
 	io.WriteString(w, templates.TableEnd)
 }
@@ -116,19 +115,19 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		c.Warningf("getting build record: %s", err)
 		return
 	}
-	templates.BulkBuildInfo.Execute(w, b)
+	templates.BulkBuildInfo(w, b)
 	if r.URL.Query().Get("a") == "reindex" {
 		FetchReport.Call(c, key, b.ReportURL)
 		io.WriteString(w, templates.ReindexOK)
 		return
 	}
 
-	templates.DataTable.Execute(w, template.JS(`"order": [3, "desc"]`))
+	templates.DataTable(w, `"order": [3, "desc"]`)
 
 	if len(paths) > 1 {
 		category := paths[1] + "/"
 		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000).Run(c)
-		templates.Heading.Execute(w, category)
+		templates.Heading(w, category)
 		writePackageList(c, w, it)
 		return
 	}
@@ -136,15 +135,12 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	var categories []bulk.Pkg
 	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(c, &categories)
 	if len(categories) == 0 {
-		templates.NoDetails.Execute(w, r.URL.Path)
+		templates.NoDetails(w, r.URL.Path)
 		return
 	}
-	templates.CategoryList.Execute(w, struct {
-		Categories []bulk.Pkg
-		CurrentURL string
-	}{categories, r.URL.Path})
+	templates.CategoryList(w, categories, r.URL.Path)
 
-	templates.Heading.Execute(w, "Packages breaking most other packages")
+	templates.Heading(w, "Packages breaking most other packages")
 
 	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(c)
 	writePackageList(c, w, it)
@@ -175,12 +171,8 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	templates.PkgInfo.Execute(w, struct {
-		Pkg   *bulk.Pkg
-		Build *bulk.Build
-	}{p, b})
-
-	templates.DataTable.Execute(w, nil)
+	templates.PkgInfo(w, p, b)
+	templates.DataTable(w, "")
 
 	// Failed, breaking other packages.
 	if p.Breaks > 0 {
@@ -197,7 +189,7 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	// TODO(bsiegert) Unfortunately, we save a list of package names, not a
 	// list of corresponding datastore keys. So we need to fetch them one by
 	// one.
-	templates.TableBegin.Execute(w, []string{"Location", "Package Name", "Status", "Breaks"})
+	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	dp := &bulk.Pkg{}
 	for _, dep := range p.FailedDeps {
 		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(c)
@@ -206,7 +198,7 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		dp.Key = key.Encode()
-		templates.TablePkgs.Execute(w, dp)
+		templates.TablePkgs(w, dp)
 	}
 	io.WriteString(w, templates.TableEnd)
 

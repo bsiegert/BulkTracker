@@ -1,0 +1,22 @@
+      <tr>
+	<td>
+	  <a href="/pkg/{{.Key}}">{{.Category}}{{.Dir}}</a>
+	</td>
+	<td>
+	  <a href="/pkg/{{.Key}}">{{.PkgName}}</a>
+	</td>
+	{{if eq .BuildStatus 0}}
+	<td class="success text-success">ok</td>
+	{{else if eq .BuildStatus 1}}
+	<td class="info text-info">prefailed</td>
+	{{else if eq .BuildStatus 2}}
+	<td class="danger text-danger">failed</td>
+	{{else if eq .BuildStatus 3}}
+	<td class="warning text-warning">indirect-failed</td>
+	{{else if eq .BuildStatus 4}}
+	<td class="info text-info">indirect-prefailed</td>
+	{{end}}
+	<td>
+	  {{.Breaks}}
+	</td>
+      </tr>

@@ -1,0 +1,17 @@
+      <tr>
+	<td>
+	  <a href="/build/{{.Key}}">{{.Date}}</a>
+	</td>
+	<td>
+	  <a href="/build/{{.Key}}">{{.Branch}}</a>
+	</td>
+	<td>
+	  <a href="/build/{{.Key}}">{{.Platform}}</a>
+	</td>
+	<td>
+	  <span class="text-danger">{{.NumFailed}} failed</span> /
+	  <span class="text-warning">{{.NumIndirectFailed}} indirect-failed</span> /
+	  <span class="text-success">{{.NumOK}} ok</span>
+	</td>
+	<td>{{.User}}</td>
+      </tr>

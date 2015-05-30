@@ -1,0 +1,51 @@
+      <div class="col-md-8">
+        <dl class="dl-horizontal" style="font-size: 120%">
+	  {{if .Branch}}<dt>Branch</dt>
+	  <dd>{{.Branch}}</dd>{{end}}
+	  <dt>Platform</dt>
+	  <dd>{{.Platform}}</dd>
+	  <dt>Compiler</dt>
+	  <dd>{{.Compiler}}</dd>
+	  <dt>Timestamp</dt>
+	  <dd>{{.Date}}</dd>
+	  <dt>User</dt>
+	  <dd>{{.User}}</dd>
+	</dl>
+      </div>
+      <div class="col-md-4"><div id="bulk-pie"></div></div>
+    </div>
+    <div class="row">
+      <script type="text/javascript">
+	google.load('visualization', '1.0', {'packages':['corechart']});
+
+	function drawBulkPiechart() {
+	  // Create and populate the data table.
+	  var data = google.visualization.arrayToDataTable([
+	    ['Number', 'Status'],
+	    ['ok', {{.NumOK}}],
+	    ['prefailed', {{.NumPrefailed}}],
+	    ['indirect-failed', {{.NumIndirectFailed}}],
+	    ['failed', {{.NumFailed}}],
+	  ]);
+
+	  // Create and draw the visualization.
+	  new google.visualization.PieChart(document.getElementById('bulk-pie')).
+	    draw(data, {
+	      pieHole: 0.4,
+	      pieSliceText: 'value',
+	      chartArea: {
+		width: 120,
+		height: 120,
+	      },
+	      title: 'Build Status',
+	      legend: { position: 'none' },
+	      slices: {
+		0: { color: 'green' },
+		1: { color: 'blue' },
+		2: { color: 'orange' },
+		3: { color: 'red' },
+	      },
+	    });
+	}
+	google.setOnLoadCallback(drawBulkPiechart);
+      </script>
