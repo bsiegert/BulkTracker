@@ -279,32 +279,3 @@ const dataTable = `
 `
 
 var DataTable = template.Must(template.New("DataTable").Parse(dataTable))
-
-var gridHeader = `<a href="/build/{{.Key}}"><small>{{.Platform}}<br />{{.Date}}</small></a>`
-
-var GridHeader = template.Must(template.New("GridHeader").Parse(gridHeader))
-
-var gridEntry = `{{$s := .}}{{with $first := (index . 0)}}
-    <tr><td>{{$first.Category}}{{$first.Dir}}</td>
-    <td>{{$first.PkgName}}</td>
-    {{range $r := $s}}
-      {{if $r}}
-	  {{if eq $r.BuildStatus 0}}
-	  <td class="success text-success">ok</td>
-	  {{else if eq $r.BuildStatus 1}}
-	  <td class="info text-info">prefailed</td>
-	  {{else if eq $r.BuildStatus 2}}
-	  <td class="danger text-danger">failed</td>
-	  {{else if eq $r.BuildStatus 3}}
-	  <td class="warning text-warning">indirect-failed</td>
-	  {{else if eq $r.BuildStatus 4}}
-	  <td class="info text-info">indirect-prefailed</td>
-	  {{end}}
-      {{else}}<td></td>
-      {{end}}
-    </tr>
-    {{end}}
-  {{end}}
-`
-
-var GridEntry = template.Must(template.New("GridEntry").Parse(gridEntry))
