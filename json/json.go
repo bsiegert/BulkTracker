@@ -5,11 +5,15 @@ import (
 
 	"appengine"
 	"appengine/datastore"
+	"appengine/memcache"
 
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +56,17 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	category, dir := paths[0]+"/", paths[1]
+	cacheKey := fmt.Sprintf("/json/pkgresults/%s%s", category, dir)
+
+	item, err := memcache.Get(c, fmt.Sprintf("/json/pkgresults/%s%s", category, dir))
+	if err == nil {
+		c.Debugf("PkgResults: used cached result")
+		w.Write(item.Value)
+		return
+	} else if err != memcache.ErrCacheMiss {
+		c.Warningf("get from memcache: %s", err)
+	}
+
 	it := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(10).Run(c)
 	var results []*PkgResult
 	for {
@@ -79,5 +94,17 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "[]")
 		return
 	}
-	json.NewEncoder(w).Encode(results)
+
+	var buf bytes.Buffer
+	json.NewEncoder(&buf).Encode(results)
+	err = memcache.Set(c, &memcache.Item{
+		Key:        cacheKey,
+		Value:      buf.Bytes(),
+		Expiration: 30 * time.Minute,
+	})
+	if err != nil {
+		c.Warningf("failed to write to cache: %s", err)
+	}
+
+	io.Copy(w, &buf)
 }
