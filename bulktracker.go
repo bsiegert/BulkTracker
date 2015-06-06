@@ -39,6 +39,10 @@ func init() {
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	builds, err := data.LatestBuilds(c)
 	if err != nil {
 		c.Errorf("failed to read latest builds: %s", err)
