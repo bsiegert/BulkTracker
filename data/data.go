@@ -5,6 +5,7 @@ package data
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 
+	"fmt"
 	"time"
 
 	"appengine"
@@ -12,7 +13,7 @@ import (
 	"appengine/memcache"
 )
 
-const latestBuildsKey = "latestBuilds"
+const latestBuildsKey = "latestBuildsPerPlatform"
 
 // LatestBuilds fetches the list of latest builds to show on the landing page.
 func LatestBuilds(c appengine.Context) (builds []bulk.Build, err error) {
@@ -25,12 +26,30 @@ func LatestBuilds(c appengine.Context) (builds []bulk.Build, err error) {
 		return builds, nil
 	}
 
-	keys, err := datastore.NewQuery("build").Order("-Timestamp").Limit(10).GetAll(c, &builds)
-	if err != nil {
-		return nil, err
-	}
-	for i := range builds {
-		builds[i].Key = keys[i].Encode()
+	it := datastore.NewQuery("build").Order("-Timestamp").Limit(1000).Run(c)
+	var b bulk.Build
+RowLoop:
+	for {
+		key, err := it.Next(&b)
+		if err == datastore.Done {
+			break
+		} else if err != nil {
+			return nil, fmt.Errorf("failed to read build: %s", err)
+		}
+		// Skip old entries with empty branch.
+		//if b.Branch == "" {
+		//	continue RowLoop
+		//}
+		// Is this the first entry of this type?
+		// TODO(bsiegert) eliminate O(n2) algo.
+		for i := range builds {
+			bb := builds[i]
+			if b.Platform == bb.Platform && b.Branch == bb.Branch && b.Compiler == bb.Compiler && b.User == bb.User {
+				continue RowLoop
+			}
+		}
+		b.Key = key.Encode()
+		builds = append(builds, b)
 	}
 
 	err = memcache.Gob.Set(c, &memcache.Item{

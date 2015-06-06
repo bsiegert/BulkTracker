@@ -50,6 +50,7 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	defer io.WriteString(w, templates.PageFooter)
 	io.WriteString(w, templates.StartPageLead)
 	writeBuildListAll(c, w, builds)
+	templates.DataTable(w, "")
 }
 
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
