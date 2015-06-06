@@ -37,13 +37,30 @@ func init() {
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+	builds, err := latestBuilds(c)
+	if err != nil {
+		c.Errorf("failed to read latest builds: %s", err)
+		w.WriteHeader(500)
+		return
+	}
+
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 	io.WriteString(w, templates.StartPageLead)
+	writeBuildListAll(c, w, builds)
+}
 
-	c := appengine.NewContext(r)
-	it := datastore.NewQuery("build").Order("-Timestamp").Limit(10).Run(c)
-	writeBuildList(c, w, it)
+// latestBuilds fetches the list of latest builds to show on the landing page.
+func latestBuilds(c appengine.Context) (builds []bulk.Build, err error) {
+	keys, err := datastore.NewQuery("build").Order("-Timestamp").Limit(10).GetAll(c, &builds)
+	if err != nil {
+		return nil, err
+	}
+	for i := range builds {
+		builds[i].Key = keys[i].Encode()
+	}
+	return builds, nil
 }
 
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +88,14 @@ func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.It
 		}
 		b.Key = key.Encode()
 		templates.TableBuilds(w, b)
+	}
+	io.WriteString(w, templates.TableEnd)
+}
+
+func writeBuildListAll(c appengine.Context, w http.ResponseWriter, builds []bulk.Build) {
+	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
+	for i := range builds {
+		templates.TableBuilds(w, &builds[i])
 	}
 	io.WriteString(w, templates.TableEnd)
 }
