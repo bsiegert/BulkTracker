@@ -2,6 +2,7 @@ package bulktracker
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/data"
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/templates"
@@ -38,7 +39,7 @@ func init() {
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	builds, err := latestBuilds(c)
+	builds, err := data.LatestBuilds(c)
 	if err != nil {
 		c.Errorf("failed to read latest builds: %s", err)
 		w.WriteHeader(500)
@@ -49,18 +50,6 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	defer io.WriteString(w, templates.PageFooter)
 	io.WriteString(w, templates.StartPageLead)
 	writeBuildListAll(c, w, builds)
-}
-
-// latestBuilds fetches the list of latest builds to show on the landing page.
-func latestBuilds(c appengine.Context) (builds []bulk.Build, err error) {
-	keys, err := datastore.NewQuery("build").Order("-Timestamp").Limit(10).GetAll(c, &builds)
-	if err != nil {
-		return nil, err
-	}
-	for i := range builds {
-		builds[i].Key = keys[i].Encode()
-	}
-	return builds, nil
 }
 
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
