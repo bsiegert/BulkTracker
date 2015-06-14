@@ -2,6 +2,7 @@ package json
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/data"
 
 	"appengine"
 	"appengine/datastore"
@@ -43,8 +44,8 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 type PkgResult struct {
-	Build bulk.Build
-	Pkg   bulk.Pkg
+	Build *bulk.Build
+	Pkg   *bulk.Pkg
 }
 
 func PkgResults(w http.ResponseWriter, r *http.Request) {
@@ -67,29 +68,48 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 		c.Warningf("get from memcache: %s", err)
 	}
 
-	it := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(10).Run(c)
-	var results []*PkgResult
-	for {
-		r := PkgResult{}
-		key, err := it.Next(&r.Pkg)
-		if err == datastore.Done {
-			break
-		} else if err != nil {
-			c.Warningf("failed to read package result: %s", err)
-			continue
-		}
-		r.Pkg.Key = key.Encode()
-		buildID := key.Parent()
-		// TODO(bsiegert) cache builds by key to avoid repeated Get
-		// calls.
-		err = datastore.Get(c, buildID, &r.Build)
-		if err != nil {
-			c.Warningf("failed to read build: %s", err)
-			continue
-		}
-		r.Build.Key = buildID.Encode()
-		results = append(results, &r)
+	// Get results for each of the LatestBuilds.
+	builds, err := data.LatestBuilds(c)
+	if err != nil {
+		c.Errorf("getting LatestBuilds: %s", err)
+		io.WriteString(w, "[]")
+		// Do not cache.
+		return
 	}
+	// Limit for now.
+	if len(builds) > 40 {
+		builds = builds[:40]
+	}
+
+	// Fan out to datastore, all in parallel.
+	ch := make(chan []PkgResult, 10)
+	for i := range builds {
+		go func(b *bulk.Build) {
+			var pkgs []bulk.Pkg
+			key, err := datastore.DecodeKey(b.Key)
+			if err != nil {
+				c.Errorf("unable to decode key: %s", err)
+			}
+			pkgkeys, err := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10).GetAll(c, &pkgs)
+			if err != nil {
+				c.Errorf("failed to query packages: %s", err)
+			}
+			for j := range pkgkeys {
+				pkgs[j].Key = pkgkeys[j].Encode()
+			}
+			results := make([]PkgResult, len(pkgs))
+			for j := range results {
+				results[j].Build = b
+				results[j].Pkg = &pkgs[j]
+			}
+			ch <- results
+		}(&builds[i])
+	}
+	var results []PkgResult
+	for range builds {
+		results = append(results, <-ch...)
+	}
+
 	if len(results) == 0 {
 		io.WriteString(w, "[]")
 		return
