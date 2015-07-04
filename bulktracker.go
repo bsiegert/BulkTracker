@@ -54,7 +54,7 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	defer io.WriteString(w, templates.PageFooter)
 	io.WriteString(w, templates.StartPageLead)
 	writeBuildListAll(c, w, builds)
-	templates.DataTable(w, "")
+	templates.DataTable(w, `"order": [3, "desc"]`)
 }
 
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	it := datastore.NewQuery("build").Order("-Timestamp").Run(c)
 	writeBuildList(c, w, it)
-	templates.DataTable(w, "")
+	templates.DataTable(w, `"order": [3, "desc"]`)
 }
 
 func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
