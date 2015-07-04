@@ -11,6 +11,8 @@ handlers:
   static_dir: static
 - url: /mock
   static_dir: mock
+- url: /images
+  static_dir: images
 - url: /robots.txt
   static_files: robots.txt
   upload: robots.txt
