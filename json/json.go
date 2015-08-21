@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -59,9 +60,9 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 	category, dir := paths[0]+"/", paths[1]
 	cacheKey := fmt.Sprintf("/json/pkgresults/%s%s", category, dir)
 
-	item, err := memcache.Get(c, fmt.Sprintf("/json/pkgresults/%s%s", category, dir))
+	item, err := memcache.Get(c, cacheKey)
 	if err == nil {
-		c.Debugf("PkgResults: used cached result")
+		c.Debugf("%s: used cached result", cacheKey)
 		w.Write(item.Value)
 		return
 	} else if err != memcache.ErrCacheMiss {
@@ -117,6 +118,47 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(results)
+	err = memcache.Set(c, &memcache.Item{
+		Key:        cacheKey,
+		Value:      buf.Bytes(),
+		Expiration: 30 * time.Minute,
+	})
+	if err != nil {
+		c.Warningf("failed to write to cache: %s", err)
+	}
+
+	io.Copy(w, &buf)
+}
+
+func Dir(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c := appengine.NewContext(r)
+
+	// TODO(bsiegert) handle /json/dir/dirname to return a list of pkgnames in
+	// that directory (union of all builds).
+	cacheKey := "/json/dir"
+	item, err := memcache.Get(c, cacheKey)
+	if err == nil {
+		c.Debugf("%s: used cached result", cacheKey)
+		w.Write(item.Value)
+		return
+	} else if err != memcache.ErrCacheMiss {
+		c.Warningf("get from memcache: %s", err)
+	}
+
+	var result []bulk.Pkg
+	_, err = datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &result)
+	if err != nil {
+		c.Errorf("failed to query packages: %s", err)
+	}
+	categories := make([]string, len(result))
+	for i := range result {
+		categories[i] = result[i].Category
+	}
+	sort.Strings(categories)
+
+	var buf bytes.Buffer
+	json.NewEncoder(&buf).Encode(categories)
 	err = memcache.Set(c, &memcache.Item{
 		Key:        cacheKey,
 		Value:      buf.Bytes(),
