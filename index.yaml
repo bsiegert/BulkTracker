@@ -11,6 +11,11 @@ indexes:
 # your application using appcfg.py.
 
 - kind: pkg
+  properties:
+  - name: Category
+  - name: Dir
+
+- kind: pkg
   ancestor: yes
   properties:
   - name: BuildStatus

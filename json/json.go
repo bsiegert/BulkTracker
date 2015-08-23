@@ -1,3 +1,5 @@
+// Package json contains handlers for BulkTracker API methods that return
+// JSON data.
 package json
 
 import (
@@ -136,7 +138,11 @@ func Dir(w http.ResponseWriter, r *http.Request) {
 
 	// TODO(bsiegert) handle /json/dir/dirname to return a list of pkgnames in
 	// that directory (union of all builds).
-	cacheKey := "/json/dir"
+	category := strings.SplitN(strings.TrimPrefix(r.URL.Path, "/json/dir/"), "/", 2)[0]
+	if category != "" && !strings.HasSuffix(category, "/") {
+		category += "/"
+	}
+	cacheKey := "/json/dir/" + category
 	item, err := memcache.Get(c, cacheKey)
 	if err == nil {
 		c.Debugf("%s: used cached result", cacheKey)
@@ -146,19 +152,34 @@ func Dir(w http.ResponseWriter, r *http.Request) {
 		c.Warningf("get from memcache: %s", err)
 	}
 
-	var result []bulk.Pkg
-	_, err = datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &result)
-	if err != nil {
-		c.Errorf("failed to query packages: %s", err)
+	var pkgs []bulk.Pkg
+	var result []string
+	if category == "" {
+		// List all categories.
+		_, err = datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &pkgs)
+		if err != nil {
+			c.Errorf("failed to query packages: %s", err)
+		}
+		result = make([]string, len(pkgs))
+		for i := range pkgs {
+			result[i] = pkgs[i].Category
+		}
+	} else {
+		// List all pkgnames in a category (union of all builds).
+		_, err = datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(c, &pkgs)
+		if err != nil {
+			c.Errorf("failed to query packages: %s", err)
+		}
+		result = make([]string, len(pkgs))
+		for i := range pkgs {
+			result[i] = pkgs[i].Dir
+		}
 	}
-	categories := make([]string, len(result))
-	for i := range result {
-		categories[i] = result[i].Category
-	}
-	sort.Strings(categories)
+
+	sort.Strings(result)
 
 	var buf bytes.Buffer
-	json.NewEncoder(&buf).Encode(categories)
+	json.NewEncoder(&buf).Encode(result)
 	err = memcache.Set(c, &memcache.Item{
 		Key:        cacheKey,
 		Value:      buf.Bytes(),
