@@ -8,17 +8,16 @@
     <title>BulkTracker</title>
 
     <link href="/static/bootstrap.min.css" rel="stylesheet">
-    <!--<style type="text/css">
-      .btn-primary {
-        color: #fff;
-	background-color: #f62711;
-	border-color: #e6230b;
+    <style type="text/css">
+      .column-item {
+	width: 14em;
       }
-    </style>-->
+    </style>
+    
   </head>
   <body>
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="/static/jquery.min.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="/static/bootstrap.min.js"></script>
   <div style="background:#F26711; padding: 20px">
@@ -44,16 +43,63 @@
   <script type="text/javascript" src="/static/select-pkgresult.js"></script>
 
   <h2>Search for package results (Beta)</h2>
-  <form id="pkgresults" class="form-inline col-lg-6">
-    <div class="form-group">
-      <div class="input-group">
-	<input id="results-pkg" type="text" class="form-control" placeholder="category/package">
-	<span class="input-group-btn">
-	  <button id="results-submit" class="btn btn-warning" type="submit">Show results</button>
-	</span>
+
+  <!--<div class="panel panel-default"><div class="panel-body">-->
+    <form id="pkgresults" class="form-inline col-lg-12">
+      <div class="form-group">
+	<div class="input-group">
+	  <input id="results-pkg" type="text" class="form-control" placeholder="category/package">
+	  <span class="input-group-btn">
+	    <button id="results-submit" class="btn btn-warning" type="submit">Show results</button>
+	  </span>
+	</div>
       </div>
-    </div>
-  </form>
+    </form>
+
+
+
+    <ul class="list-inline col-lg-12" style="margin-top: 20px">
+      <li class="column-item">
+	<a id="archivers-collapse" data-toggle="collapse" href="#archivers">archivers/</a>
+      </li>
+      <div id="archivers" class="panel panel-default panel-collapse collapse">
+	<div class="panel-heading">archivers</div>
+	<div id="archivers-body" class="panel-body">
+	  <p class="text-muted">Loading ...</p>
+	</div>
+      </div>
+      <li style="width: 14em">
+	<a data-toggle="collapse" href="#audio">audio/</a>
+      </li>
+      <div id="audio" class="panel panel-default panel-collapse collapse">
+	<div class="panel-heading">audio</div>
+	<div class="panel-body">
+	  <ul class="list-inline">
+	    <li class="column-item"><a href="#">abcde</a></li>
+	    <li class="column-item"><a href="#">abcmidi</a></li>
+	    <li class="column-item"><a href="#">adplug</a></li>
+	    <li class="column-item"><a href="#">akode</a></li>
+	  </ul>
+	</div>
+      </div>
+    </ul>
+    <!--</div></div>-->
+
+  <script type="text/javascript">
+    $('a#archivers-collapse').click(function() {
+      $.ajax({
+	url: '/json/dir/archivers/',
+      }).done(function(data) {
+	//_elem = $('#archivers-body');
+	_a = '<ul class="list-inline">';
+	for (i in data) {
+	  _a += '<li class="column-item"><a href="#">' + data[i] + '</a></li>';
+	}
+	_a += '</ul>';
+	$('#archivers-body').html(_a);
+      });
+    });
+  </script>
 
   </div><div class="row">
 
