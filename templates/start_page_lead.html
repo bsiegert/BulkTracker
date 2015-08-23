@@ -21,6 +21,22 @@
     </div>
   </form>
 
+  <p class="text-muted col-lg-12" style="margin: 20px 0px">
+    Enter a full package name in the box, or select a category from the list below.
+  </p>
+
+  <ul id="categories" class="list-inline col-lg-12"></ul>
+
+  <script src="/static/category-collapse.js"></script>
+  <script type="text/javascript">
+    $.ajax({url: '/json/dir/'}).done(function(data) {
+      for (i in data) {
+	AddCollapsePanel(data[i]);
+	AddCollapseHandler(data[i]);
+      }
+    });
+  </script>
+
   </div><div class="row">
 
   <h2>Latest Builds per Platform&nbsp; <a href="/builds" class="btn btn-primary">Show all</a></h2>
