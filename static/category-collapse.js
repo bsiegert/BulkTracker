@@ -20,3 +20,15 @@ function AddCollapseHandler(name) {
     });
   });
 }
+
+function AddCollapsePanel(name) {
+  name = name.split("/")[0];
+  _a = '<li class="column-item">'
+    + '<a id="' + name + '-collapse" data-toggle="collapse" href="#'
+    + name + '">' + name + '/</a></li>'
+    + '<div id="' + name + '" class="panel panel-default panel-collapse collapse">'
+    + '<div class="panel-heading">' + name + '</div>'
+    + '<div id="' + name + '-body" class="panel-body">'
+    + '<p class="text-muted">Loading ...</p></div></div>';
+  $('#categories').append(_a);
+}

@@ -10,7 +10,7 @@
     <link href="/static/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
       .column-item {
-	width: 14em;
+	width: 16em;
       }
     </style>
     
@@ -44,7 +44,6 @@
 
   <h2>Search for package results (Beta)</h2>
 
-  <!--<div class="panel panel-default"><div class="panel-body">-->
     <form id="pkgresults" class="form-inline col-lg-12">
       <div class="form-group">
 	<div class="input-group">
@@ -56,39 +55,21 @@
       </div>
     </form>
 
+    <p class="text-muted col-lg-12" style="margin: 20px 0px">
+      Enter a full package name in the box, or select a category from the list below.
+    </p>
 
-
-    <ul class="list-inline col-lg-12" style="margin-top: 20px">
-      <li class="column-item">
-	<a id="archivers-collapse" data-toggle="collapse" href="#archivers">archivers/</a>
-      </li>
-      <div id="archivers" class="panel panel-default panel-collapse collapse">
-	<div class="panel-heading">archivers</div>
-	<div id="archivers-body" class="panel-body">
-	  <p class="text-muted">Loading ...</p>
-	</div>
-      </div>
-      <li style="width: 14em">
-	<a id="audio-collapse" data-toggle="collapse" href="#audio">audio/</a>
-      </li>
-      <div id="audio" class="panel panel-default panel-collapse collapse">
-	<div class="panel-heading">audio</div>
-	<div id="audio-body" class="panel-body">
-	  <ul class="list-inline">
-	    <li class="column-item"><a href="#">abcde</a></li>
-	    <li class="column-item"><a href="#">abcmidi</a></li>
-	    <li class="column-item"><a href="#">adplug</a></li>
-	    <li class="column-item"><a href="#">akode</a></li>
-	  </ul>
-	</div>
-      </div>
+    <ul id="categories" class="list-inline col-lg-12">
     </ul>
-    <!--</div></div>-->
 
   <script src="/static/category-collapse.js"></script>
   <script type="text/javascript">
-    AddCollapseHandler('archivers');
-    AddCollapseHandler('audio');
+    $.ajax({url: '/json/dir/'}).done(function(data) {
+      for (i in data) {
+	AddCollapsePanel(data[i]);
+	AddCollapseHandler(data[i]);
+      }
+    });
   </script>
 
   </div><div class="row">
