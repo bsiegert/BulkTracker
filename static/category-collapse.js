@@ -16,7 +16,7 @@ function AddCollapseHandler(name) {
       $('#'+name+'-body').html(_a);
     })
     .fail(function() {
-      $('#'+name+'-body').html('<p class="text-error">Failed to load navigation.</p>');
+      $('#'+name+'-body').html('<p class="text-danger">Failed to load navigation.</p>');
     });
   });
 }
