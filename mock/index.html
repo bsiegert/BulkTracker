@@ -69,11 +69,11 @@
 	</div>
       </div>
       <li style="width: 14em">
-	<a data-toggle="collapse" href="#audio">audio/</a>
+	<a id="audio-collapse" data-toggle="collapse" href="#audio">audio/</a>
       </li>
       <div id="audio" class="panel panel-default panel-collapse collapse">
 	<div class="panel-heading">audio</div>
-	<div class="panel-body">
+	<div id="audio-body" class="panel-body">
 	  <ul class="list-inline">
 	    <li class="column-item"><a href="#">abcde</a></li>
 	    <li class="column-item"><a href="#">abcmidi</a></li>
@@ -85,20 +85,10 @@
     </ul>
     <!--</div></div>-->
 
+  <script src="/static/category-collapse.js"></script>
   <script type="text/javascript">
-    $('a#archivers-collapse').click(function() {
-      $.ajax({
-	url: '/json/dir/archivers/',
-      }).done(function(data) {
-	//_elem = $('#archivers-body');
-	_a = '<ul class="list-inline">';
-	for (i in data) {
-	  _a += '<li class="column-item"><a href="#">' + data[i] + '</a></li>';
-	}
-	_a += '</ul>';
-	$('#archivers-body').html(_a);
-      });
-    });
+    AddCollapseHandler('archivers');
+    AddCollapseHandler('audio');
   </script>
 
   </div><div class="row">
