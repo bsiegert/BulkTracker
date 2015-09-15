@@ -36,6 +36,7 @@ func init() {
 	http.HandleFunc("/json/build/", json.BuildDetails)
 	http.HandleFunc("/json/dir/", json.Dir)
 	http.HandleFunc("/json/pkgresults/", json.PkgResults)
+	http.HandleFunc("/json/allpkgresults/", json.AllPkgResults)
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {

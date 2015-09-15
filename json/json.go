@@ -17,8 +17,12 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
+
+// TODO(bsiegert) There is a lot of duplicated code in these functions.
+// Abstract some of it away.
 
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -113,6 +117,68 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 		results = append(results, <-ch...)
 	}
 
+	if len(results) == 0 {
+		io.WriteString(w, "[]")
+		return
+	}
+
+	var buf bytes.Buffer
+	json.NewEncoder(&buf).Encode(results)
+	err = memcache.Set(c, &memcache.Item{
+		Key:        cacheKey,
+		Value:      buf.Bytes(),
+		Expiration: 30 * time.Minute,
+	})
+	if err != nil {
+		c.Warningf("failed to write to cache: %s", err)
+	}
+
+	io.Copy(w, &buf)
+}
+
+func AllPkgResults(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c := appengine.NewContext(r)
+
+	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/allpkgresults/"), "/")
+	if len(paths) < 2 {
+		return
+	}
+	category, dir := paths[0]+"/", paths[1]
+	cacheKey := fmt.Sprintf("/json/allpkgresults/%s%s", category, dir)
+
+	item, err := memcache.Get(c, cacheKey)
+	if err == nil {
+		c.Debugf("%s: used cached result", cacheKey)
+		w.Write(item.Value)
+		return
+	} else if err != memcache.ErrCacheMiss {
+		c.Warningf("get from memcache: %s", err)
+	}
+	
+	var pkgs []bulk.Pkg
+	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(c, &pkgs)
+	if err != nil {
+		c.Errorf("failed to query packages: %s", err)
+	}
+	for j := range pkgkeys {
+		pkgs[j].Key = pkgkeys[j].Encode()
+	}
+	results := make([]PkgResult, len(pkgs))
+	for j := range results {
+		results[j].Pkg = p
+		
+		// TODO(bsiegert) do this in parallel and/or cache repeated values.
+		// One way would be to build a list of empty build records and desired
+		// keys, then call GetMulti.
+		buildKey := pkgkeys[j].Ancestor()
+		b := &bulk.Build{Key: buildKey.Encode()}
+		err = datastore.Get(c, buildKey, b)
+		if err != nil {
+			c.Errorf("getting build record: %s", err)
+		}
+		results[j].Build = b
+	}
 	if len(results) == 0 {
 		io.WriteString(w, "[]")
 		return
