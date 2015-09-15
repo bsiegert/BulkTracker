@@ -13,7 +13,7 @@ var classes = {
   4: "info text-info"
 };
 
-$(document).ready(function() {
+function PkgResultsTable(handler) {
   var pkgname = "www/firefox";
   var pkgname_re = /^[A-Za-z0-9+-]+\/[A-Za-z0-9+-]+$/;
   var fragment = window.location.pathname.split("/pkgresults/")[1];
@@ -24,7 +24,7 @@ $(document).ready(function() {
 
   $('.table').dataTable({
     ajax: {
-      url:     "/json/pkgresults/"+pkgname,
+      url:     "/json/"+handler+"/"+pkgname,
       dataSrc: ""
     },
     columns: [
@@ -50,6 +50,8 @@ $(document).ready(function() {
       $('td:eq(1)', row).addClass(classes[data.Pkg.BuildStatus]);
       $('td:eq(4)', row).wrapInner('<a href="/build/'+data.Build.Key+'"></a>');
     }
-  });
-});
+  });  
+}
+
+$(document).ready(function() { PkgResultsTable("pkgresults"); });
 
