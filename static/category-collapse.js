@@ -8,7 +8,7 @@ function AddCollapseHandler(name) {
       url: '/json/dir/'+name+'/',
     }).done(function(data) {
       _a = '<ul class="list-inline">';
-      for (i in data) {
+      for (var i in data) {
 	_a += '<li class="column-item"><a href="/pkgresults/'
 	  + name + '/' + data[i] + '">' + data[i] + '</a></li>';
       }
