@@ -53,7 +53,9 @@ function PkgResultsTable(event) {
   });  
 }
 
-$(document).ready(function() { PkgResultsTable({data: "pkgresults"}); });
+$(document).ready(function() {
+  PkgResultsTable({data: "pkgresults"});
+  $("#latest").on("click", "pkgresults", PkgResultsTable);
+  $("#all").on("click", "allpkgresults", PkgResultsTable);
+});
 
-$("#latest").on("click", "pkgresults", PkgResultsTable);
-$("#all").on("click", "allpkgresults", PkgResultsTable);
