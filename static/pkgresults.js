@@ -13,7 +13,7 @@ var classes = {
   4: "info text-info"
 };
 
-function PkgResultsTable(handler) {
+function PkgResultsTable(event) {
   var pkgname = "www/firefox";
   var pkgname_re = /^[A-Za-z0-9+-]+\/[A-Za-z0-9+-]+$/;
   var fragment = window.location.pathname.split("/pkgresults/")[1];
@@ -53,5 +53,7 @@ function PkgResultsTable(handler) {
   });  
 }
 
-$(document).ready(function() { PkgResultsTable("pkgresults"); });
+$(document).ready(function() { PkgResultsTable({data: "pkgresults"}); });
 
+$("#latest").on("click", "pkgresults", PkgResultsTable);
+$("#all").on("click", "allpkgresults", PkgResultsTable);
