@@ -17,7 +17,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -155,7 +154,7 @@ func AllPkgResults(w http.ResponseWriter, r *http.Request) {
 	} else if err != memcache.ErrCacheMiss {
 		c.Warningf("get from memcache: %s", err)
 	}
-	
+
 	var pkgs []bulk.Pkg
 	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(c, &pkgs)
 	if err != nil {
@@ -166,12 +165,12 @@ func AllPkgResults(w http.ResponseWriter, r *http.Request) {
 	}
 	results := make([]PkgResult, len(pkgs))
 	for j := range results {
-		results[j].Pkg = p
-		
+		results[j].Pkg = &pkgs[j]
+
 		// TODO(bsiegert) do this in parallel and/or cache repeated values.
 		// One way would be to build a list of empty build records and desired
 		// keys, then call GetMulti.
-		buildKey := pkgkeys[j].Ancestor()
+		buildKey := pkgkeys[j].Parent()
 		b := &bulk.Build{Key: buildKey.Encode()}
 		err = datastore.Get(c, buildKey, b)
 		if err != nil {
