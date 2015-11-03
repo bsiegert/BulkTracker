@@ -23,8 +23,9 @@ function PkgResultsTable(event) {
   $('#pkgname-header').text(pkgname);
 
   $('.table').dataTable({
+    destroy: true,
     ajax: {
-      url:     "/json/"+handler+"/"+pkgname,
+      url:     "/json/"+event.data+"/"+pkgname,
       dataSrc: ""
     },
     columns: [
@@ -55,7 +56,7 @@ function PkgResultsTable(event) {
 
 $(document).ready(function() {
   PkgResultsTable({data: "pkgresults"});
-  $("#latest").on("click", "pkgresults", PkgResultsTable);
-  $("#all").on("click", "allpkgresults", PkgResultsTable);
+  $("#latest").on("click", null, "pkgresults", PkgResultsTable);
+  $("#all").on("click", null, "allpkgresults", PkgResultsTable);
 });
 
