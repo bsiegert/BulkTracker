@@ -23,6 +23,25 @@ import (
 // TODO(bsiegert) There is a lot of duplicated code in these functions.
 // Abstract some of it away.
 
+// The default duration until a cache entry expires.
+const CacheExpiration = 30 * time.Minute
+
+// CacheAndWrite stores the JSON representation of v in the App Engine
+// memcache and writes it to w.
+func CacheAndWrite(c appengine.Context, v interface{}, cacheKey string, w io.Writer) {
+	var buf bytes.Buffer
+	json.NewEncoder(&buf).Encode(v)
+	err := memcache.Set(c, &memcache.Item{
+		Key:        cacheKey,
+		Value:      buf.Bytes(),
+		Expiration: CacheExpiration,
+	})
+	if err != nil {
+		c.Warningf("failed to write %q to cache: %s", cacheKey, err)
+	}
+	io.Copy(w, &buf)
+}
+
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := appengine.NewContext(r)
@@ -121,18 +140,7 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var buf bytes.Buffer
-	json.NewEncoder(&buf).Encode(results)
-	err = memcache.Set(c, &memcache.Item{
-		Key:        cacheKey,
-		Value:      buf.Bytes(),
-		Expiration: 30 * time.Minute,
-	})
-	if err != nil {
-		c.Warningf("failed to write to cache: %s", err)
-	}
-
-	io.Copy(w, &buf)
+	CacheAndWrite(c, results, cacheKey, w)
 }
 
 func AllPkgResults(w http.ResponseWriter, r *http.Request) {
@@ -182,19 +190,7 @@ func AllPkgResults(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "[]")
 		return
 	}
-
-	var buf bytes.Buffer
-	json.NewEncoder(&buf).Encode(results)
-	err = memcache.Set(c, &memcache.Item{
-		Key:        cacheKey,
-		Value:      buf.Bytes(),
-		Expiration: 30 * time.Minute,
-	})
-	if err != nil {
-		c.Warningf("failed to write to cache: %s", err)
-	}
-
-	io.Copy(w, &buf)
+	CacheAndWrite(c, results, cacheKey, w)
 }
 
 func Dir(w http.ResponseWriter, r *http.Request) {
@@ -242,17 +238,5 @@ func Dir(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Strings(result)
-
-	var buf bytes.Buffer
-	json.NewEncoder(&buf).Encode(result)
-	err = memcache.Set(c, &memcache.Item{
-		Key:        cacheKey,
-		Value:      buf.Bytes(),
-		Expiration: 30 * time.Minute,
-	})
-	if err != nil {
-		c.Warningf("failed to write to cache: %s", err)
-	}
-
-	io.Copy(w, &buf)
+	CacheAndWrite(c, result, cacheKey, w)
 }
