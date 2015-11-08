@@ -8,8 +8,10 @@ import (
 	"io/ioutil"
 )
 
+const templateDir = "../templates/"
+
 func readFile(name string) string {
-	s, err := ioutil.ReadFile("templates/" + name)
+	s, err := ioutil.ReadFile(templateDir + name)
 	if err != nil {
 		panic(err)
 	}
@@ -26,15 +28,15 @@ var (
 
 // t is the top-level template object.
 var t = template.Must(template.ParseFiles(
-	"templates/table_begin.html",
-	"templates/table_builds.html",
-	"templates/table_pkgs.html",
-	"templates/bulk_build_info.html",
-	"templates/pkg_info.html",
-	"templates/no_details.html",
-	"templates/category_list.html",
-	"templates/heading.html",
-	"templates/data_table.html"))
+	templateDir+"table_begin.html",
+	templateDir+"table_builds.html",
+	templateDir+"table_pkgs.html",
+	templateDir+"bulk_build_info.html",
+	templateDir+"pkg_info.html",
+	templateDir+"no_details.html",
+	templateDir+"category_list.html",
+	templateDir+"heading.html",
+	templateDir+"data_table.html"))
 
 func TableBegin(w io.Writer, columns ...string) {
 	t.ExecuteTemplate(w, "table_begin.html", columns)
