@@ -22,4 +22,4 @@ handlers:
 - url: /.*
   script: _go_app
 
-nobuild_files: (bulk|data|dsbatch|json|templates)/
+nobuild_files: (bulk|data|dsbatch|ingest|json|templates)/
