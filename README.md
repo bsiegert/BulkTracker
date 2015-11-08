@@ -14,4 +14,7 @@ build reports via email. It parses the email and tries to fetch the machine-read
 report from the given URL. The report is split into records and saved in the
 datastore. The web UI allows examining aggregate and per-package results.
 
+The main program and the App Engine configuration is located in the `app/`
+subdirectory.
+
 This is an open project. Drop me a line if you are interested in participating!
