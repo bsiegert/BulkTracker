@@ -9,10 +9,13 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"appengine/delay"
+	"appengine/memcache"
 	"appengine/urlfetch"
 
+	"bytes"
 	"compress/bzip2"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -24,6 +27,73 @@ import (
 	"time"
 )
 
+// Constants for the current status.
+const (
+	Fetching = iota
+	Failed
+	Writing
+	// Done: when the Status no longer exists in the datastore.
+)
+
+type Status struct {
+	URL     string
+	Current int // Current status; one of the constants above.
+	// If Current == Writing, statistics for how many package records
+	// have been written.
+	PkgsWritten, PkgsTotal int
+	// If Current == Failed, the last error encountered.
+	LastErr error
+
+	key      *datastore.Key `json:"-"`
+	cacheKey string         `json:"-"`
+}
+
+// NewStatus allocates a new Status for report ingestion. As a side effect,
+// it also deletes old records, if any.
+func NewStatus(c appengine.Context, build *datastore.Key) *Status {
+	s := &Status{
+		key:      datastore.NewIncompleteKey(c, "status", build),
+		cacheKey: "/json/status/" + build.String(),
+	}
+
+	// TODO delete from memcache.
+	keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(c, nil)
+	if err != nil {
+		c.Warningf("failed to query for old statuses: %s", err)
+		return s
+	}
+	dsbatch.DeleteMulti(c, keys)
+	return s
+}
+
+// Put writes s into the datastore and memcache.
+func (s *Status) Put(c appengine.Context) {
+	datastore.Put(c, s.key, s)
+
+	var buf bytes.Buffer
+	json.NewEncoder(&buf).Encode(s)
+	err := memcache.Set(c, &memcache.Item{
+		Key:        s.cacheKey,
+		Value:      buf.Bytes(),
+		Expiration: 2 * time.Minute,
+	})
+	if err != nil {
+		c.Warningf("failed to write %q to cache: %s", s.cacheKey, err)
+	}
+}
+
+// UpdateProgress sets the # of packages written and calls Put.
+func (s *Status) UpdateProgress(c appengine.Context, written int) {
+	s.PkgsWritten = written
+	s.Put(c)
+}
+
+// Done marks the ingestion as done by removing the Status entry.
+func (s *Status) Done(c appengine.Context) {
+	datastore.Delete(c, s.key)
+	// TODO delete from memcache.
+}
+
 // All these names mean HEAD.
 var headAliases = map[string]bool{
 	"current":          true,
@@ -31,6 +101,9 @@ var headAliases = map[string]bool{
 	"upstream-trunk64": true,
 }
 
+// HandleIncomingMail is called (with a POST request) by App Engine
+// when a new mail comes in. It tries to parse it as a bulk build
+// report and ingests it, if successful.
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	msg, err := mail.ReadMessage(r.Body)
@@ -89,6 +162,10 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
 var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *datastore.Key, url string) {
+	status := NewStatus(c, build)
+	status.URL = url
+	status.Current = Fetching
+	status.Put(c)
 	client := http.Client{
 		Transport: &urlfetch.Transport{
 			Context:  c,
@@ -98,6 +175,9 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	resp, err := client.Get(url)
 	if err != nil {
 		c.Warningf("failed to fetch report at %q: %s", url, err)
+		status.LastErr = err
+		status.Current = Failed
+		status.Put(c)
 		return
 	}
 	defer resp.Body.Close()
@@ -108,8 +188,14 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	pkgs, err := bulk.PkgsFromReport(r)
 	if err != nil {
 		c.Errorf("failed to parse report at %q: %s", url, err)
+		status.LastErr = err
+		status.Current = Failed
+		status.Put(c)
 		return
 	}
+
+	status.Current = Writing
+	status.PkgsTotal = len(pkgs)
 	sort.Sort(bulk.PkgsByName(pkgs))
 	keys, err := datastore.NewQuery("pkg").Ancestor(build).Order("PkgName").KeysOnly().GetAll(c, nil)
 	if err != nil {
@@ -123,9 +209,13 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 		dsbatch.DeleteMulti(c, keys[p:k])
 		keys = keys[:p]
 	}
-	if err = dsbatch.PutMulti(c, keys, pkgs); err != nil {
+	if err = dsbatch.PutMulti(c, keys, pkgs, status); err != nil {
+		status.Current = Failed
+		status.LastErr = err
+		status.Put(c)
 		c.Warningf("%s", err)
 	}
+	status.Done(c)
 })
 
 // ParseMultipartMail parses an email and returns a reader for the first

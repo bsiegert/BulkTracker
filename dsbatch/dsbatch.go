@@ -14,9 +14,14 @@ import (
 // Maximum number of records per call to PutMulti.
 const MaxPerCall = 500
 
+// ProgressUpdater allows sharing the progress of the operation.
+type ProgressUpdater interface {
+	UpdateProgress(c appengine.Context, written int)
+}
+
 // TODO(bsiegert) also implement checking maximum request size (currently 1MB).
 
-func PutMulti(c appengine.Context, keys []*datastore.Key, values interface{}) error {
+func PutMulti(c appengine.Context, keys []*datastore.Key, values interface{}, pu ProgressUpdater) error {
 	v := reflect.ValueOf(values)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
@@ -33,6 +38,7 @@ func PutMulti(c appengine.Context, keys []*datastore.Key, values interface{}) er
 		k := keys[n:m]
 		c.Debugf("writing records %d-%d", n, m)
 		_, err := datastore.PutMulti(c, k, v.Slice(n, m).Interface())
+		pu.UpdateProgress(c, m)
 		if err != nil {
 			return err
 		}
