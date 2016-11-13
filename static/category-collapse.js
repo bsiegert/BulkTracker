@@ -45,7 +45,7 @@ bt.categories.addPanel = function (name) {
 	  name,
 	  '/</a></li>',
           '<div id="', name,
-	  '" class="panel panel-default panel-collapse collapse">',
+	  '" class="panel panel-default panel-collapse collapse col-lg-12">',
           '<div class="panel-heading">',
 	  name,
 	  '</div>',
