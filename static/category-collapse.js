@@ -5,11 +5,9 @@ bt.categories = bt.categories || {};
 // init fires off an AJAX request to populate the categories table.
 bt.categories.init = function () {
   $.ajax({url: '/json/dir/'}).done(function (data) {
-    for (var i in data) {
-      if (data.hasOwnProperty(i)) {
-	bt.categories.addPanel(data[i]);
-	bt.categories.addHandler(data[i]);
-      }
+    for (var i = 0; i < data.length; i++) {
+      bt.categories.addPanel(data[i]);
+      bt.categories.addHandler(data[i]);
     }
   });
 }
