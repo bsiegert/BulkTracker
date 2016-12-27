@@ -59,7 +59,7 @@ func readReport() ([]byte, error) {
 
 func postReport(body []byte) error {
 	log.Print("POST http://localhost:8080/_ah/mail/")
-	resp, err := http.Post("http://localhost:8080/_ah/mail/", "message/rfc822", bytes.NewReader(body))
+	resp, err := http.Post("http://localhost:8080/_ah/mail/builds@bulktracker.appspotmail.com", "message/rfc822", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
