@@ -167,10 +167,7 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 	n := 0
 
 	s := bufio.NewScanner(r)
-	for {
-		if !s.Scan() {
-			break
-		}
+	for s.Scan() {
 		b := s.Bytes()
 		split := bytes.IndexRune(b, '=')
 		if split == -1 {
