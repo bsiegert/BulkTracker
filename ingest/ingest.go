@@ -5,6 +5,7 @@ package ingest
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dsbatch"
+	"xi2.org/x/xz"
 
 	"appengine"
 	"appengine/datastore"
@@ -14,6 +15,7 @@ import (
 
 	"bytes"
 	"compress/bzip2"
+	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -62,7 +64,10 @@ func NewStatus(c appengine.Context, build *datastore.Key) *Status {
 		c.Warningf("failed to query for old statuses: %s", err)
 		return s
 	}
-	dsbatch.DeleteMulti(c, keys)
+	if len(keys) > 0 {
+		c.Infof("Deleting %d records", len(keys))
+		dsbatch.DeleteMulti(c, keys)
+	}
 	return s
 }
 
@@ -90,6 +95,7 @@ func (s *Status) UpdateProgress(c appengine.Context, written int) {
 
 // Done marks the ingestion as done by removing the Status entry.
 func (s *Status) Done(c appengine.Context) {
+	c.Infof("%v", s.key)
 	datastore.Delete(c, s.key)
 	// TODO delete from memcache.
 }
@@ -159,6 +165,33 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	FetchReport.Call(c, key, build.ReportURL)
 }
 
+// fileSuffix returns the "file type" suffix of the file name, possibly
+// containing a full URL.
+func fileSuffix(name string) string {
+	// Take basename, without removing trailing slashes.
+	name = name[strings.LastIndexByte(name, byte('/'))+1:]
+	s := strings.LastIndexByte(name, byte('.'))
+	if s == -1 {
+		return ""
+	}
+	return name[s+1:]
+}
+
+// decompressingReader returns a Reader with the right type of decompression
+// wrapper.
+func decompressingReader(r io.Reader, url string) (io.Reader, error) {
+	switch fileSuffix(url) {
+	case "bz2":
+		return bzip2.NewReader(r), nil
+	case "gz":
+		return gzip.NewReader(r)
+	case "xz", "lzma":
+		return xz.NewReader(r, 0)
+	}
+	// Uncompressed, or unknown.
+	return r, nil
+}
+
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
 var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *datastore.Key, url string) {
@@ -181,9 +214,13 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 		return
 	}
 	defer resp.Body.Close()
-	r := io.Reader(resp.Body)
-	if strings.HasSuffix(url, ".bz2") {
-		r = bzip2.NewReader(resp.Body)
+	r, err := decompressingReader(resp.Body, url)
+	if err != nil {
+		c.Errorf("failed to uncompress report at %q: %s", url, err)
+		status.LastErr = err
+		status.Current = Failed
+		status.Put(c)
+		return
 	}
 	pkgs, err := bulk.PkgsFromReport(r)
 	if err != nil {
@@ -208,6 +245,9 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	if k, p := len(keys), len(pkgs); k > p {
 		dsbatch.DeleteMulti(c, keys[p:k])
 		keys = keys[:p]
+	}
+	if len(keys) == 0 {
+		return
 	}
 	if err = dsbatch.PutMulti(c, keys, pkgs, status); err != nil {
 		status.Current = Failed
