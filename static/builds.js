@@ -11,7 +11,6 @@ bt.builds.columns = [
   {data: "Platform"},
   {
     render: function (data, type, row) {
-      console.log(row)
       return "<span class=\"text-danger\">" + row.NumFailed
 	+ " failed</span> / <span class=\"text-warning\">"
 	+ row.NumIndirectFailed 
@@ -23,6 +22,11 @@ bt.builds.columns = [
   {data: "User"}
 ];
 
+bt.builds.createdRow = function (row, data) {
+  $('td', row).filter(function (i) { return i < 3 })
+    .wrapInner('<a href="/build/'+data.Key+'"></a>');
+};
+
 bt.builds.init = function () {
   $('.table').dataTable({
     ajax: {
@@ -30,6 +34,7 @@ bt.builds.init = function () {
       dataSrc: ""
     },
     columns: bt.builds.columns,
+    createdRow: bt.builds.createdRow,
     order: [[0, 'desc']]
   });
 };
