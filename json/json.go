@@ -42,6 +42,21 @@ func CacheAndWrite(c appengine.Context, v interface{}, cacheKey string, w io.Wri
 	io.Copy(w, &buf)
 }
 
+// CacheGet tries fetching the value with the given cacheKey from memcache and
+// writes it to w if it exists. It returns true if there was a cache hit.
+func CacheGet(c appengine.Context, cacheKey string, w http.ResponseWriter) bool {
+	item, err := memcache.Get(c, cacheKey)
+	if err != nil {
+		if err != memcache.ErrCacheMiss {
+			c.Warningf("get from memcache: %s", err)
+		}
+		return false
+	}
+	c.Debugf("%s: used cached result", cacheKey)
+	w.Write(item.Value)
+	return true
+}
+
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := appengine.NewContext(r)
@@ -66,6 +81,26 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	// end copy+paste
 
 	json.NewEncoder(w).Encode(b)
+}
+
+func AllBuildDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c := appengine.NewContext(r)
+	cacheKey := "/json/allbuilds"
+
+	if CacheGet(c, cacheKey, w) {
+		return
+	}
+
+	var builds []bulk.Build
+	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(c, &builds)
+	if err != nil {
+		c.Errorf("failed to query builds: %s", err)
+	}
+	for i := range keys {
+		builds[i].Key = keys[i].Encode()
+	}
+	CacheAndWrite(c, builds, cacheKey, w)
 }
 
 type PkgResult struct {

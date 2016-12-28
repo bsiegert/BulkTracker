@@ -25,6 +25,7 @@ func init() {
 	http.HandleFunc("/_ah/mail/", ingest.HandleIncomingMail)
 
 	http.HandleFunc("/json/build/", json.BuildDetails)
+	http.HandleFunc("/json/allbuilds/", json.AllBuildDetails)
 	http.HandleFunc("/json/dir/", json.Dir)
 	http.HandleFunc("/json/pkgresults/", json.PkgResults)
 	http.HandleFunc("/json/allpkgresults/", json.AllPkgResults)
@@ -55,10 +56,9 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	defer io.WriteString(w, templates.PageFooter)
 	templates.Heading(w, "List of Builds")
 
-	c := appengine.NewContext(r)
-	it := datastore.NewQuery("build").Order("-Timestamp").Run(c)
-	writeBuildList(c, w, it)
-	templates.DataTable(w, `"order": [0, "desc"]`)
+	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
+	io.WriteString(w, templates.TableEnd)
+	io.WriteString(w, `<script src="/static/builds.js"></script>`)
 }
 
 func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
