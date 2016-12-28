@@ -29,7 +29,8 @@ bt.builds.init = function () {
       url: "/json/allbuilds/",
       dataSrc: ""
     },
-    columns: bt.builds.columns
+    columns: bt.builds.columns,
+    order: [[0, 'desc']]
   });
 };
 
