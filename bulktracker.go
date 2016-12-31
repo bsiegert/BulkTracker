@@ -24,11 +24,10 @@ func init() {
 	http.HandleFunc("/pkg/", PkgDetails)
 	http.HandleFunc("/_ah/mail/", ingest.HandleIncomingMail)
 
-	http.HandleFunc("/json/build/", json.BuildDetails)
-	http.HandleFunc("/json/allbuilds/", json.AllBuildDetails)
-	http.HandleFunc("/json/dir/", json.Dir)
-	http.HandleFunc("/json/pkgresults/", json.PkgResults)
-	http.HandleFunc("/json/allpkgresults/", json.AllPkgResults)
+	for path, endpoint := range json.Mux {
+		path = fmt.Sprintf("/json/%s/", path)
+		http.Handle(path, endpoint)
+	}
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {

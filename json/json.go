@@ -26,6 +26,46 @@ import (
 // The default duration until a cache entry expires.
 const CacheExpiration = 30 * time.Minute
 
+// Endpoint is the standard function signature of a JSON API endpoint.
+// params is a list of path components; the format of the URLs is
+// /json/endpointname/param1/param2. The function returns a result to be
+// marshalled to JSON, or an error.
+type Endpoint func(c appengine.Context, params []string) (interface{}, error)
+
+func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	c := appengine.NewContext(r)
+	cacheKey := strings.TrimSuffix(r.URL.Path, "/")
+	paths := strings.Split(strings.TrimPrefix(cacheKey, "/json/"), "/")
+	if len(paths) < 1 {
+		w.WriteHeader(404)
+		return
+	}
+	if CacheGet(c, cacheKey, w) {
+		return
+	}
+
+	result, err := e(c, paths[1:])
+	if err != nil {
+		if result != nil {
+			json.NewEncoder(w).Encode(result)
+		}
+		c.Errorf(err.Error())
+		return
+	}
+	CacheAndWrite(c, result, cacheKey, w)
+}
+
+// Mux maps endpoint names to their implementations. It assumes that the results
+// of a successful endpoint call are cacheable.
+var Mux = map[string]Endpoint{
+	"build":         BuildDetails,
+	"allbuilds":     AllBuildDetails,
+	"pkgresults":    PkgResults,
+	"allpkgresults": AllPkgResults,
+	"dir":           Dir,
+}
+
 // CacheAndWrite stores the JSON representation of v in the App Engine
 // memcache and writes it to w.
 func CacheAndWrite(c appengine.Context, v interface{}, cacheKey string, w io.Writer) {
@@ -57,50 +97,33 @@ func CacheGet(c appengine.Context, cacheKey string, w http.ResponseWriter) bool 
 	return true
 }
 
-func BuildDetails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	c := appengine.NewContext(r)
-
-	// begin copy+paste
-	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/build/"), "/")
-	if len(paths) == 0 {
-		return
+func BuildDetails(c appengine.Context, params []string) (interface{}, error) {
+	if len(params) == 0 {
+		return nil, nil
 	}
-	key, err := datastore.DecodeKey(paths[0])
+	key, err := datastore.DecodeKey(params[0])
 	if err != nil {
-		c.Warningf("error decoding key: %s", err)
-		return
+		return nil, fmt.Errorf("error decoding key: %s", err)
 	}
 
 	b := &bulk.Build{Key: key.Encode()}
 	err = datastore.Get(c, key, b)
 	if err != nil {
-		c.Warningf("getting build record: %s", err)
-		return
+		return nil, fmt.Errorf("getting build record: %s", err)
 	}
-	// end copy+paste
-
-	json.NewEncoder(w).Encode(b)
+	return b, nil
 }
 
-func AllBuildDetails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	c := appengine.NewContext(r)
-	cacheKey := "/json/allbuilds"
-
-	if CacheGet(c, cacheKey, w) {
-		return
-	}
-
+func AllBuildDetails(c appengine.Context, params []string) (interface{}, error) {
 	var builds []bulk.Build
 	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(c, &builds)
 	if err != nil {
-		c.Errorf("failed to query builds: %s", err)
+		return nil, fmt.Errorf("failed to query builds: %s", err)
 	}
 	for i := range keys {
 		builds[i].Key = keys[i].Encode()
 	}
-	CacheAndWrite(c, builds, cacheKey, w)
+	return builds, nil
 }
 
 type PkgResult struct {
@@ -108,33 +131,16 @@ type PkgResult struct {
 	Pkg   *bulk.Pkg
 }
 
-func PkgResults(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	c := appengine.NewContext(r)
-
-	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/pkgresults/"), "/")
-	if len(paths) < 2 {
-		return
+func PkgResults(c appengine.Context, params []string) (interface{}, error) {
+	if len(params) < 2 {
+		return nil, nil
 	}
-	category, dir := paths[0]+"/", paths[1]
-	cacheKey := fmt.Sprintf("/json/pkgresults/%s%s", category, dir)
-
-	item, err := memcache.Get(c, cacheKey)
-	if err == nil {
-		c.Debugf("%s: used cached result", cacheKey)
-		w.Write(item.Value)
-		return
-	} else if err != memcache.ErrCacheMiss {
-		c.Warningf("get from memcache: %s", err)
-	}
+	category, dir := params[0]+"/", params[1]
 
 	// Get results for each of the LatestBuilds.
 	builds, err := data.LatestBuilds(c)
 	if err != nil {
-		c.Errorf("getting LatestBuilds: %s", err)
-		io.WriteString(w, "[]")
-		// Do not cache.
-		return
+		return nil, fmt.Errorf("getting LatestBuilds: %s", err)
 	}
 	// Limit for now.
 	if len(builds) > 40 {
@@ -169,34 +175,14 @@ func PkgResults(w http.ResponseWriter, r *http.Request) {
 	for range builds {
 		results = append(results, <-ch...)
 	}
-
-	if len(results) == 0 {
-		io.WriteString(w, "[]")
-		return
-	}
-
-	CacheAndWrite(c, results, cacheKey, w)
+	return results, nil
 }
 
-func AllPkgResults(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	c := appengine.NewContext(r)
-
-	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/allpkgresults/"), "/")
-	if len(paths) < 2 {
-		return
+func AllPkgResults(c appengine.Context, params []string) (interface{}, error) {
+	if len(params) < 2 {
+		return []bulk.Pkg{}, nil
 	}
-	category, dir := paths[0]+"/", paths[1]
-	cacheKey := fmt.Sprintf("/json/allpkgresults/%s%s", category, dir)
-
-	item, err := memcache.Get(c, cacheKey)
-	if err == nil {
-		c.Debugf("%s: used cached result", cacheKey)
-		w.Write(item.Value)
-		return
-	} else if err != memcache.ErrCacheMiss {
-		c.Warningf("get from memcache: %s", err)
-	}
+	category, dir := params[0]+"/", params[1]
 
 	var pkgs []bulk.Pkg
 	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(c, &pkgs)
@@ -221,40 +207,25 @@ func AllPkgResults(w http.ResponseWriter, r *http.Request) {
 		}
 		results[j].Build = b
 	}
-	if len(results) == 0 {
-		io.WriteString(w, "[]")
-		return
-	}
-	CacheAndWrite(c, results, cacheKey, w)
+	return results, nil
 }
 
-func Dir(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	c := appengine.NewContext(r)
-
-	// TODO(bsiegert) handle /json/dir/dirname to return a list of pkgnames in
-	// that directory (union of all builds).
-	category := strings.SplitN(strings.TrimPrefix(r.URL.Path, "/json/dir/"), "/", 2)[0]
+func Dir(c appengine.Context, params []string) (interface{}, error) {
+	var category string
+	if len(params) > 0 {
+		category = params[0]
+	}
 	if category != "" && !strings.HasSuffix(category, "/") {
 		category += "/"
-	}
-	cacheKey := "/json/dir/" + category
-	item, err := memcache.Get(c, cacheKey)
-	if err == nil {
-		c.Debugf("%s: used cached result", cacheKey)
-		w.Write(item.Value)
-		return
-	} else if err != memcache.ErrCacheMiss {
-		c.Warningf("get from memcache: %s", err)
 	}
 
 	var pkgs []bulk.Pkg
 	var result []string
 	if category == "" {
 		// List all categories.
-		_, err = datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &pkgs)
+		_, err := datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &pkgs)
 		if err != nil {
-			c.Errorf("failed to query packages: %s", err)
+			return nil, fmt.Errorf("failed to query packages: %s", err)
 		}
 		result = make([]string, len(pkgs))
 		for i := range pkgs {
@@ -262,9 +233,9 @@ func Dir(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// List all pkgnames in a category (union of all builds).
-		_, err = datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(c, &pkgs)
+		_, err := datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(c, &pkgs)
 		if err != nil {
-			c.Errorf("failed to query packages: %s", err)
+			return nil, fmt.Errorf("failed to query packages: %s", err)
 		}
 		result = make([]string, len(pkgs))
 		for i := range pkgs {
@@ -273,5 +244,5 @@ func Dir(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Strings(result)
-	CacheAndWrite(c, result, cacheKey, w)
+	return result, nil
 }
