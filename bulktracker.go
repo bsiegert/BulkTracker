@@ -60,24 +60,6 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `<script src="/static/builds.js"></script>`)
 }
 
-func writeBuildList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
-	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
-	b := &bulk.Build{}
-	for {
-		key, err := it.Next(b)
-		if err == datastore.Done {
-			break
-		} else if err != nil {
-			c.Errorf("failed to read build: %s", err)
-			w.WriteHeader(500)
-			return
-		}
-		b.Key = key.Encode()
-		templates.TableBuilds(w, b)
-	}
-	io.WriteString(w, templates.TableEnd)
-}
-
 func writeBuildListAll(c appengine.Context, w http.ResponseWriter, builds []bulk.Build) {
 	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
 	for i := range builds {
