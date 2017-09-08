@@ -234,7 +234,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	status.Current = Writing
 	status.PkgsTotal = len(pkgs)
 	sort.Sort(bulk.PkgsByName(pkgs))
-	keys, err := datastore.NewQuery("pkg").Ancestor(build).Order("PkgName").KeysOnly().GetAll(c, nil)
+	keys, err := datastore.NewQuery("pkg").Ancestor(build).KeysOnly().GetAll(c, nil)
 	if err != nil {
 		c.Warningf("failed to get current records: %s", err)
 	}
