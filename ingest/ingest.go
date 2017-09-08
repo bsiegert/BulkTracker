@@ -236,8 +236,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	sort.Sort(bulk.PkgsByName(pkgs))
 	keys, err := datastore.NewQuery("pkg").Ancestor(build).Order("PkgName").KeysOnly().GetAll(c, nil)
 	if err != nil {
-		c.Errorf("getting current records: %s", err)
-		return
+		c.Warningf("failed to get current records: %s", err)
 	}
 	for i := len(keys); i < len(pkgs); i++ {
 		keys = append(keys, datastore.NewIncompleteKey(c, "pkg", build))
