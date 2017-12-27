@@ -7,7 +7,7 @@ import (
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"xi2.org/x/xz"
 
-	"golang.org/x/net/context"
+	"context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/delay"

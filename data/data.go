@@ -6,7 +6,7 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 
 	"fmt"
-	"golang.org/x/net/context"
+	"context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
