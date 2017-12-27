@@ -202,10 +202,7 @@ var FetchReport = delay.Func("FetchReport", func(c context.Context, build *datas
 	status.Current = Fetching
 	status.Put(c)
 	client := http.Client{
-		Transport: &urlfetch.Transport{
-			Context:  c,
-			Deadline: time.Minute,
-		},
+		Transport: &urlfetch.Transport{Context:  c},
 	}
 	resp, err := client.Get(url)
 	if err != nil {
