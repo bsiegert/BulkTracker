@@ -20,9 +20,6 @@ import (
 	"time"
 )
 
-// TODO(bsiegert) There is a lot of duplicated code in these functions.
-// Abstract some of it away.
-
 // The default duration until a cache entry expires.
 const CacheExpiration = 30 * time.Minute
 
