@@ -6,23 +6,23 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 
 	"fmt"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/memcache"
 	"time"
-
-	"appengine"
-	"appengine/datastore"
-	"appengine/memcache"
 )
 
 const latestBuildsKey = "latestBuildsPerPlatform"
 
 // LatestBuilds fetches the list of latest builds to show on the landing page.
-func LatestBuilds(c appengine.Context) (builds []bulk.Build, err error) {
+func LatestBuilds(c context.Context) (builds []bulk.Build, err error) {
 	_, err = memcache.Gob.Get(c, latestBuildsKey, &builds)
 	if err != nil && err != memcache.ErrCacheMiss {
-		c.Warningf("get latest builds from memcache: %s", err)
+		log.Warningf(c, "get latest builds from memcache: %s", err)
 	}
 	if err == nil {
-		c.Debugf("latestBuilds: used cached result")
+		log.Debugf(c, "latestBuilds: used cached result")
 		return builds, nil
 	}
 
@@ -58,7 +58,7 @@ RowLoop:
 		Expiration: 30 * time.Minute,
 	})
 	if err != nil {
-		c.Warningf("failed to Set latestBuilds: %s", err)
+		log.Warningf(c, "failed to Set latestBuilds: %s", err)
 	}
 
 	return builds, nil

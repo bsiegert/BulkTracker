@@ -7,11 +7,13 @@ import (
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"xi2.org/x/xz"
 
-	"appengine"
-	"appengine/datastore"
-	"appengine/delay"
-	"appengine/memcache"
-	"appengine/urlfetch"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/delay"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/memcache"
+	"google.golang.org/appengine/urlfetch"
 
 	"bytes"
 	"compress/bzip2"
@@ -52,7 +54,7 @@ type Status struct {
 
 // NewStatus allocates a new Status for report ingestion. As a side effect,
 // it also deletes old records, if any.
-func NewStatus(c appengine.Context, build *datastore.Key) *Status {
+func NewStatus(c context.Context, build *datastore.Key) *Status {
 	s := &Status{
 		key:      datastore.NewIncompleteKey(c, "status", build),
 		cacheKey: "/json/status/" + build.String(),
@@ -61,18 +63,18 @@ func NewStatus(c appengine.Context, build *datastore.Key) *Status {
 	// TODO delete from memcache.
 	keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(c, nil)
 	if err != nil {
-		c.Warningf("failed to query for old statuses: %s", err)
+		log.Warningf(c, "failed to query for old statuses: %s", err)
 		return s
 	}
 	if len(keys) > 0 {
-		c.Infof("Deleting %d records", len(keys))
+		log.Infof(c, "Deleting %d records", len(keys))
 		dsbatch.DeleteMulti(c, keys)
 	}
 	return s
 }
 
 // Put writes s into the datastore and memcache.
-func (s *Status) Put(c appengine.Context) {
+func (s *Status) Put(c context.Context) {
 	datastore.Put(c, s.key, s)
 
 	var buf bytes.Buffer
@@ -83,19 +85,19 @@ func (s *Status) Put(c appengine.Context) {
 		Expiration: 2 * time.Minute,
 	})
 	if err != nil {
-		c.Warningf("failed to write %q to cache: %s", s.cacheKey, err)
+		log.Warningf(c, "failed to write %q to cache: %s", s.cacheKey, err)
 	}
 }
 
 // UpdateProgress sets the # of packages written and calls Put.
-func (s *Status) UpdateProgress(c appengine.Context, written int) {
+func (s *Status) UpdateProgress(c context.Context, written int) {
 	s.PkgsWritten = written
 	s.Put(c)
 }
 
 // Done marks the ingestion as done by removing the Status entry.
-func (s *Status) Done(c appengine.Context) {
-	c.Infof("%v", s.key)
+func (s *Status) Done(c context.Context) {
+	log.Infof(c, "%v", s.key)
 	datastore.Delete(c, s.key)
 	// TODO delete from memcache.
 }
@@ -114,28 +116,28 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	msg, err := mail.ReadMessage(r.Body)
 	if err != nil {
-		c.Errorf("failed to read mail message: %s", err)
+		log.Errorf(c, "failed to read mail message: %s", err)
 		w.WriteHeader(500)
 		return
 	}
 	fromAddr, err := msg.Header.AddressList("From")
 	if err != nil {
-		c.Warningf("unable to parse From header: %s", err)
+		log.Warningf(c, "unable to parse From header: %s", err)
 		return
 	}
 	from := &mail.Address{}
 	if len(fromAddr) > 0 {
 		from = fromAddr[0]
 	}
-	c.Infof("new mail from %s", from)
+	log.Infof(c, "new mail from %s", from)
 	if strings.Index(from.Address, "majordomo") != -1 {
 		body, _ := ioutil.ReadAll(msg.Body)
-		c.Infof("%s", body)
+		log.Infof(c, "%s", body)
 		return
 	}
 	body, err := ParseMultipartMail(msg)
 	if err != nil {
-		c.Errorf("failed to read mail body: %s", err)
+		log.Errorf(c, "failed to read mail body: %s", err)
 		return
 	}
 	fromName := from.Name
@@ -158,10 +160,10 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	if headAliases[build.Branch] {
 		build.Branch = "HEAD"
 	}
-	c.Debugf("%#v, %s", build, err)
+	log.Debugf(c, "%#v, %s", build, err)
 
 	key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "build", nil), build)
-	c.Infof("wrote entry %v: %s", key, err)
+	log.Infof(c, "wrote entry %v: %s", key, err)
 	FetchReport.Call(c, key, build.ReportURL)
 }
 
@@ -194,7 +196,7 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
-var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *datastore.Key, url string) {
+var FetchReport = delay.Func("FetchReport", func(c context.Context, build *datastore.Key, url string) {
 	status := NewStatus(c, build)
 	status.URL = url
 	status.Current = Fetching
@@ -207,7 +209,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	}
 	resp, err := client.Get(url)
 	if err != nil {
-		c.Warningf("failed to fetch report at %q: %s", url, err)
+		log.Warningf(c, "failed to fetch report at %q: %s", url, err)
 		status.LastErr = err
 		status.Current = Failed
 		status.Put(c)
@@ -216,7 +218,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	defer resp.Body.Close()
 	r, err := decompressingReader(resp.Body, url)
 	if err != nil {
-		c.Errorf("failed to uncompress report at %q: %s", url, err)
+		log.Errorf(c, "failed to uncompress report at %q: %s", url, err)
 		status.LastErr = err
 		status.Current = Failed
 		status.Put(c)
@@ -224,7 +226,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	}
 	pkgs, err := bulk.PkgsFromReport(r)
 	if err != nil {
-		c.Errorf("failed to parse report at %q: %s", url, err)
+		log.Errorf(c, "failed to parse report at %q: %s", url, err)
 		status.LastErr = err
 		status.Current = Failed
 		status.Put(c)
@@ -236,7 +238,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 	sort.Sort(bulk.PkgsByName(pkgs))
 	keys, err := datastore.NewQuery("pkg").Ancestor(build).KeysOnly().GetAll(c, nil)
 	if err != nil {
-		c.Warningf("failed to get current records: %s", err)
+		log.Warningf(c, "failed to get current records: %s", err)
 	}
 	for i := len(keys); i < len(pkgs); i++ {
 		keys = append(keys, datastore.NewIncompleteKey(c, "pkg", build))
@@ -252,7 +254,7 @@ var FetchReport = delay.Func("FetchReport", func(c appengine.Context, build *dat
 		status.Current = Failed
 		status.LastErr = err
 		status.Put(c)
-		c.Warningf("%s", err)
+		log.Warningf(c, "%s", err)
 	}
 	status.Done(c)
 })

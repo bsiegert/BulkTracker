@@ -7,8 +7,10 @@ import (
 	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/templates"
 
-	"appengine"
-	"appengine/datastore"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 
 	"fmt"
 	"io"
@@ -38,7 +40,7 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	}
 	builds, err := data.LatestBuilds(c)
 	if err != nil {
-		c.Errorf("failed to read latest builds: %s", err)
+		log.Errorf(c, "failed to read latest builds: %s", err)
 		w.WriteHeader(500)
 		return
 	}
@@ -60,7 +62,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `<script src="/static/builds.js"></script>`)
 }
 
-func writeBuildListAll(c appengine.Context, w http.ResponseWriter, builds []bulk.Build) {
+func writeBuildListAll(c context.Context, w http.ResponseWriter, builds []bulk.Build) {
 	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
 	for i := range builds {
 		templates.TableBuilds(w, &builds[i])
@@ -69,7 +71,7 @@ func writeBuildListAll(c appengine.Context, w http.ResponseWriter, builds []bulk
 }
 
 // writePackageList writes a table of package results from the iterator it to w.
-func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.Iterator) {
+func writePackageList(c context.Context, w http.ResponseWriter, it *datastore.Iterator) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	p := &bulk.Pkg{}
 	for {
@@ -77,7 +79,7 @@ func writePackageList(c appengine.Context, w http.ResponseWriter, it *datastore.
 		if err == datastore.Done {
 			break
 		} else if err != nil {
-			c.Errorf("failed to read pkg: %s", err)
+			log.Errorf(c, "failed to read pkg: %s", err)
 			w.WriteHeader(500)
 			return
 		}
@@ -98,14 +100,14 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	key, err := datastore.DecodeKey(paths[0])
 	if err != nil {
-		c.Warningf("error decoding key: %s", err)
+		log.Warningf(c, "error decoding key: %s", err)
 		return
 	}
 
 	b := &bulk.Build{}
 	err = datastore.Get(c, key, b)
 	if err != nil {
-		c.Warningf("getting build record: %s", err)
+		log.Warningf(c, "getting build record: %s", err)
 		return
 	}
 	templates.BulkBuildInfo(w, b)
@@ -146,7 +148,7 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 
 	pkgKey, err := datastore.DecodeKey(path.Base(r.URL.Path))
 	if err != nil {
-		c.Warningf("error decoding pkg key: %s", err)
+		log.Warningf(c, "error decoding pkg key: %s", err)
 		return
 	}
 	buildKey := pkgKey.Parent()
@@ -154,12 +156,12 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	p := &bulk.Pkg{}
 	b := &bulk.Build{}
 	if err = datastore.Get(c, pkgKey, p); err != nil {
-		c.Warningf("getting pkg record: %s", err)
+		log.Warningf(c, "getting pkg record: %s", err)
 		return
 	}
 	if buildKey != nil {
 		if err = datastore.Get(c, buildKey, b); err != nil {
-			c.Warningf("getting build record: %s", err)
+			log.Warningf(c, "getting build record: %s", err)
 			return
 		}
 	}

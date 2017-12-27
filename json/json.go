@@ -6,9 +6,11 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/data"
 
-	"appengine"
-	"appengine/datastore"
-	"appengine/memcache"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/memcache"
 
 	"bytes"
 	"encoding/json"
@@ -27,7 +29,7 @@ const CacheExpiration = 30 * time.Minute
 // params is a list of path components; the format of the URLs is
 // /json/endpointname/param1/param2. The function returns a result to be
 // marshalled to JSON, or an error.
-type Endpoint func(c appengine.Context, params []string) (interface{}, error)
+type Endpoint func(c context.Context, params []string) (interface{}, error)
 
 func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -47,7 +49,7 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if result != nil {
 			json.NewEncoder(w).Encode(result)
 		}
-		c.Errorf(err.Error())
+		log.Errorf(c, err.Error())
 		return
 	}
 	CacheAndWrite(c, result, cacheKey, w)
@@ -65,7 +67,7 @@ var Mux = map[string]Endpoint{
 
 // CacheAndWrite stores the JSON representation of v in the App Engine
 // memcache and writes it to w.
-func CacheAndWrite(c appengine.Context, v interface{}, cacheKey string, w io.Writer) {
+func CacheAndWrite(c context.Context, v interface{}, cacheKey string, w io.Writer) {
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(v)
 	err := memcache.Set(c, &memcache.Item{
@@ -74,27 +76,27 @@ func CacheAndWrite(c appengine.Context, v interface{}, cacheKey string, w io.Wri
 		Expiration: CacheExpiration,
 	})
 	if err != nil {
-		c.Warningf("failed to write %q to cache: %s", cacheKey, err)
+		log.Warningf(c, "failed to write %q to cache: %s", cacheKey, err)
 	}
 	io.Copy(w, &buf)
 }
 
 // CacheGet tries fetching the value with the given cacheKey from memcache and
 // writes it to w if it exists. It returns true if there was a cache hit.
-func CacheGet(c appengine.Context, cacheKey string, w http.ResponseWriter) bool {
+func CacheGet(c context.Context, cacheKey string, w http.ResponseWriter) bool {
 	item, err := memcache.Get(c, cacheKey)
 	if err != nil {
 		if err != memcache.ErrCacheMiss {
-			c.Warningf("get from memcache: %s", err)
+			log.Warningf(c, "get from memcache: %s", err)
 		}
 		return false
 	}
-	c.Debugf("%s: used cached result", cacheKey)
+	log.Debugf(c, "%s: used cached result", cacheKey)
 	w.Write(item.Value)
 	return true
 }
 
-func BuildDetails(c appengine.Context, params []string) (interface{}, error) {
+func BuildDetails(c context.Context, params []string) (interface{}, error) {
 	if len(params) == 0 {
 		return nil, nil
 	}
@@ -111,7 +113,7 @@ func BuildDetails(c appengine.Context, params []string) (interface{}, error) {
 	return b, nil
 }
 
-func AllBuildDetails(c appengine.Context, params []string) (interface{}, error) {
+func AllBuildDetails(c context.Context, params []string) (interface{}, error) {
 	var builds []bulk.Build
 	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(c, &builds)
 	if err != nil {
@@ -128,7 +130,7 @@ type PkgResult struct {
 	Pkg   *bulk.Pkg
 }
 
-func PkgResults(c appengine.Context, params []string) (interface{}, error) {
+func PkgResults(c context.Context, params []string) (interface{}, error) {
 	if len(params) < 2 {
 		return nil, nil
 	}
@@ -151,11 +153,11 @@ func PkgResults(c appengine.Context, params []string) (interface{}, error) {
 			var pkgs []bulk.Pkg
 			key, err := datastore.DecodeKey(b.Key)
 			if err != nil {
-				c.Errorf("unable to decode key: %s", err)
+				log.Errorf(c, "unable to decode key: %s", err)
 			}
 			pkgkeys, err := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10).GetAll(c, &pkgs)
 			if err != nil {
-				c.Errorf("failed to query packages: %s", err)
+				log.Errorf(c, "failed to query packages: %s", err)
 			}
 			for j := range pkgkeys {
 				pkgs[j].Key = pkgkeys[j].Encode()
@@ -175,7 +177,7 @@ func PkgResults(c appengine.Context, params []string) (interface{}, error) {
 	return results, nil
 }
 
-func AllPkgResults(c appengine.Context, params []string) (interface{}, error) {
+func AllPkgResults(c context.Context, params []string) (interface{}, error) {
 	if len(params) < 2 {
 		return []bulk.Pkg{}, nil
 	}
@@ -184,7 +186,7 @@ func AllPkgResults(c appengine.Context, params []string) (interface{}, error) {
 	var pkgs []bulk.Pkg
 	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(c, &pkgs)
 	if err != nil {
-		c.Errorf("failed to query packages: %s", err)
+		log.Errorf(c, "failed to query packages: %s", err)
 	}
 	for j := range pkgkeys {
 		pkgs[j].Key = pkgkeys[j].Encode()
@@ -200,14 +202,14 @@ func AllPkgResults(c appengine.Context, params []string) (interface{}, error) {
 		b := &bulk.Build{Key: buildKey.Encode()}
 		err = datastore.Get(c, buildKey, b)
 		if err != nil {
-			c.Errorf("getting build record: %s", err)
+			log.Errorf(c, "getting build record: %s", err)
 		}
 		results[j].Build = b
 	}
 	return results, nil
 }
 
-func Dir(c appengine.Context, params []string) (interface{}, error) {
+func Dir(c context.Context, params []string) (interface{}, error) {
 	var category string
 	if len(params) > 0 {
 		category = params[0]
