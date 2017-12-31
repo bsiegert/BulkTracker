@@ -8,6 +8,7 @@ import (
 
 	"github.com/bsiegert/BulkTracker/bulk"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 )
 
 var ch chan AutocompleteRequest
@@ -51,15 +52,16 @@ func lookup(allPkgNames []string, req AutocompleteRequest) {
 
 // Result encodes a single line of the select2 JSON response format.
 type Result struct {
-	ID, Text string
+	ID   string `json:"id"`
+	Text string `json:"text"`
 }
 
 // AutocompleteResponse is the overall return type of the select2 JSON response.
 type AutocompleteResponse struct {
-	Results    []Result
+	Results    []Result `json:"results"`
 	Pagination struct {
-		More bool
-	}
+		More bool `json:"more"`
+	} `json:"pagination,omitempty"`
 }
 
 // AutocompleteRequest has the parameters for a single autocomplete request.
@@ -78,9 +80,11 @@ type AutocompleteRequest struct {
 // loading the dataset.
 func Autocomplete(req AutocompleteRequest) error {
 	if ch == nil {
+		log.Infof(req.Ctx, "loading data")
 		if err := load(req.Ctx); err != nil {
 			return err
 		}
+		log.Infof(req.Ctx, "done loading data")
 	}
 	ch <- req
 	return nil

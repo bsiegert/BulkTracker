@@ -258,7 +258,7 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 func Autocomplete(c context.Context, _ []string, form url.Values) (interface{}, error) {
 	term := form.Get("term")
 	if term == "" {
-		return nil, nil
+		return stateful.AutocompleteResponse{}, nil
 	}
 	ch := make(chan stateful.AutocompleteResponse)
 	if err := stateful.Autocomplete(stateful.AutocompleteRequest{Ctx: c, Search: term, Ret: ch}); err != nil {
