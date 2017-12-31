@@ -5,6 +5,7 @@ package stateful
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/bsiegert/BulkTracker/bulk"
 	"google.golang.org/appengine/datastore"
@@ -16,6 +17,10 @@ var ch chan AutocompleteRequest
 // TODO regularly reload the dataset.
 
 func load(ctx context.Context) error {
+	// Replace ch with the new one. In the future, when reloading (i.e.
+	// ch != nil at this point), consider moving the setting to the end.
+	ch = make(chan AutocompleteRequest)
+
 	var pkgs []bulk.Pkg
 	_, err := datastore.NewQuery("pkg").Project("Category", "Dir").Distinct().GetAll(ctx, &pkgs)
 	if err != nil {
@@ -27,13 +32,11 @@ func load(ctx context.Context) error {
 		allPkgNames = append(allPkgNames, p.Category+p.Dir)
 	}
 
-	newChan := make(chan AutocompleteRequest)
 	go func() {
-		for req := range newChan {
+		for req := range ch {
 			lookup(allPkgNames, req)
 		}
 	}()
-	ch = newChan
 	return nil
 }
 
@@ -80,11 +83,12 @@ type AutocompleteRequest struct {
 // loading the dataset.
 func Autocomplete(req AutocompleteRequest) error {
 	if ch == nil {
-		log.Infof(req.Ctx, "loading data")
+		log.Infof(req.Ctx, "loading autocomplete data")
+		start := time.Now()
 		if err := load(req.Ctx); err != nil {
 			return err
 		}
-		log.Infof(req.Ctx, "done loading data")
+		log.Infof(req.Ctx, "done loading autocomplete data, took %v", time.Now().Sub(start))
 	}
 	ch <- req
 	return nil
