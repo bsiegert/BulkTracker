@@ -4,4 +4,12 @@ $(document).ready(function() {
     $(location).attr('href', "/pkgresults/" + pkg);
     return false;
   });
+  
+  $('#results-pkg').select2({
+    theme: 'bootstrap',
+    ajax: {
+      url: '/json/autocomplete/',
+      dataType: 'json'
+    }
+  });
 });
