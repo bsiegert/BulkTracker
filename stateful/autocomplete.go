@@ -4,7 +4,6 @@ package stateful
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/bsiegert/BulkTracker/bulk"
@@ -24,7 +23,7 @@ func load(ctx context.Context) error {
 
 	allPkgNames := make([]string, 0, len(pkgs))
 	for _, p := range pkgs {
-		allPkgNames = append(allPkgNames, fmt.Sprintf("%s/%s", p.Category, p.Dir))
+		allPkgNames = append(allPkgNames, p.Category+p.Dir)
 	}
 
 	newChan := make(chan AutocompleteRequest)

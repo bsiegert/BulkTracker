@@ -5,6 +5,7 @@ package json
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/data"
+	"github.com/bsiegert/BulkTracker/stateful"
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
@@ -12,7 +13,7 @@ import (
 	"google.golang.org/appengine/memcache"
 
 	"bytes"
-        "context"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -70,6 +71,7 @@ var Mux = map[string]Endpoint{
 	"pkgresults":    PkgResults,
 	"allpkgresults": AllPkgResults,
 	"dir":           Dir,
+	"autocomplete":  Autocomplete,
 }
 
 // CacheAndWrite stores the JSON representation of v in the App Engine
@@ -251,4 +253,16 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 
 	sort.Strings(result)
 	return result, nil
+}
+
+func Autocomplete(c context.Context, _ []string, form url.Values) (interface{}, error) {
+	term := form.Get("term")
+	if term == "" {
+		return nil, nil
+	}
+	ch := make(chan stateful.AutocompleteResponse)
+	if err := stateful.Autocomplete(stateful.AutocompleteRequest{Ctx: c, Search: term, Ret: ch}); err != nil {
+		return nil, err
+	}
+	return <-ch, nil
 }
