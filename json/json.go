@@ -6,17 +6,18 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/data"
 
-	"context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 
 	"bytes"
+        "context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -29,12 +30,18 @@ const CacheExpiration = 30 * time.Minute
 // params is a list of path components; the format of the URLs is
 // /json/endpointname/param1/param2. The function returns a result to be
 // marshalled to JSON, or an error.
-type Endpoint func(c context.Context, params []string) (interface{}, error)
+type Endpoint func(c context.Context, params []string, form url.Values) (interface{}, error)
 
 func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	c := appengine.NewContext(r)
+	r.ParseForm()
+	r.Form.Del("_") // used by some of the JSON calls to prevent caching, hah!
+
 	cacheKey := strings.TrimSuffix(r.URL.Path, "/")
+	if len(r.Form) > 0 {
+		cacheKey += "?" + r.Form.Encode()
+	}
 	paths := strings.Split(strings.TrimPrefix(cacheKey, "/json/"), "/")
 	if len(paths) < 1 {
 		w.WriteHeader(404)
@@ -44,7 +51,7 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := e(c, paths[1:])
+	result, err := e(c, paths[1:], r.Form)
 	if err != nil {
 		if result != nil {
 			json.NewEncoder(w).Encode(result)
@@ -96,7 +103,7 @@ func CacheGet(c context.Context, cacheKey string, w http.ResponseWriter) bool {
 	return true
 }
 
-func BuildDetails(c context.Context, params []string) (interface{}, error) {
+func BuildDetails(c context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) == 0 {
 		return nil, nil
 	}
@@ -113,7 +120,7 @@ func BuildDetails(c context.Context, params []string) (interface{}, error) {
 	return b, nil
 }
 
-func AllBuildDetails(c context.Context, params []string) (interface{}, error) {
+func AllBuildDetails(c context.Context, params []string, _ url.Values) (interface{}, error) {
 	var builds []bulk.Build
 	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(c, &builds)
 	if err != nil {
@@ -130,7 +137,7 @@ type PkgResult struct {
 	Pkg   *bulk.Pkg
 }
 
-func PkgResults(c context.Context, params []string) (interface{}, error) {
+func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
 		return nil, nil
 	}
@@ -177,7 +184,7 @@ func PkgResults(c context.Context, params []string) (interface{}, error) {
 	return results, nil
 }
 
-func AllPkgResults(c context.Context, params []string) (interface{}, error) {
+func AllPkgResults(c context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
 		return []bulk.Pkg{}, nil
 	}
@@ -209,7 +216,7 @@ func AllPkgResults(c context.Context, params []string) (interface{}, error) {
 	return results, nil
 }
 
-func Dir(c context.Context, params []string) (interface{}, error) {
+func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) {
 	var category string
 	if len(params) > 0 {
 		category = params[0]
