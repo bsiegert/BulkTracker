@@ -10,6 +10,7 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/memcache"
 )
 
 var ch chan AutocompleteRequest
@@ -21,15 +22,23 @@ func load(ctx context.Context) error {
 	// ch != nil at this point), consider moving the setting to the end.
 	ch = make(chan AutocompleteRequest)
 
-	var pkgs []bulk.Pkg
-	_, err := datastore.NewQuery("pkg").Project("Category", "Dir").Distinct().GetAll(ctx, &pkgs)
-	if err != nil {
-		return err
-	}
-
-	allPkgNames := make([]string, 0, len(pkgs))
-	for _, p := range pkgs {
-		allPkgNames = append(allPkgNames, p.Category+p.Dir)
+	var allPkgNames []string
+	if val, err := memcache.Get(ctx, "allpkgnames"); err == nil {
+		allPkgNames = strings.Split(strings.TrimSuffix(string(val.Value), "\n"), "\n")
+	} else {
+		log.Debugf(ctx, "failed to load allpkgnames from cache: %v", err)
+		allPkgNames, err = loadFromDatastore(ctx)
+		if err != nil {
+			return err
+		}
+		err = memcache.Set(ctx, &memcache.Item{
+			Key:        "allpkgnames",
+			Value:      []byte(strings.Join(allPkgNames, "\n")),
+			Expiration: 24 * time.Hour,
+		})
+		if err != nil {
+			log.Warningf(ctx, "failed to write to cache: %v", err)
+		}
 	}
 
 	go func() {
@@ -38,6 +47,20 @@ func load(ctx context.Context) error {
 		}
 	}()
 	return nil
+}
+
+func loadFromDatastore(ctx context.Context) ([]string, error) {
+	var pkgs []bulk.Pkg
+	_, err := datastore.NewQuery("pkg").Project("Category", "Dir").Distinct().GetAll(ctx, &pkgs)
+	if err != nil {
+		return nil, err
+	}
+
+	allPkgNames := make([]string, 0, len(pkgs))
+	for _, p := range pkgs {
+		allPkgNames = append(allPkgNames, p.Category+p.Dir)
+	}
+	return allPkgNames, nil
 }
 
 func lookup(allPkgNames []string, req AutocompleteRequest) {
