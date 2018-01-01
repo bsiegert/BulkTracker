@@ -7,6 +7,7 @@ $(document).ready(function() {
   
   $('#results-pkg').select2({
     theme: 'bootstrap',
+    tags: true,
     ajax: {
       url: '/json/autocomplete/',
       dataType: 'json'
