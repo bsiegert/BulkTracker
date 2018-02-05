@@ -1,6 +1,6 @@
 /*-
  * Copyright (c) 2014-2018
- *      Benny Siegert <bsiegert@gmail.com>
+ *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
  * are retained or reproduced in an accompanying document, permission
@@ -18,48 +18,3 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-package bulk
-
-import (
-	"reflect"
-	"strings"
-	"testing"
-)
-
-const pkgFoo = `
-PKGNAME=foo-1.0
-BUILD_STATUS=indirect-failed
-DEPENDS=bar-2.0
-`
-
-const pkgBar = `
-PKGNAME=bar-2.0
-BUILD_STATUS=failed
-DEPENDS=
-`
-
-var pkgsFromReportTests = []struct {
-	report string
-	want   []Pkg
-}{
-	{
-		pkgFoo,
-		[]Pkg{Pkg{PkgName: "foo-1.0", BuildStatus: IndirectFailed}},
-	},
-	{
-		pkgFoo + pkgBar,
-		[]Pkg{
-			Pkg{PkgName: "foo-1.0", BuildStatus: IndirectFailed, FailedDeps: []string{"bar-2.0"}},
-			Pkg{PkgName: "bar-2.0", BuildStatus: Failed, Breaks: 1},
-		},
-	},
-}
-
-func TestPkgsFromReport(t *testing.T) {
-	for _, test := range pkgsFromReportTests {
-		got, _ := PkgsFromReport(strings.NewReader(test.report))
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("PkgsFromReport(%q): got %#v, want %#v", test.report, got, test.want)
-		}
-	}
-}
