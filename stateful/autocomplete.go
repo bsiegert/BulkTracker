@@ -29,8 +29,14 @@ import (
 
 	"github.com/bsiegert/BulkTracker/bulk"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/delay"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
+)
+
+const (
+	memcacheKey = "allpkgnames"
+	lockKey     = "allpkgnames-lock"
 )
 
 var ch chan AutocompleteRequest
@@ -82,6 +88,41 @@ func loadFromDatastore(ctx context.Context) ([]string, error) {
 	}
 	return allPkgNames, nil
 }
+
+var PrefillCache = delay.Func("PrefillCache", func(ctx context.Context) {
+	_, err := memcache.Get(ctx, lockKey)
+	if err == nil {
+		// Another instance is holding the "poor man's lock".
+		return
+	}
+	err = memcache.Set(ctx, &memcache.Item{
+		Key:        lockKey,
+		Value:      []byte{'*'},
+		Expiration: time.Minute,
+	})
+	if err != nil {
+		log.Warningf(ctx, "cannot set memcache lock: %v", err)
+	}
+	defer func() {
+		if err := memcache.Delete(ctx, lockKey); err != nil {
+			log.Warningf(ctx, "cannot remove memcache lock: %v", err)
+		}
+	}()
+
+	allPkgNames, err := loadFromDatastore(ctx)
+	if err != nil {
+		log.Errorf(ctx, "error loading from datastore: %v", err)
+		return
+	}
+	err = memcache.Set(ctx, &memcache.Item{
+		Key:        "allpkgnames",
+		Value:      []byte(strings.Join(allPkgNames, "\n")),
+		Expiration: 24 * time.Hour,
+	})
+	if err != nil {
+		log.Errorf(ctx, "error writing data to memcache: %v", err)
+	}
+})
 
 func lookup(allPkgNames []string, req AutocompleteRequest) {
 	resp := AutocompleteResponse{}
