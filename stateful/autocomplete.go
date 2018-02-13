@@ -24,6 +24,7 @@ package stateful
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -39,34 +40,24 @@ const (
 	lockKey     = "allpkgnames-lock"
 )
 
-var ch chan AutocompleteRequest
+var (
+	ch         chan AutocompleteRequest
+	errNoCache = errors.New("stateful: no cached data available")
+)
 
 // TODO regularly reload the dataset.
 
 func load(ctx context.Context) error {
-	// Replace ch with the new one. In the future, when reloading (i.e.
-	// ch != nil at this point), consider moving the setting to the end.
-	ch = make(chan AutocompleteRequest)
-
 	var allPkgNames []string
-	if val, err := memcache.Get(ctx, "allpkgnames"); err == nil {
-		allPkgNames = strings.Split(strings.TrimSuffix(string(val.Value), "\n"), "\n")
-	} else {
+	val, err := memcache.Get(ctx, memcacheKey)
+	if err != nil {
 		log.Debugf(ctx, "failed to load allpkgnames from cache: %v", err)
-		allPkgNames, err = loadFromDatastore(ctx)
-		if err != nil {
-			return err
-		}
-		err = memcache.Set(ctx, &memcache.Item{
-			Key:        "allpkgnames",
-			Value:      []byte(strings.Join(allPkgNames, "\n")),
-			Expiration: 24 * time.Hour,
-		})
-		if err != nil {
-			log.Warningf(ctx, "failed to write to cache: %v", err)
-		}
+		PrefillCache.Call(ctx)
+		return errNoCache
 	}
 
+	ch = make(chan AutocompleteRequest)
+	allPkgNames = strings.Split(strings.TrimSuffix(string(val.Value), "\n"), "\n")
 	go func() {
 		for req := range ch {
 			lookup(allPkgNames, req)
@@ -115,7 +106,7 @@ var PrefillCache = delay.Func("PrefillCache", func(ctx context.Context) {
 		return
 	}
 	err = memcache.Set(ctx, &memcache.Item{
-		Key:        "allpkgnames",
+		Key:        memcacheKey,
 		Value:      []byte(strings.Join(allPkgNames, "\n")),
 		Expiration: 24 * time.Hour,
 	})
