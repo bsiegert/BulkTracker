@@ -25,7 +25,7 @@ package ingest
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dsbatch"
-	"xi2.org/x/xz"
+	"github.com/xi2/xz"
 
 	"context"
 	"google.golang.org/appengine"
