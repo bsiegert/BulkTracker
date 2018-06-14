@@ -116,7 +116,7 @@ var PrefillCache = delay.Func("PrefillCache", func(ctx context.Context) {
 })
 
 func lookup(allPkgNames []string, req AutocompleteRequest) {
-	resp := AutocompleteResponse{}
+	resp := AutocompleteResponse{Results: []Result{}}
 	for _, p := range allPkgNames {
 		if strings.Contains(p, req.Search) {
 			resp.Results = append(resp.Results, Result{

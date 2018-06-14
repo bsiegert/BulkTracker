@@ -278,11 +278,21 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 func Autocomplete(c context.Context, _ []string, form url.Values) (interface{}, error) {
 	term := form.Get("term")
 	if term == "" {
-		return stateful.AutocompleteResponse{}, nil
+		return stateful.AutocompleteResponse{
+			// select2 gets confused if the value is null.
+			Results: []stateful.Result{},
+		}, nil
 	}
 	ch := make(chan stateful.AutocompleteResponse)
 	if err := stateful.Autocomplete(stateful.AutocompleteRequest{Ctx: c, Search: term, Ret: ch}); err != nil {
-		return nil, err
+		return stateful.AutocompleteResponse{
+			// select2 gets confused if the value is null.
+			Results: []stateful.Result{},
+		}, err
 	}
-	return <-ch, nil
+	resp := <-ch
+	if resp.Results == nil {
+		resp.Results = []stateful.Result{}
+	}
+	return resp, nil
 }
