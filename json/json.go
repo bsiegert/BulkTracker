@@ -27,8 +27,8 @@ import (
 	"github.com/bsiegert/BulkTracker/data"
 	"github.com/bsiegert/BulkTracker/stateful"
 
+	"cloud.google.com/go/datastore"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 
@@ -125,7 +125,11 @@ func CacheGet(c context.Context, cacheKey string, w http.ResponseWriter) bool {
 	return true
 }
 
-func BuildDetails(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func BuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+	client, err := datastore.NewClient(ctx, "")
+	if err != nil {
+		return nil, err
+	}
 	if len(params) == 0 {
 		return nil, nil
 	}
@@ -135,16 +139,21 @@ func BuildDetails(c context.Context, params []string, _ url.Values) (interface{}
 	}
 
 	b := &bulk.Build{Key: key.Encode()}
-	err = datastore.Get(c, key, b)
+	err = client.Get(ctx, key, b)
 	if err != nil {
 		return nil, fmt.Errorf("getting build record: %s", err)
 	}
 	return b, nil
 }
 
-func AllBuildDetails(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func AllBuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+	client, err := datastore.NewClient(ctx, "")
+	if err != nil {
+		return nil, err
+	}
 	var builds []bulk.Build
-	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(c, &builds)
+	query := datastore.NewQuery("build").Order("-Timestamp")
+	keys, err := client.GetAll(ctx, query, &builds)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query builds: %s", err)
 	}
@@ -160,6 +169,10 @@ type PkgResult struct {
 }
 
 func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, error) {
+	client, err := datastore.NewClient(c, "")
+	if err != nil {
+		return nil, err
+	}
 	if len(params) < 2 {
 		return nil, nil
 	}
@@ -184,7 +197,8 @@ func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, 
 			if err != nil {
 				log.Errorf(c, "unable to decode key: %s", err)
 			}
-			pkgkeys, err := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10).GetAll(c, &pkgs)
+			query := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10)
+			pkgkeys, err := client.GetAll(c, query, &pkgs)
 			if err != nil {
 				log.Errorf(c, "failed to query packages: %s", err)
 			}
@@ -207,13 +221,18 @@ func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, 
 }
 
 func AllPkgResults(c context.Context, params []string, _ url.Values) (interface{}, error) {
+	client, err := datastore.NewClient(c, "")
+	if err != nil {
+		return nil, err
+	}
 	if len(params) < 2 {
 		return []bulk.Pkg{}, nil
 	}
 	category, dir := params[0]+"/", params[1]
 
 	var pkgs []bulk.Pkg
-	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(c, &pkgs)
+	query := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000)
+	pkgkeys, err := client.GetAll(c, query, &pkgs)
 	if err != nil {
 		log.Errorf(c, "failed to query packages: %s", err)
 	}
@@ -227,9 +246,9 @@ func AllPkgResults(c context.Context, params []string, _ url.Values) (interface{
 		// TODO(bsiegert) do this in parallel and/or cache repeated values.
 		// One way would be to build a list of empty build records and desired
 		// keys, then call GetMulti.
-		buildKey := pkgkeys[j].Parent()
+		buildKey := pkgkeys[j].Parent
 		b := &bulk.Build{Key: buildKey.Encode()}
-		err = datastore.Get(c, buildKey, b)
+		err = client.Get(c, buildKey, b)
 		if err != nil {
 			log.Errorf(c, "getting build record: %s", err)
 		}
@@ -239,6 +258,11 @@ func AllPkgResults(c context.Context, params []string, _ url.Values) (interface{
 }
 
 func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) {
+	client, err := datastore.NewClient(c, "")
+	if err != nil {
+		return nil, err
+	}
+
 	var category string
 	if len(params) > 0 {
 		category = params[0]
@@ -251,7 +275,8 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 	var result []string
 	if category == "" {
 		// List all categories.
-		_, err := datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &pkgs)
+		query := datastore.NewQuery("pkg").Project("Category").Distinct()
+		_, err := client.GetAll(c, query, &pkgs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to query packages: %s", err)
 		}
@@ -261,7 +286,8 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 		}
 	} else {
 		// List all pkgnames in a category (union of all builds).
-		_, err := datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(c, &pkgs)
+		query := datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct()
+		_, err := client.GetAll(c, query, &pkgs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to query packages: %s", err)
 		}
