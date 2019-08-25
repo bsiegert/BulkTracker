@@ -28,8 +28,8 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"github.com/bsiegert/BulkTracker/bulk"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/delay"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
@@ -67,8 +67,13 @@ func load(ctx context.Context) error {
 }
 
 func loadFromDatastore(ctx context.Context) ([]string, error) {
+	client, err := datastore.NewClient(ctx, "")
+	if err != nil {
+		return nil, err
+	}
 	var pkgs []bulk.Pkg
-	_, err := datastore.NewQuery("pkg").Project("Category", "Dir").Distinct().GetAll(ctx, &pkgs)
+	query := datastore.NewQuery("pkg").Project("Category", "Dir").Distinct()
+	_, err = client.GetAll(ctx, query, &pkgs)
 	if err != nil {
 		return nil, err
 	}
