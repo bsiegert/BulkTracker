@@ -26,7 +26,7 @@ package dsbatch
 import (
 	"errors"
 	"context"
-	"google.golang.org/appengine/datastore"
+	"cloud.google.com/go/datastore"
 	"google.golang.org/appengine/log"
 	"reflect"
 )
@@ -41,7 +41,11 @@ type ProgressUpdater interface {
 
 // TODO(bsiegert) also implement checking maximum request size (currently 1MB).
 
-func PutMulti(c context.Context, keys []*datastore.Key, values interface{}, pu ProgressUpdater) error {
+func PutMulti(ctx context.Context, keys []*datastore.Key, values interface{}, pu ProgressUpdater) error {
+	client, err := datastore.NewClient(ctx, "")
+	if err != nil {
+		return err
+	}
 	v := reflect.ValueOf(values)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
@@ -56,9 +60,9 @@ func PutMulti(c context.Context, keys []*datastore.Key, values interface{}, pu P
 			m = l
 		}
 		k := keys[n:m]
-		log.Debugf(c, "writing records %d-%d", n, m)
-		_, err := datastore.PutMulti(c, k, v.Slice(n, m).Interface())
-		pu.UpdateProgress(c, m)
+		log.Debugf(ctx, "writing records %d-%d", n, m)
+		_, err := client.PutMulti(ctx, k, v.Slice(n, m).Interface())
+		pu.UpdateProgress(ctx, m)
 		if err != nil {
 			return err
 		}
@@ -66,7 +70,11 @@ func PutMulti(c context.Context, keys []*datastore.Key, values interface{}, pu P
 	return nil
 }
 
-func DeleteMulti(c context.Context, keys []*datastore.Key) error {
+func DeleteMulti(ctx context.Context, keys []*datastore.Key) error {
+	client, err := datastore.NewClient(ctx, "")
+	if err != nil {
+		return err
+	}
 	l := len(keys)
 	for n := 0; n < l; n += MaxPerCall {
 		m := n + MaxPerCall
@@ -74,8 +82,8 @@ func DeleteMulti(c context.Context, keys []*datastore.Key) error {
 			m = l
 		}
 		k := keys[n:m]
-		log.Debugf(c, "deleting records %d-%d", n, m)
-		err := datastore.DeleteMulti(c, k)
+		log.Debugf(ctx, "deleting records %d-%d", n, m)
+		err := client.DeleteMulti(ctx, k)
 		if err != nil {
 			return err
 		}
