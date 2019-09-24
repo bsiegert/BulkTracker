@@ -27,15 +27,15 @@ import (
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/xi2/xz"
 
-	"context"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
+	"cloud.google.com/go/datastore"
 	"google.golang.org/appengine/delay"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 	"google.golang.org/appengine/urlfetch"
 
 	"bytes"
+	"context"
 	"compress/bzip2"
 	"compress/gzip"
 	"encoding/base64"
@@ -76,12 +76,19 @@ type Status struct {
 // it also deletes old records, if any.
 func NewStatus(c context.Context, build *datastore.Key) *Status {
 	s := &Status{
-		key:      datastore.NewIncompleteKey(c, "status", build),
+		key:      datastore.IncompleteKey("status", build),
 		cacheKey: "/json/status/" + build.String(),
 	}
 
+	client, err := datastore.NewClient(c)
+	if err != nil {
+		log.Warningf(c, "failed to create datastore client: %v, err)
+		return s
+	}
+
 	// TODO delete from memcache.
-	keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(c, nil)
+	query := datastore.NewQuery("status").Ancestor(build).KeysOnly()
+	keys, err := client.GetAll(c, query, nil)
 	if err != nil {
 		log.Warningf(c, "failed to query for old statuses: %s", err)
 		return s
@@ -95,6 +102,11 @@ func NewStatus(c context.Context, build *datastore.Key) *Status {
 
 // Put writes s into the datastore and memcache.
 func (s *Status) Put(c context.Context) {
+	client, err := datastore.NewClient(c, "")
+	if err != nil {
+		log.Warningf(c, "failed create datastore client: %v", err)
+		return
+	}
 	datastore.Put(c, s.key, s)
 
 	var buf bytes.Buffer
@@ -117,8 +129,13 @@ func (s *Status) UpdateProgress(c context.Context, written int) {
 
 // Done marks the ingestion as done by removing the Status entry.
 func (s *Status) Done(c context.Context) {
+	client, err := datastore.NewClient(c)
+	if err != nil {
+		log.Warningf(c, "failed to create datastore client: %v, err)
+		return
+	}
 	log.Infof(c, "%v", s.key)
-	datastore.Delete(c, s.key)
+	client.Delete(c, s.key) // TODO swallowed error
 	// TODO delete from memcache.
 }
 
@@ -134,6 +151,12 @@ var headAliases = map[string]bool{
 // report and ingests it, if successful.
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
+	client, err := datastore.NewClient(c, "")
+	if err != nil {
+		log.Errorf(c, "failed to create datastore client: %v", err)
+		w.WriteHeader(500)
+		return
+	}
 	msg, err := mail.ReadMessage(r.Body)
 	if err != nil {
 		log.Errorf(c, "failed to read mail message: %s", err)
@@ -182,7 +205,7 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Debugf(c, "%#v, %s", build, err)
 
-	key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "build", nil), build)
+	key, err := client.Put(c, datastore.IncompleteKey("build", nil), build)
 	log.Infof(c, "wrote entry %v: %s", key, err)
 	FetchReport.Call(c, key, build.ReportURL)
 }
