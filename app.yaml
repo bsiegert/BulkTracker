@@ -1,5 +1,4 @@
-runtime: go
-api_version: go1.9
+runtime: go111
 
 inbound_services:
 - mail
@@ -18,6 +17,6 @@ handlers:
   static_files: static/pkgresults.html
   upload: static/pkgresults.html
 - url: /.*
-  script: _go_app
+  script: auto
 
 nobuild_files: (bulk|data|dsbatch|ingest|json|stateful|templates|testing)/

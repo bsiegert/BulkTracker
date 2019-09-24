@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2019
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -18,7 +18,7 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-package bulktracker
+package main
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
@@ -39,7 +39,7 @@ import (
 	"strings"
 )
 
-func init() {
+func main() {
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/builds", ShowBuilds)
 	http.HandleFunc("/build/", BuildDetails)
@@ -50,6 +50,7 @@ func init() {
 		path = fmt.Sprintf("/json/%s/", path)
 		http.Handle(path, endpoint)
 	}
+	appengine.Main()
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
