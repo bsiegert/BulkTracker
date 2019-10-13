@@ -54,14 +54,14 @@ func main() {
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	builds, err := data.LatestBuilds(c)
+	builds, err := data.LatestBuilds(ctx)
 	if err != nil {
-		log.Errorf(c, "failed to read latest builds: %s", err)
+		log.Errorf(ctx, "failed to read latest builds: %s", err)
 		w.WriteHeader(500)
 		return
 	}
@@ -69,7 +69,7 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 	io.WriteString(w, templates.StartPageLead)
-	writeBuildListAll(c, w, builds)
+	writeBuildListAll(ctx, w, builds)
 	templates.DataTable(w, `"order": [0, "desc"]`)
 }
 
@@ -92,7 +92,7 @@ func writeBuildListAll(c context.Context, w http.ResponseWriter, builds []bulk.B
 }
 
 // writePackageList writes a table of package results from the iterator it to w.
-func writePackageList(c context.Context, w http.ResponseWriter, it *datastore.Iterator) {
+func writePackageList(ctx context.Context, w http.ResponseWriter, it *datastore.Iterator) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	p := &bulk.Pkg{}
 	for {
@@ -100,7 +100,7 @@ func writePackageList(c context.Context, w http.ResponseWriter, it *datastore.It
 		if err == datastore.Done {
 			break
 		} else if err != nil {
-			log.Errorf(c, "failed to read pkg: %s", err)
+			log.Errorf(ctx, "failed to read pkg: %s", err)
 			w.WriteHeader(500)
 			return
 		}
@@ -111,7 +111,7 @@ func writePackageList(c context.Context, w http.ResponseWriter, it *datastore.It
 }
 
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 
@@ -121,19 +121,19 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	key, err := datastore.DecodeKey(paths[0])
 	if err != nil {
-		log.Warningf(c, "error decoding key: %s", err)
+		log.Warningf(ctx, "error decoding key: %s", err)
 		return
 	}
 
 	b := &bulk.Build{}
-	err = datastore.Get(c, key, b)
+	err = datastore.Get(ctx, key, b)
 	if err != nil {
-		log.Warningf(c, "getting build record: %s", err)
+		log.Warningf(ctx, "getting build record: %s", err)
 		return
 	}
 	templates.BulkBuildInfo(w, b)
 	if r.URL.Query().Get("a") == "reindex" {
-		ingest.FetchReport.Call(c, key, b.ReportURL)
+		ingest.FetchReport.Call(ctx, key, b.ReportURL)
 		io.WriteString(w, templates.ReindexOK)
 		return
 	}
@@ -142,14 +142,14 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	if len(paths) > 1 {
 		category := paths[1] + "/"
-		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000).Run(c)
+		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000).Run(ctx)
 		templates.Heading(w, category)
-		writePackageList(c, w, it)
+		writePackageList(ctx, w, it)
 		return
 	}
 
 	var categories []bulk.Pkg
-	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(c, &categories)
+	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(ctx, &categories)
 	if len(categories) == 0 {
 		templates.NoDetails(w, r.URL.Path)
 		return
@@ -158,31 +158,31 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	templates.Heading(w, "Packages breaking most other packages")
 
-	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(c)
-	writePackageList(c, w, it)
+	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(ctx)
+	writePackageList(ctx, w, it)
 }
 
 func PkgDetails(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 
 	pkgKey, err := datastore.DecodeKey(path.Base(r.URL.Path))
 	if err != nil {
-		log.Warningf(c, "error decoding pkg key: %s", err)
+		log.Warningf(ctx, "error decoding pkg key: %s", err)
 		return
 	}
 	buildKey := pkgKey.Parent()
 
 	p := &bulk.Pkg{}
 	b := &bulk.Build{}
-	if err = datastore.Get(c, pkgKey, p); err != nil {
-		log.Warningf(c, "getting pkg record: %s", err)
+	if err = datastore.Get(ctx, pkgKey, p); err != nil {
+		log.Warningf(ctx, "getting pkg record: %s", err)
 		return
 	}
 	if buildKey != nil {
-		if err = datastore.Get(c, buildKey, b); err != nil {
-			log.Warningf(c, "getting build record: %s", err)
+		if err = datastore.Get(ctx, buildKey, b); err != nil {
+			log.Warningf(ctx, "getting build record: %s", err)
 			return
 		}
 	}
@@ -193,8 +193,8 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	// Failed, breaking other packages.
 	if p.Breaks > 0 {
 		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", p.Breaks)
-		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(c)
-		writePackageList(c, w, it)
+		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
+		writePackageList(ctx, w, it)
 	}
 
 	// Failed to build because of dependencies.
@@ -208,7 +208,7 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	dp := &bulk.Pkg{}
 	for _, dep := range p.FailedDeps {
-		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(c)
+		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(ctx)
 		key, err := it.Next(dp)
 		if err != nil {
 			continue
