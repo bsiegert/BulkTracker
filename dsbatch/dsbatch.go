@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2019
  *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -36,12 +36,12 @@ const MaxPerCall = 500
 
 // ProgressUpdater allows sharing the progress of the operation.
 type ProgressUpdater interface {
-	UpdateProgress(c context.Context, written int)
+	UpdateProgress(ctx context.Context, written int)
 }
 
 // TODO(bsiegert) also implement checking maximum request size (currently 1MB).
 
-func PutMulti(c context.Context, keys []*datastore.Key, values interface{}, pu ProgressUpdater) error {
+func PutMulti(ctx context.Context, keys []*datastore.Key, values interface{}, pu ProgressUpdater) error {
 	v := reflect.ValueOf(values)
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
@@ -56,9 +56,9 @@ func PutMulti(c context.Context, keys []*datastore.Key, values interface{}, pu P
 			m = l
 		}
 		k := keys[n:m]
-		log.Debugf(c, "writing records %d-%d", n, m)
-		_, err := datastore.PutMulti(c, k, v.Slice(n, m).Interface())
-		pu.UpdateProgress(c, m)
+		log.Debugf(ctx, "writing records %d-%d", n, m)
+		_, err := datastore.PutMulti(ctx, k, v.Slice(n, m).Interface())
+		pu.UpdateProgress(ctx, m)
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func PutMulti(c context.Context, keys []*datastore.Key, values interface{}, pu P
 	return nil
 }
 
-func DeleteMulti(c context.Context, keys []*datastore.Key) error {
+func DeleteMulti(ctx context.Context, keys []*datastore.Key) error {
 	l := len(keys)
 	for n := 0; n < l; n += MaxPerCall {
 		m := n + MaxPerCall
@@ -74,8 +74,8 @@ func DeleteMulti(c context.Context, keys []*datastore.Key) error {
 			m = l
 		}
 		k := keys[n:m]
-		log.Debugf(c, "deleting records %d-%d", n, m)
-		err := datastore.DeleteMulti(c, k)
+		log.Debugf(ctx, "deleting records %d-%d", n, m)
+		err := datastore.DeleteMulti(ctx, k)
 		if err != nil {
 			return err
 		}

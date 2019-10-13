@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2019
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -27,8 +27,6 @@ import (
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/xi2/xz"
 
-	"context"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/delay"
 	"google.golang.org/appengine/log"
@@ -38,6 +36,7 @@ import (
 	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -74,51 +73,51 @@ type Status struct {
 
 // NewStatus allocates a new Status for report ingestion. As a side effect,
 // it also deletes old records, if any.
-func NewStatus(c context.Context, build *datastore.Key) *Status {
+func NewStatus(ctx context.Context, build *datastore.Key) *Status {
 	s := &Status{
-		key:      datastore.NewIncompleteKey(c, "status", build),
+		key:      datastore.NewIncompleteKey(ctx, "status", build),
 		cacheKey: "/json/status/" + build.String(),
 	}
 
 	// TODO delete from memcache.
-	keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(c, nil)
+	keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(ctx, nil)
 	if err != nil {
-		log.Warningf(c, "failed to query for old statuses: %s", err)
+		log.Warningf(ctx, "failed to query for old statuses: %s", err)
 		return s
 	}
 	if len(keys) > 0 {
-		log.Infof(c, "Deleting %d records", len(keys))
-		dsbatch.DeleteMulti(c, keys)
+		log.Infof(ctx, "Deleting %d records", len(keys))
+		dsbatch.DeleteMulti(ctx, keys)
 	}
 	return s
 }
 
 // Put writes s into the datastore and memcache.
-func (s *Status) Put(c context.Context) {
-	datastore.Put(c, s.key, s)
+func (s *Status) Put(ctx context.Context) {
+	datastore.Put(ctx, s.key, s)
 
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(s)
-	err := memcache.Set(c, &memcache.Item{
+	err := memcache.Set(ctx, &memcache.Item{
 		Key:        s.cacheKey,
 		Value:      buf.Bytes(),
 		Expiration: 2 * time.Minute,
 	})
 	if err != nil {
-		log.Warningf(c, "failed to write %q to cache: %s", s.cacheKey, err)
+		log.Warningf(ctx, "failed to write %q to cache: %s", s.cacheKey, err)
 	}
 }
 
 // UpdateProgress sets the # of packages written and calls Put.
-func (s *Status) UpdateProgress(c context.Context, written int) {
+func (s *Status) UpdateProgress(ctx context.Context, written int) {
 	s.PkgsWritten = written
-	s.Put(c)
+	s.Put(ctx)
 }
 
 // Done marks the ingestion as done by removing the Status entry.
-func (s *Status) Done(c context.Context) {
-	log.Infof(c, "%v", s.key)
-	datastore.Delete(c, s.key)
+func (s *Status) Done(ctx context.Context) {
+	log.Infof(ctx, "%v", s.key)
+	datastore.Delete(ctx, s.key)
 	// TODO delete from memcache.
 }
 
@@ -133,31 +132,31 @@ var headAliases = map[string]bool{
 // when a new mail comes in. It tries to parse it as a bulk build
 // report and ingests it, if successful.
 func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	msg, err := mail.ReadMessage(r.Body)
 	if err != nil {
-		log.Errorf(c, "failed to read mail message: %s", err)
+		log.Errorf(ctx, "failed to read mail message: %s", err)
 		w.WriteHeader(500)
 		return
 	}
 	fromAddr, err := msg.Header.AddressList("From")
 	if err != nil {
-		log.Warningf(c, "unable to parse From header: %s", err)
+		log.Warningf(ctx, "unable to parse From header: %s", err)
 		return
 	}
 	from := &mail.Address{}
 	if len(fromAddr) > 0 {
 		from = fromAddr[0]
 	}
-	log.Infof(c, "new mail from %s", from)
+	log.Infof(ctx, "new mail from %s", from)
 	if strings.Index(from.Address, "majordomo") != -1 {
 		body, _ := ioutil.ReadAll(msg.Body)
-		log.Infof(c, "%s", body)
+		log.Infof(ctx, "%s", body)
 		return
 	}
 	body, err := ParseMultipartMail(msg)
 	if err != nil {
-		log.Errorf(c, "failed to read mail body: %s", err)
+		log.Errorf(ctx, "failed to read mail body: %s", err)
 		return
 	}
 	fromName := from.Name
@@ -180,11 +179,11 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 	if headAliases[build.Branch] {
 		build.Branch = "HEAD"
 	}
-	log.Debugf(c, "%#v, %s", build, err)
+	log.Debugf(ctx, "%#v, %s", build, err)
 
-	key, err := datastore.Put(c, datastore.NewIncompleteKey(c, "build", nil), build)
-	log.Infof(c, "wrote entry %v: %s", key, err)
-	FetchReport.Call(c, key, build.ReportURL)
+	key, err := datastore.Put(ctx, datastore.NewIncompleteKey(ctx, "build", nil), build)
+	log.Infof(ctx, "wrote entry %v: %s", key, err)
+	FetchReport.Call(ctx, key, build.ReportURL)
 }
 
 // fileSuffix returns the "file type" suffix of the file name, possibly
@@ -216,64 +215,64 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
-var FetchReport = delay.Func("FetchReport", func(c context.Context, build *datastore.Key, url string) {
-	status := NewStatus(c, build)
+var FetchReport = delay.Func("FetchReport", func(ctx context.Context, build *datastore.Key, url string) {
+	status := NewStatus(ctx, build)
 	status.URL = url
 	status.Current = Fetching
-	status.Put(c)
+	status.Put(ctx)
 	client := http.Client{
-		Transport: &urlfetch.Transport{Context:  c},
+		Transport: &urlfetch.Transport{Context: ctx},
 	}
 	resp, err := client.Get(url)
 	if err != nil {
-		log.Warningf(c, "failed to fetch report at %q: %s", url, err)
+		log.Warningf(ctx, "failed to fetch report at %q: %s", url, err)
 		status.LastErr = err
 		status.Current = Failed
-		status.Put(c)
+		status.Put(ctx)
 		return
 	}
 	defer resp.Body.Close()
 	r, err := decompressingReader(resp.Body, url)
 	if err != nil {
-		log.Errorf(c, "failed to uncompress report at %q: %s", url, err)
+		log.Errorf(ctx, "failed to uncompress report at %q: %s", url, err)
 		status.LastErr = err
 		status.Current = Failed
-		status.Put(c)
+		status.Put(ctx)
 		return
 	}
 	pkgs, err := bulk.PkgsFromReport(r)
 	if err != nil {
-		log.Errorf(c, "failed to parse report at %q: %s", url, err)
+		log.Errorf(ctx, "failed to parse report at %q: %s", url, err)
 		status.LastErr = err
 		status.Current = Failed
-		status.Put(c)
+		status.Put(ctx)
 		return
 	}
 
 	status.Current = Writing
 	status.PkgsTotal = len(pkgs)
 	sort.Sort(bulk.PkgsByName(pkgs))
-	keys, err := datastore.NewQuery("pkg").Ancestor(build).KeysOnly().GetAll(c, nil)
+	keys, err := datastore.NewQuery("pkg").Ancestor(build).KeysOnly().GetAll(ctx, nil)
 	if err != nil {
-		log.Warningf(c, "failed to get current records: %s", err)
+		log.Warningf(ctx, "failed to get current records: %s", err)
 	}
 	for i := len(keys); i < len(pkgs); i++ {
-		keys = append(keys, datastore.NewIncompleteKey(c, "pkg", build))
+		keys = append(keys, datastore.NewIncompleteKey(ctx, "pkg", build))
 	}
 	if k, p := len(keys), len(pkgs); k > p {
-		dsbatch.DeleteMulti(c, keys[p:k])
+		dsbatch.DeleteMulti(ctx, keys[p:k])
 		keys = keys[:p]
 	}
 	if len(keys) == 0 {
 		return
 	}
-	if err = dsbatch.PutMulti(c, keys, pkgs, status); err != nil {
+	if err = dsbatch.PutMulti(ctx, keys, pkgs, status); err != nil {
 		status.Current = Failed
 		status.LastErr = err
-		status.Put(c)
-		log.Warningf(c, "%s", err)
+		status.Put(ctx)
+		log.Warningf(ctx, "%s", err)
 	}
-	status.Done(c)
+	status.Done(ctx)
 })
 
 // ParseMultipartMail parses an email and returns a reader for the first

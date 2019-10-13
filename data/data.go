@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2019
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -36,17 +36,17 @@ import (
 const latestBuildsKey = "latestBuildsPerPlatform"
 
 // LatestBuilds fetches the list of latest builds to show on the landing page.
-func LatestBuilds(c context.Context) (builds []bulk.Build, err error) {
-	_, err = memcache.Gob.Get(c, latestBuildsKey, &builds)
+func LatestBuilds(ctx context.Context) (builds []bulk.Build, err error) {
+	_, err = memcache.Gob.Get(ctx, latestBuildsKey, &builds)
 	if err != nil && err != memcache.ErrCacheMiss {
-		log.Warningf(c, "get latest builds from memcache: %s", err)
+		log.Warningf(ctx, "get latest builds from memcache: %s", err)
 	}
 	if err == nil {
-		log.Debugf(c, "latestBuilds: used cached result")
+		log.Debugf(ctx, "latestBuilds: used cached result")
 		return builds, nil
 	}
 
-	it := datastore.NewQuery("build").Order("-Timestamp").Limit(1000).Run(c)
+	it := datastore.NewQuery("build").Order("-Timestamp").Limit(1000).Run(ctx)
 	var b bulk.Build
 RowLoop:
 	for {
@@ -72,13 +72,13 @@ RowLoop:
 		builds = append(builds, b)
 	}
 
-	err = memcache.Gob.Set(c, &memcache.Item{
+	err = memcache.Gob.Set(ctx, &memcache.Item{
 		Key:        latestBuildsKey,
 		Object:     &builds,
 		Expiration: 30 * time.Minute,
 	})
 	if err != nil {
-		log.Warningf(c, "failed to Set latestBuilds: %s", err)
+		log.Warningf(ctx, "failed to Set latestBuilds: %s", err)
 	}
 
 	return builds, nil

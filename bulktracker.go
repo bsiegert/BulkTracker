@@ -83,7 +83,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `<script src="/static/builds.js"></script>`)
 }
 
-func writeBuildListAll(c context.Context, w http.ResponseWriter, builds []bulk.Build) {
+func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []bulk.Build) {
 	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
 	for i := range builds {
 		templates.TableBuilds(w, &builds[i])

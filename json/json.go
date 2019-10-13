@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2019
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -27,7 +27,6 @@ import (
 	"github.com/bsiegert/BulkTracker/data"
 	"github.com/bsiegert/BulkTracker/stateful"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
@@ -51,11 +50,11 @@ const CacheExpiration = 30 * time.Minute
 // params is a list of path components; the format of the URLs is
 // /json/endpointname/param1/param2. The function returns a result to be
 // marshalled to JSON, or an error.
-type Endpoint func(c context.Context, params []string, form url.Values) (interface{}, error)
+type Endpoint func(ctx context.Context, params []string, form url.Values) (interface{}, error)
 
 func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	r.ParseForm()
 	r.Form.Del("_") // used by some of the JSON calls to prevent caching, hah!
 
@@ -68,19 +67,19 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 		return
 	}
-	if CacheGet(c, cacheKey, w) {
+	if CacheGet(ctx, cacheKey, w) {
 		return
 	}
 
-	result, err := e(c, paths[1:], r.Form)
+	result, err := e(ctx, paths[1:], r.Form)
 	if err != nil {
 		if result != nil {
 			json.NewEncoder(w).Encode(result)
 		}
-		log.Errorf(c, err.Error())
+		log.Errorf(ctx, err.Error())
 		return
 	}
-	CacheAndWrite(c, result, cacheKey, w)
+	CacheAndWrite(ctx, result, cacheKey, w)
 }
 
 // Mux maps endpoint names to their implementations. It assumes that the results
@@ -96,36 +95,36 @@ var Mux = map[string]Endpoint{
 
 // CacheAndWrite stores the JSON representation of v in the App Engine
 // memcache and writes it to w.
-func CacheAndWrite(c context.Context, v interface{}, cacheKey string, w io.Writer) {
+func CacheAndWrite(ctx context.Context, v interface{}, cacheKey string, w io.Writer) {
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(v)
-	err := memcache.Set(c, &memcache.Item{
+	err := memcache.Set(ctx, &memcache.Item{
 		Key:        cacheKey,
 		Value:      buf.Bytes(),
 		Expiration: CacheExpiration,
 	})
 	if err != nil {
-		log.Warningf(c, "failed to write %q to cache: %s", cacheKey, err)
+		log.Warningf(ctx, "failed to write %q to cache: %s", cacheKey, err)
 	}
 	io.Copy(w, &buf)
 }
 
 // CacheGet tries fetching the value with the given cacheKey from memcache and
 // writes it to w if it exists. It returns true if there was a cache hit.
-func CacheGet(c context.Context, cacheKey string, w http.ResponseWriter) bool {
-	item, err := memcache.Get(c, cacheKey)
+func CacheGet(ctx context.Context, cacheKey string, w http.ResponseWriter) bool {
+	item, err := memcache.Get(ctx, cacheKey)
 	if err != nil {
 		if err != memcache.ErrCacheMiss {
-			log.Warningf(c, "get from memcache: %s", err)
+			log.Warningf(ctx, "get from memcache: %s", err)
 		}
 		return false
 	}
-	log.Debugf(c, "%s: used cached result", cacheKey)
+	log.Debugf(ctx, "%s: used cached result", cacheKey)
 	w.Write(item.Value)
 	return true
 }
 
-func BuildDetails(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func BuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) == 0 {
 		return nil, nil
 	}
@@ -135,16 +134,16 @@ func BuildDetails(c context.Context, params []string, _ url.Values) (interface{}
 	}
 
 	b := &bulk.Build{Key: key.Encode()}
-	err = datastore.Get(c, key, b)
+	err = datastore.Get(ctx, key, b)
 	if err != nil {
 		return nil, fmt.Errorf("getting build record: %s", err)
 	}
 	return b, nil
 }
 
-func AllBuildDetails(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func AllBuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	var builds []bulk.Build
-	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(c, &builds)
+	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(ctx, &builds)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query builds: %s", err)
 	}
@@ -159,14 +158,14 @@ type PkgResult struct {
 	Pkg   *bulk.Pkg
 }
 
-func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
 		return nil, nil
 	}
 	category, dir := params[0]+"/", params[1]
 
 	// Get results for each of the LatestBuilds.
-	builds, err := data.LatestBuilds(c)
+	builds, err := data.LatestBuilds(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting LatestBuilds: %s", err)
 	}
@@ -182,11 +181,11 @@ func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, 
 			var pkgs []bulk.Pkg
 			key, err := datastore.DecodeKey(b.Key)
 			if err != nil {
-				log.Errorf(c, "unable to decode key: %s", err)
+				log.Errorf(ctx, "unable to decode key: %s", err)
 			}
-			pkgkeys, err := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10).GetAll(c, &pkgs)
+			pkgkeys, err := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10).GetAll(ctx, &pkgs)
 			if err != nil {
-				log.Errorf(c, "failed to query packages: %s", err)
+				log.Errorf(ctx, "failed to query packages: %s", err)
 			}
 			for j := range pkgkeys {
 				pkgs[j].Key = pkgkeys[j].Encode()
@@ -206,16 +205,16 @@ func PkgResults(c context.Context, params []string, _ url.Values) (interface{}, 
 	return results, nil
 }
 
-func AllPkgResults(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func AllPkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
 		return []bulk.Pkg{}, nil
 	}
 	category, dir := params[0]+"/", params[1]
 
 	var pkgs []bulk.Pkg
-	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(c, &pkgs)
+	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(ctx, &pkgs)
 	if err != nil {
-		log.Errorf(c, "failed to query packages: %s", err)
+		log.Errorf(ctx, "failed to query packages: %s", err)
 	}
 	for j := range pkgkeys {
 		pkgs[j].Key = pkgkeys[j].Encode()
@@ -229,16 +228,16 @@ func AllPkgResults(c context.Context, params []string, _ url.Values) (interface{
 		// keys, then call GetMulti.
 		buildKey := pkgkeys[j].Parent()
 		b := &bulk.Build{Key: buildKey.Encode()}
-		err = datastore.Get(c, buildKey, b)
+		err = datastore.Get(ctx, buildKey, b)
 		if err != nil {
-			log.Errorf(c, "getting build record: %s", err)
+			log.Errorf(ctx, "getting build record: %s", err)
 		}
 		results[j].Build = b
 	}
 	return results, nil
 }
 
-func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) {
+func Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	var category string
 	if len(params) > 0 {
 		category = params[0]
@@ -251,7 +250,7 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 	var result []string
 	if category == "" {
 		// List all categories.
-		_, err := datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(c, &pkgs)
+		_, err := datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(ctx, &pkgs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to query packages: %s", err)
 		}
@@ -261,7 +260,7 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 		}
 	} else {
 		// List all pkgnames in a category (union of all builds).
-		_, err := datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(c, &pkgs)
+		_, err := datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(ctx, &pkgs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to query packages: %s", err)
 		}
@@ -275,7 +274,7 @@ func Dir(c context.Context, params []string, _ url.Values) (interface{}, error) 
 	return result, nil
 }
 
-func Autocomplete(c context.Context, _ []string, form url.Values) (interface{}, error) {
+func Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}, error) {
 	term := form.Get("term")
 	if term == "" {
 		return stateful.AutocompleteResponse{
@@ -284,7 +283,7 @@ func Autocomplete(c context.Context, _ []string, form url.Values) (interface{}, 
 		}, nil
 	}
 	ch := make(chan stateful.AutocompleteResponse)
-	if err := stateful.Autocomplete(stateful.AutocompleteRequest{Ctx: c, Search: term, Ret: ch}); err != nil {
+	if err := stateful.Autocomplete(stateful.AutocompleteRequest{Ctx: ctx, Search: term, Ret: ch}); err != nil {
 		return stateful.AutocompleteResponse{
 			// select2 gets confused if the value is null.
 			Results: []stateful.Result{},
