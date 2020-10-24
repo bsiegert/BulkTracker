@@ -23,6 +23,7 @@ package main
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/data"
+	"github.com/bsiegert/BulkTracker/delete"
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/templates"
@@ -132,10 +133,13 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	templates.BulkBuildInfo(w, b)
-	if r.URL.Query().Get("a") == "reindex" {
+	switch r.URL.Query().Get("a") {
+	case "reindex":
 		ingest.FetchReport.Call(ctx, key, b.ReportURL)
 		io.WriteString(w, templates.ReindexOK)
 		return
+	case "delete":
+		delete.DeleteBuildDetails.Call(ctx, key)
 	}
 
 	templates.DataTable(w, `"order": [3, "desc"]`)
