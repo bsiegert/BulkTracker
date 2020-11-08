@@ -22,6 +22,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -31,7 +32,9 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-var numResults = flag.Int("n", 5, "Number of results")
+var numResults = flag.Int("n", 1, "Number of results")
+
+var ErrNoDetails = errors.New("no details")
 
 func main() {
 	flag.Parse()
@@ -55,10 +58,15 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%s (%v on %v)\n", key.Encode(), build.Platform, build.Date())
-		if HasDetails(ctx, client, key) {
-			fmt.Println("\thas detailed records")
-			i++
+
+		err = RemoveDetails(ctx, client, key)
+		if err == ErrNoDetails {
+			continue
 		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		i++
 	}
 
 	client.Close()
@@ -68,11 +76,20 @@ func OldestBuilds() *datastore.Query {
 	return datastore.NewQuery("build").Order("Timestamp").Limit(100)
 }
 
-func HasDetails(ctx context.Context, client *datastore.Client, buildKey *datastore.Key) bool {
-	q := datastore.NewQuery("pkg").Ancestor(buildKey).KeysOnly().Limit(1)
+func RemoveDetails(ctx context.Context, client *datastore.Client, buildKey *datastore.Key) error {
+	q := datastore.NewQuery("pkg").Ancestor(buildKey).KeysOnly()
 	keys, err := client.GetAll(ctx, q, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	return len(keys) > 0
+	if len(keys) == 0 {
+		return ErrNoDetails
+	}
+	fmt.Printf("\tRemoving %v records ... ", len(keys))
+	err = DeleteMulti(ctx, client, keys)
+	if err != nil {
+		return err
+	}
+	fmt.Println("done.")
+	return nil
 }
