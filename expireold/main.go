@@ -73,7 +73,7 @@ func main() {
 }
 
 func OldestBuilds() *datastore.Query {
-	return datastore.NewQuery("build").Order("Timestamp").Limit(100)
+	return datastore.NewQuery("build").Order("Timestamp").Limit(1000)
 }
 
 func RemoveDetails(ctx context.Context, client *datastore.Client, buildKey *datastore.Key) error {
