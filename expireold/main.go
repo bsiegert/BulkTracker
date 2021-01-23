@@ -49,6 +49,7 @@ func main() {
 	iter := client.Run(ctx, q)
 
 	var build bulk.Build
+	keys := make([]*datastore.Key, 0, *numResults)
 
 	for i := 0; i < *numResults; {
 		key, err := iter.Next(&build)
@@ -58,6 +59,7 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%s (%v on %v)\n", key.Encode(), build.Platform, build.Date())
+		keys = append(keys, key)
 
 		err = RemoveDetails(ctx, client, key)
 		if err == ErrNoDetails {
@@ -67,6 +69,12 @@ func main() {
 			log.Fatal(err)
 		}
 		i++
+	}
+
+	fmt.Printf("Deleting %d builds\n", len(keys))
+	err = DeleteMulti(ctx, client, keys)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	client.Close()
