@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS pkgs (
     pkg_id int UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     category text,
     dir text
+    UNIQUE (category, dir)
 );
 
 CREATE TABLE IF NOT EXISTS results (
