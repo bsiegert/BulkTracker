@@ -25,7 +25,7 @@ package ingest
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dsbatch"
-	"github.com/xi2/xz"
+	"github.com/ulikunitz/xz"
 
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/delay"
@@ -207,7 +207,7 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 	case "gz":
 		return gzip.NewReader(r)
 	case "xz", "lzma":
-		return xz.NewReader(r, 0)
+		return xz.NewReader(r)
 	}
 	// Uncompressed, or unknown.
 	return r, nil
