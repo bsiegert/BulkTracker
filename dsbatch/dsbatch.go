@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019
+ * Copyright (c) 2014-2021
  *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -24,11 +24,12 @@
 package dsbatch
 
 import (
-	"errors"
 	"context"
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/log"
+	"errors"
 	"reflect"
+
+	"github.com/bsiegert/BulkTracker/log"
+	"google.golang.org/appengine/datastore"
 )
 
 // Maximum number of records per call to PutMulti.

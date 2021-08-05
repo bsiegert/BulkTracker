@@ -25,10 +25,10 @@ package json
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/data"
+	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/stateful"
 
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 
 	"bytes"

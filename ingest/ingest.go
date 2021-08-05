@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019
+ * Copyright (c) 2014-2021
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -25,11 +25,11 @@ package ingest
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dsbatch"
+	"github.com/bsiegert/BulkTracker/log"
 	"github.com/ulikunitz/xz"
 
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/delay"
-	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 	"google.golang.org/appengine/urlfetch"
 

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019
+ * Copyright (c) 2014-2021
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -24,13 +24,14 @@ package data
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/log"
 
-	"fmt"
 	"context"
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/memcache"
+	"fmt"
 	"time"
+
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/memcache"
 )
 
 const latestBuildsKey = "latestBuildsPerPlatform"

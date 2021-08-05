@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019
+ * Copyright (c) 2014-2021
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -26,13 +26,13 @@ import (
 	"github.com/bsiegert/BulkTracker/delete"
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/json"
+	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/templates"
 
-	"context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/log"
 
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,6 +41,8 @@ import (
 )
 
 func main() {
+	log.InitLogger()
+
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/builds", ShowBuilds)
 	http.HandleFunc("/build/", BuildDetails)
