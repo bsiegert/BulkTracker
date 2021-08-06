@@ -6,6 +6,7 @@ import (
 )
 
 func InitLogger() {
+	log.SetLevel(log.DebugLevel)
 	log.SetFormatter(stackdriver.NewFormatter())
-	log.Info("Added Stackdriver Logging")
+	log.Debug("Added Stackdriver Logging")
 }
