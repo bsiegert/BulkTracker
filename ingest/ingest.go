@@ -213,6 +213,23 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 	return r, nil
 }
 
+// httpGet tries http.Get and falls back to using an App Engine urlfetch
+// transport if it fails.
+func httpGet(ctx context.Context, url string) (*http.Response, error) {
+	resp, directErr := http.Get(url)
+	if directErr == nil {
+		return resp, directErr
+	}
+	client := http.Client{
+		Transport: &urlfetch.Transport{Context: ctx},
+	}
+	resp, urlfetchErr := client.Get(url)
+	if urlfetchErr == nil {
+		log.Errorf(ctx, "XXX direct HTTP get failed (%q) but urlfetch succeeded", directErr)
+	}
+	return resp, urlfetchErr
+}
+
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
 var FetchReport = delay.Func("FetchReport", func(ctx context.Context, build *datastore.Key, url string) {
@@ -220,10 +237,7 @@ var FetchReport = delay.Func("FetchReport", func(ctx context.Context, build *dat
 	status.URL = url
 	status.Current = Fetching
 	status.Put(ctx)
-	client := http.Client{
-		Transport: &urlfetch.Transport{Context: ctx},
-	}
-	resp, err := client.Get(url)
+	resp, err := httpGet(ctx, url)
 	if err != nil {
 		log.Warningf(ctx, "failed to fetch report at %q: %s", url, err)
 		status.LastErr = err
