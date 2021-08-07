@@ -7,6 +7,8 @@ import (
 
 func InitLogger() {
 	log.SetLevel(log.DebugLevel)
-	log.SetFormatter(stackdriver.NewFormatter())
+	log.SetFormatter(stackdriver.NewFormatter(
+		stackdriver.WithStackSkip("github.com/bsiegert/BulkTracker/log"),
+	))
 	log.Debug("Added Stackdriver Logging")
 }
