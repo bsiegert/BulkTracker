@@ -156,15 +156,21 @@ type AutocompleteRequest struct {
 // Autocomplete sends an autocomplete request. The response will be delivered
 // over the channel in req.Ret. The function returns an error that occurs while
 // loading the dataset.
-func Autocomplete(req AutocompleteRequest) error {
+func Autocomplete(ctx context.Context, search string) (*AutocompleteResponse, error) {
 	if ch == nil {
-		log.Infof(req.Ctx, "loading autocomplete data")
+		log.Infof(ctx, "loading autocomplete data")
 		start := time.Now()
-		if err := load(req.Ctx); err != nil {
-			return err
+		if err := load(ctx); err != nil {
+			return nil, err
 		}
-		log.Infof(req.Ctx, "done loading autocomplete data, took %v", time.Now().Sub(start))
+		log.Infof(ctx, "done loading autocomplete data, took %v", time.Now().Sub(start))
 	}
-	ch <- req
-	return nil
+	retCh := make(chan AutocompleteResponse, 1)
+	ch <- AutocompleteRequest{
+		Ctx:    ctx,
+		Search: search,
+		Ret:    retCh,
+	}
+	retval := <-retCh
+	return &retval, nil
 }

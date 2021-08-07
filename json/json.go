@@ -282,14 +282,13 @@ func Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}
 			Results: []stateful.Result{},
 		}, nil
 	}
-	ch := make(chan stateful.AutocompleteResponse)
-	if err := stateful.Autocomplete(stateful.AutocompleteRequest{Ctx: ctx, Search: term, Ret: ch}); err != nil {
+	resp, err := stateful.Autocomplete(ctx, term)
+	if err != nil {
 		return stateful.AutocompleteResponse{
 			// select2 gets confused if the value is null.
 			Results: []stateful.Result{},
 		}, err
 	}
-	resp := <-ch
 	if resp.Results == nil {
 		resp.Results = []stateful.Result{}
 	}
