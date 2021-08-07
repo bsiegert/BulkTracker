@@ -27,6 +27,7 @@ import (
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/log"
+	"github.com/bsiegert/BulkTracker/stateful"
 	"github.com/bsiegert/BulkTracker/templates"
 
 	"google.golang.org/appengine"
@@ -62,6 +63,10 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	// Try prepopulating the autocomplete cache early.
+	stateful.MaybePrefillCache(ctx)
+
 	builds, err := data.LatestBuilds(ctx)
 	if err != nil {
 		log.Errorf(ctx, "failed to read latest builds: %s", err)

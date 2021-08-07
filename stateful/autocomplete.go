@@ -73,6 +73,11 @@ func loadFromDatastore(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
+	// Consider 0 package names as an invalid result.
+	if len(pkgs) == 0 {
+		return nil, errors.New("got 0 package names")
+	}
+
 	allPkgNames := make([]string, 0, len(pkgs))
 	for _, p := range pkgs {
 		allPkgNames = append(allPkgNames, p.Category+p.Dir)
@@ -102,7 +107,7 @@ var PrefillCache = delay.Func("PrefillCache", func(ctx context.Context) {
 
 	allPkgNames, err := loadFromDatastore(ctx)
 	if err != nil {
-		log.Errorf(ctx, "error loading from datastore: %v", err)
+		log.Warningf(ctx, "error loading from datastore: %v", err)
 		return
 	}
 	err = memcache.Set(ctx, &memcache.Item{
@@ -114,6 +119,15 @@ var PrefillCache = delay.Func("PrefillCache", func(ctx context.Context) {
 		log.Errorf(ctx, "error writing data to memcache: %v", err)
 	}
 })
+
+// MaybePrefillCache calls PrefillCache opportunistically if the item is not
+// in memcache yet.
+func MaybePrefillCache(ctx context.Context) {
+	_, err := memcache.Get(ctx, memcacheKey)
+	if err == memcache.ErrCacheMiss {
+		PrefillCache.Call(ctx)
+	}
+}
 
 func lookup(allPkgNames []string, req AutocompleteRequest) {
 	resp := AutocompleteResponse{Results: []Result{}}
