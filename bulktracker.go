@@ -21,6 +21,9 @@
 package main
 
 import (
+	"os"
+	"time"
+
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/data"
 	"github.com/bsiegert/BulkTracker/delete"
@@ -30,6 +33,8 @@ import (
 	"github.com/bsiegert/BulkTracker/stateful"
 	"github.com/bsiegert/BulkTracker/templates"
 
+	ds "cloud.google.com/go/datastore"
+	"google.golang.org/api/iterator"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 
@@ -43,6 +48,10 @@ import (
 
 func main() {
 	log.InitLogger()
+
+	if hostPort, ok := os.LookupEnv("CLOUDSDK_EMULATOR_DATASTORE_HOST_PORT"); ok {
+		os.Setenv("DATASTORE_EMULATOR_HOST", hostPort)
+	}
 
 	http.HandleFunc("/", StartPage)
 	http.HandleFunc("/builds", ShowBuilds)
@@ -100,12 +109,12 @@ func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []bulk
 }
 
 // writePackageList writes a table of package results from the iterator it to w.
-func writePackageList(ctx context.Context, w http.ResponseWriter, it *datastore.Iterator) {
+func writePackageList(ctx context.Context, w http.ResponseWriter, it *ds.Iterator) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	p := &bulk.Pkg{}
 	for {
 		key, err := it.Next(p)
-		if err == datastore.Done {
+		if err == iterator.Done {
 			break
 		} else if err != nil {
 			log.Errorf(ctx, "failed to read pkg: %s", err)
@@ -120,6 +129,13 @@ func writePackageList(ctx context.Context, w http.ResponseWriter, it *datastore.
 
 func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	log.Debugf(ctx, "before NewClient")
+	client, err := ds.NewClient(ctx, "bulktracker")
+	if err != nil {
+		log.Errorf(ctx, "could not open datastore client: %v", err)
+		return
+	}
+	log.Debugf(ctx, "after NewClient")
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 
@@ -127,18 +143,22 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	if len(paths) == 0 {
 		return
 	}
-	key, err := datastore.DecodeKey(paths[0])
+	key, err := ds.DecodeKey(paths[0])
 	if err != nil {
 		log.Warningf(ctx, "error decoding key: %s", err)
 		return
 	}
+	log.Debugf(ctx, "key %s", key)
 
 	b := &bulk.Build{}
-	err = datastore.Get(ctx, key, b)
+	cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	err = client.Get(cctx, key, b)
 	if err != nil {
 		log.Warningf(ctx, "getting build record: %s", err)
 		return
 	}
+	log.Debugf(ctx, "build %v", b)
 	templates.BulkBuildInfo(w, b)
 	switch r.URL.Query().Get("a") {
 	case "reindex":
@@ -153,14 +173,16 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	if len(paths) > 1 {
 		category := paths[1] + "/"
-		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000).Run(ctx)
+		query := ds.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000)
+		it := client.Run(ctx, query)
 		templates.Heading(w, category)
 		writePackageList(ctx, w, it)
 		return
 	}
 
 	var categories []bulk.Pkg
-	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(ctx, &categories)
+	query := ds.NewQuery("pkg").Ancestor(key).Project("Category").Distinct()
+	_, err = client.GetAll(ctx, query, &categories)
 	if len(categories) == 0 {
 		templates.NoDetails(w, r.URL.Path)
 		return
@@ -169,7 +191,8 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	templates.Heading(w, "Packages breaking most other packages")
 
-	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(ctx)
+	query = ds.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100)
+	it := client.Run(ctx, query)
 	writePackageList(ctx, w, it)
 }
 
@@ -204,8 +227,8 @@ func PkgDetails(w http.ResponseWriter, r *http.Request) {
 	// Failed, breaking other packages.
 	if p.Breaks > 0 {
 		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", p.Breaks)
-		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
-		writePackageList(ctx, w, it)
+		//it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
+		//writePackageList(ctx, w, it)
 	}
 
 	// Failed to build because of dependencies.
