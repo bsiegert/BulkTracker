@@ -30,6 +30,7 @@ import (
 
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/log"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/delay"
 	"google.golang.org/appengine/memcache"
@@ -38,6 +39,8 @@ import (
 const (
 	memcacheKey = "allpkgnames"
 	lockKey     = "allpkgnames-lock"
+
+	maxInFlight = 5
 )
 
 var (
@@ -67,20 +70,53 @@ func load(ctx context.Context) error {
 }
 
 func loadFromDatastore(ctx context.Context) ([]string, error) {
-	var pkgs []bulk.Pkg
-	_, err := datastore.NewQuery("pkg").Project("Category", "Dir").Distinct().GetAll(ctx, &pkgs)
+	var categories []bulk.Pkg
+	_, err := datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(ctx, &categories)
 	if err != nil {
 		return nil, err
 	}
 
 	// Consider 0 package names as an invalid result.
-	if len(pkgs) == 0 {
-		return nil, errors.New("got 0 package names")
+	if len(categories) == 0 {
+		return nil, errors.New("got 0 package categories")
 	}
 
-	allPkgNames := make([]string, 0, len(pkgs))
-	for _, p := range pkgs {
-		allPkgNames = append(allPkgNames, p.Category+p.Dir)
+	g, ctx := errgroup.WithContext(ctx)
+
+	in := make(chan string)
+	var out [maxInFlight][]string
+	for i := 0; i < maxInFlight; i++ {
+		i := i
+		g.Go(func() error {
+			for cat := range in {
+				var dirs []bulk.Pkg
+				_, err := datastore.NewQuery("pkg").Filter("Category =", cat).Project("Dir").Distinct().GetAll(ctx, &dirs)
+				if err != nil {
+					log.Warningf(ctx, "query for %s failed: %v", cat, err)
+					return err
+				}
+				for _, p := range dirs {
+					out[i] = append(out[i], cat+p.Dir)
+				}
+
+			}
+			return nil
+		})
+	}
+	for _, c := range categories {
+		in <- c.Category
+	}
+	close(in)
+	if err = g.Wait(); err != nil {
+		return nil, err
+	}
+	n := 0
+	for i := range out {
+		n += len(out[i])
+	}
+	allPkgNames := make([]string, 0, n)
+	for i := range out {
+		allPkgNames = append(allPkgNames, out[i]...)
 	}
 	return allPkgNames, nil
 }
