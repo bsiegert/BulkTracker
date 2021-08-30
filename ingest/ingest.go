@@ -26,6 +26,7 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/bsiegert/BulkTracker/log"
+	ftp "github.com/smira/go-ftp-protocol/protocol"
 	"github.com/ulikunitz/xz"
 
 	"google.golang.org/appengine/datastore"
@@ -216,13 +217,17 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 // httpGet tries http.Get and falls back to using an App Engine urlfetch
 // transport if it fails.
 func httpGet(ctx context.Context, url string) (*http.Response, error) {
-	resp, directErr := http.Get(url)
+	transport := &http.Transport{}
+	transport.RegisterProtocol("ftp", &ftp.FTPRoundTripper{})
+	client := http.Client{
+		Transport: transport,
+	}
+	resp, directErr := client.Get(url)
 	if directErr == nil {
 		return resp, directErr
 	}
-	client := http.Client{
-		Transport: &urlfetch.Transport{Context: ctx},
-	}
+
+	client.Transport = &urlfetch.Transport{Context: ctx}
 	resp, urlfetchErr := client.Get(url)
 	if urlfetchErr == nil {
 		log.Errorf(ctx, "XXX direct HTTP get failed (%q) but urlfetch succeeded", directErr)
