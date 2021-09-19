@@ -153,7 +153,7 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	if len(paths) > 1 {
 		category := paths[1] + "/"
-		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(1000).Run(ctx)
+		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(10000).Run(ctx)
 		templates.Heading(w, category)
 		writePackageList(ctx, w, it)
 		return
