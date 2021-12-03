@@ -29,7 +29,7 @@ import (
 	"reflect"
 
 	"github.com/bsiegert/BulkTracker/log"
-	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/v2/datastore"
 )
 
 // Maximum number of records per call to PutMulti.

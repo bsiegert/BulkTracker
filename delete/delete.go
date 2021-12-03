@@ -27,8 +27,8 @@ import (
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/bsiegert/BulkTracker/log"
 
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/delay"
+	"google.golang.org/appengine/v2/datastore"
+	"google.golang.org/appengine/v2/delay"
 )
 
 // DeleteBuildDetails deletes the detailed records for the given build.
