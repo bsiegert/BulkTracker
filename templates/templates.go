@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2018, 2021
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -51,6 +51,7 @@ var t = template.Must(template.ParseFiles(
 	"templates/table_pkgs.html",
 	"templates/bulk_build_info.html",
 	"templates/pkg_info.html",
+	"templates/datastore_error.html",
 	"templates/no_details.html",
 	"templates/category_list.html",
 	"templates/heading.html",
@@ -81,6 +82,10 @@ func PkgInfo(w io.Writer, p *bulk.Pkg, b *bulk.Build) {
 
 func NoDetails(w io.Writer, path string) {
 	t.ExecuteTemplate(w, "no_details.html", path)
+}
+
+func DatastoreError(w io.Writer, err error) {
+	t.ExecuteTemplate(w, "datastore_error.html", err)
 }
 
 func CategoryList(w io.Writer, categories []bulk.Pkg, path string) {

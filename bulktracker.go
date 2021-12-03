@@ -70,13 +70,14 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	builds, err := data.LatestBuilds(ctx)
 	if err != nil {
 		log.Errorf(ctx, "failed to read latest builds: %s", err)
-		w.WriteHeader(500)
-		return
 	}
 
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 	io.WriteString(w, templates.StartPageLead)
+	if len(builds) == 0 {
+		templates.DatastoreError(w, err)
+	}
 	writeBuildListAll(ctx, w, builds)
 	templates.DataTable(w, `"order": [0, "desc"]`)
 }
