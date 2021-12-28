@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2020
+ * Copyright (c) 2014-2021
  *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -22,6 +22,7 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"cloud.google.com/go/datastore"
 )
@@ -38,9 +39,16 @@ func DeleteMulti(ctx context.Context, client *datastore.Client, keys []*datastor
 		}
 		k := keys[n:m]
 		err := client.DeleteMulti(ctx, k)
-		if err != nil {
+		if err != nil && !isRetryable(err) {
 			return err
 		}
 	}
 	return nil
+}
+
+// rpc error: code = Aborted desc = too much contention on these datastore entities. please try again.
+
+func isRetryable(err error) bool {
+	errStr := strings.ToLower(err.Error())
+	return strings.Contains(errStr, "try again") || strings.Contains(errStr, "retry")
 }
