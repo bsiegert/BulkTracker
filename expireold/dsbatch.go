@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/datastore"
+	"golang.org/x/sync/errgroup"
 )
 
 // Maximum number of records per call to PutMulti.
@@ -32,20 +33,34 @@ const MaxPerCall = 500
 
 func DeleteMulti(ctx context.Context, client *datastore.Client, keys []*datastore.Key) error {
 	l := len(keys)
+	ch := make(chan []*datastore.Key)
+	group, cctx := errgroup.WithContext(ctx)
+
+	deleteChunk := func() error {
+		for k := range ch {
+			_, err := client.RunInTransaction(cctx, func(tx *datastore.Transaction) error {
+				return tx.DeleteMulti(k)
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for i := 0; i < *numParallel; i++ {
+		group.Go(deleteChunk)
+	}
+
 	for n := 0; n < l; n += MaxPerCall {
 		m := n + MaxPerCall
 		if m > l {
 			m = l
 		}
 		k := keys[n:m]
-		_, err := client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-			return tx.DeleteMulti(k)
-		})
-		if err != nil && !isRetryable(err) {
-			return err
-		}
+		ch <- k
 	}
-	return nil
+	close(ch)
+	return group.Wait()
 }
 
 // rpc error: code = Aborted desc = too much contention on these datastore entities. please try again.

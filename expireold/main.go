@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2020
+ * Copyright (c) 2020-2021
  *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -32,7 +32,10 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-var numResults = flag.Int("n", 1, "Number of results")
+var (
+	numResults  = flag.Int("n", 1, "Number of results")
+	numParallel = flag.Int("parallel", 2, "Number of parallel datastore calls")
+)
 
 var ErrNoDetails = errors.New("no details")
 
