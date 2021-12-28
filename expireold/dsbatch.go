@@ -38,7 +38,9 @@ func DeleteMulti(ctx context.Context, client *datastore.Client, keys []*datastor
 			m = l
 		}
 		k := keys[n:m]
-		err := client.DeleteMulti(ctx, k)
+		_, err := client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+			return tx.DeleteMulti(k)
+		})
 		if err != nil && !isRetryable(err) {
 			return err
 		}
