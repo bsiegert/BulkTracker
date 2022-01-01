@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2020-2021
+ * Copyright (c) 2020-2022
  *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -26,6 +26,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/bsiegert/BulkTracker/bulk"
@@ -88,6 +89,7 @@ func OldestBuilds() *datastore.Query {
 }
 
 func RemoveDetails(ctx context.Context, client *datastore.Client, buildKey *datastore.Key) error {
+	startTime := time.Now()
 	q := datastore.NewQuery("pkg").Ancestor(buildKey).KeysOnly()
 	keys, err := client.GetAll(ctx, q, nil)
 	if err != nil {
@@ -96,11 +98,11 @@ func RemoveDetails(ctx context.Context, client *datastore.Client, buildKey *data
 	if len(keys) == 0 {
 		return ErrNoDetails
 	}
-	fmt.Printf("\tRemoving %v records ... ", len(keys))
+	fmt.Printf("\tRemoving %v records (%s) ... ", len(keys), time.Since(startTime))
 	err = DeleteMulti(ctx, client, keys)
 	if err != nil {
 		return err
 	}
-	fmt.Println("done.")
+	fmt.Printf("done in %s.\n", time.Since(startTime))
 	return nil
 }
