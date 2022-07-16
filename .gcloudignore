@@ -11,6 +11,7 @@
 # from your .gitignore file, remove the corresponding line
 # below:
 .git
+.github
 .gitignore
 
 # Binaries for programs and plugins
