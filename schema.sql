@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2021
+ * Copyright (c) 2021-2022
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -19,7 +19,7 @@
  */
 
 CREATE TABLE IF NOT EXISTS builds (
-    build_id int UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    build_id int PRIMARY KEY ASC,
     platform text,
     build_ts timestamp,
     branch text,
@@ -35,14 +35,14 @@ CREATE TABLE IF NOT EXISTS builds (
 );
 
 CREATE TABLE IF NOT EXISTS pkgs (
-    pkg_id int UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    pkg_id int PRIMARY KEY ASC,
     category text,
-    dir text
+    dir text,
     UNIQUE (category, dir)
 );
 
 CREATE TABLE IF NOT EXISTS results (
-    result_id int UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    result_id int PRIMARY KEY ASC,
     build_id int REFERENCES builds,
     pkg_id int REFERENCES pkgs,
     pkg_name text,
