@@ -30,16 +30,11 @@ import (
 	"github.com/ulikunitz/xz"
 
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/delay"
-	"google.golang.org/appengine/memcache"
-	"google.golang.org/appengine/urlfetch"
 
-	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -48,7 +43,6 @@ import (
 	"net/mail"
 	"sort"
 	"strings"
-	"time"
 )
 
 // Constants for the current status.
@@ -68,45 +62,46 @@ type Status struct {
 	// If Current == Failed, the last error encountered.
 	LastErr error
 
-	key      *datastore.Key `json:"-"`
-	cacheKey string         `json:"-"`
+	// key      *datastore.Key `json:"-"`
+	cacheKey string `json:"-"`
 }
 
 // NewStatus allocates a new Status for report ingestion. As a side effect,
 // it also deletes old records, if any.
 func NewStatus(ctx context.Context, build *datastore.Key) *Status {
-	s := &Status{
-		key:      datastore.NewIncompleteKey(ctx, "status", build),
-		cacheKey: "/json/status/" + build.String(),
-	}
+	// s := &Status{
+	// 	key:      datastore.NewIncompleteKey(ctx, "status", build),
+	// 	cacheKey: "/json/status/" + build.String(),
+	// }
 
-	// TODO delete from memcache.
-	keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(ctx, nil)
-	if err != nil {
-		log.Warningf(ctx, "failed to query for old statuses: %s", err)
-		return s
-	}
-	if len(keys) > 0 {
-		log.Infof(ctx, "Deleting %d records", len(keys))
-		dsbatch.DeleteMulti(ctx, keys)
-	}
-	return s
+	// // TODO delete from memcache.
+	// keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(ctx, nil)
+	// if err != nil {
+	// 	log.Warningf(ctx, "failed to query for old statuses: %s", err)
+	// 	return s
+	// }
+	// if len(keys) > 0 {
+	// 	log.Infof(ctx, "Deleting %d records", len(keys))
+	// 	dsbatch.DeleteMulti(ctx, keys)
+	// }
+	// return s
+	return &Status{}
 }
 
 // Put writes s into the datastore and memcache.
 func (s *Status) Put(ctx context.Context) {
-	datastore.Put(ctx, s.key, s)
+	// datastore.Put(ctx, s.key, s)
 
-	var buf bytes.Buffer
-	json.NewEncoder(&buf).Encode(s)
-	err := memcache.Set(ctx, &memcache.Item{
-		Key:        s.cacheKey,
-		Value:      buf.Bytes(),
-		Expiration: 2 * time.Minute,
-	})
-	if err != nil {
-		log.Warningf(ctx, "failed to write %q to cache: %s", s.cacheKey, err)
-	}
+	// var buf bytes.Buffer
+	// json.NewEncoder(&buf).Encode(s)
+	// err := memcache.Set(ctx, &memcache.Item{
+	// 	Key:        s.cacheKey,
+	// 	Value:      buf.Bytes(),
+	// 	Expiration: 2 * time.Minute,
+	// })
+	// if err != nil {
+	// 	log.Warningf(ctx, "failed to write %q to cache: %s", s.cacheKey, err)
+	// }
 }
 
 // UpdateProgress sets the # of packages written and calls Put.
@@ -117,8 +112,8 @@ func (s *Status) UpdateProgress(ctx context.Context, written int) {
 
 // Done marks the ingestion as done by removing the Status entry.
 func (s *Status) Done(ctx context.Context) {
-	log.Infof(ctx, "%v", s.key)
-	datastore.Delete(ctx, s.key)
+	// log.Infof(ctx, "%v", s.key)
+	// datastore.Delete(ctx, s.key)
 	// TODO delete from memcache.
 }
 
@@ -184,7 +179,7 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 
 	key, err := datastore.Put(ctx, datastore.NewIncompleteKey(ctx, "build", nil), build)
 	log.Infof(ctx, "wrote entry %v: %s", key, err)
-	FetchReport.Call(ctx, key, build.ReportURL)
+	FetchReport(ctx, key, build.ReportURL)
 }
 
 // fileSuffix returns the "file type" suffix of the file name, possibly
@@ -222,22 +217,12 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 	client := http.Client{
 		Transport: transport,
 	}
-	resp, directErr := client.Get(url)
-	if directErr == nil {
-		return resp, directErr
-	}
-
-	client.Transport = &urlfetch.Transport{Context: ctx}
-	resp, urlfetchErr := client.Get(url)
-	if urlfetchErr == nil {
-		log.Errorf(ctx, "XXX direct HTTP get failed (%q) but urlfetch succeeded", directErr)
-	}
-	return resp, urlfetchErr
+	return client.Get(url)
 }
 
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
-var FetchReport = delay.Func("FetchReport", func(ctx context.Context, build *datastore.Key, url string) {
+func FetchReport(ctx context.Context, build *datastore.Key, url string) {
 	status := NewStatus(ctx, build)
 	status.URL = url
 	status.Current = Fetching
@@ -292,7 +277,7 @@ var FetchReport = delay.Func("FetchReport", func(ctx context.Context, build *dat
 		log.Warningf(ctx, "%s", err)
 	}
 	status.Done(ctx)
-})
+}
 
 // ParseMultipartMail parses an email and returns a reader for the first
 // text/plain element. If the message is not in multipart format, returns the
