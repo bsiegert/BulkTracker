@@ -23,12 +23,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/bsiegert/BulkTracker/ingest"
+	"github.com/bsiegert/BulkTracker/log"
 )
 
 var (
@@ -42,6 +43,6 @@ func main() {
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Errorf(context.Background(), "%s", err)
 	}
 }
