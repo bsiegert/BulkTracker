@@ -19,7 +19,7 @@
  */
 
 CREATE TABLE IF NOT EXISTS builds (
-    build_id int PRIMARY KEY ASC,
+    build_id INTEGER PRIMARY KEY ASC,
     platform text,
     build_ts timestamp,
     branch text,
