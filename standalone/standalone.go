@@ -24,9 +24,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
+
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/log"
@@ -38,10 +42,19 @@ var (
 
 func main() {
 	flag.Parse()
+	ctx := context.Background()
 
-	http.Handle("/", &ingest.IncomingMailHandler{})
+	db, err := sql.Open("sqlite3", "BulkTracker.db")
+	if err != nil {
+		log.Errorf(ctx, "failed to open database: %s", err)
+		os.Exit(1)
+	}
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	http.Handle("/", &ingest.IncomingMailHandler{
+		DB: db,
+	})
+
+	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Errorf(context.Background(), "%s", err)
 	}

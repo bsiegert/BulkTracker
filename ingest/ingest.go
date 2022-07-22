@@ -34,6 +34,7 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -127,7 +128,9 @@ var headAliases = map[string]bool{
 // IncomingMailHandler provides an endpoint that is called (with a POST request)
 // by App Engine when a new mail comes in. It tries to parse it as a bulk build
 // report and ingests it, if successful.
-type IncomingMailHandler struct{}
+type IncomingMailHandler struct {
+	DB *sql.DB
+}
 
 func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

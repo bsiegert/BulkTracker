@@ -8,6 +8,7 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/jlaffaye/ftp v0.0.0-20210307004419-5d4190119067 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.14
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
 	github.com/ulikunitz/xz v0.5.10
