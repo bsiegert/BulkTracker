@@ -124,10 +124,12 @@ var headAliases = map[string]bool{
 	"upstream-trunk64": true,
 }
 
-// HandleIncomingMail is called (with a POST request) by App Engine
-// when a new mail comes in. It tries to parse it as a bulk build
+// IncomingMailHandler provides an endpoint that is called (with a POST request)
+// by App Engine when a new mail comes in. It tries to parse it as a bulk build
 // report and ingests it, if successful.
-func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
+type IncomingMailHandler struct{}
+
+func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	msg, err := mail.ReadMessage(r.Body)
 	if err != nil {

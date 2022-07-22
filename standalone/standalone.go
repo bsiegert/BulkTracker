@@ -39,7 +39,7 @@ var (
 func main() {
 	flag.Parse()
 
-	http.HandleFunc("/", ingest.HandleIncomingMail)
+	http.Handle("/", &ingest.IncomingMailHandler{})
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
