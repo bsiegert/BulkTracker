@@ -24,7 +24,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
@@ -32,6 +31,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/log"
 )
@@ -44,21 +44,14 @@ func main() {
 	flag.Parse()
 	ctx := context.Background()
 
-	db, err := sql.Open("sqlite3", "BulkTracker.db")
-	if err != nil {
-		log.Errorf(ctx, "failed to open database: %s", err)
-		os.Exit(1)
-	}
-
-	putBuildStmt, err := db.PrepareContext(ctx, `INSERT INTO builds (platform, build_ts, branch, compiler, build_user, report_url) VALUES (?, ?, ?, ?, ?, ?) RETURNING build_id;`)
+	db, err := dao.New(ctx)
 	if err != nil {
 		log.Errorf(ctx, "failed to open database: %s", err)
 		os.Exit(1)
 	}
 
 	http.Handle("/", &ingest.IncomingMailHandler{
-		DB:           db,
-		PutBuildStmt: putBuildStmt,
+		DB: db,
 	})
 
 	log.Infof(ctx, "Listening on port %d", *port)

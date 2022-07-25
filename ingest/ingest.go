@@ -24,6 +24,7 @@ package ingest
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/bsiegert/BulkTracker/log"
 	ftp "github.com/smira/go-ftp-protocol/protocol"
@@ -34,7 +35,6 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
-	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -129,8 +129,7 @@ var headAliases = map[string]bool{
 // by App Engine when a new mail comes in. It tries to parse it as a bulk build
 // report and ingests it, if successful.
 type IncomingMailHandler struct {
-	DB           *sql.DB
-	PutBuildStmt *sql.Stmt
+	DB *dao.DB
 }
 
 func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -183,27 +182,9 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 	log.Debugf(ctx, "%#v, %s", build, err)
 
-	id, err := i.PutBuild(ctx, build)
+	id, err := i.DB.PutBuild(ctx, build)
 	log.Infof(ctx, "wrote entry %v: %s", id, err)
 	//FetchReport(ctx, id, build.ReportURL)
-}
-
-// PutBuild writes the Build record to the DB and returns the ID.
-func (i *IncomingMailHandler) PutBuild(ctx context.Context, build *bulk.Build) (int, error) {
-	tx, err := i.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return -1, err
-	}
-	row := tx.StmtContext(ctx, i.PutBuildStmt).QueryRowContext(ctx, build.Platform, build.Timestamp, build.Branch, build.Compiler, build.User, build.ReportURL)
-
-	var id int
-	err = row.Scan(&id)
-	if err != nil {
-		tx.Rollback()
-		return -1, err
-	}
-	err = tx.Commit()
-	return id, err
 }
 
 // fileSuffix returns the "file type" suffix of the file name, possibly
