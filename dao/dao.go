@@ -33,10 +33,13 @@ const (
 				(platform, build_ts, branch, compiler, build_user, report_url)
 				VALUES (?, ?, ?, ?, ?, ?)
 				RETURNING build_id;`
+	deleteAllForBuildSQL = `DELETE from results
+							WHERE build_id = ?;`
 )
 
-func New(ctx context.Context) (*DB, error) {
-	sqldb, err := sql.Open("sqlite3", "BulkTracker.db")
+// New opens a new DB instance with the given SQL driver and connection string.
+func New(ctx context.Context, driver, dbPath string) (*DB, error) {
+	sqldb, err := sql.Open(driver, dbPath)
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +51,22 @@ func New(ctx context.Context) (*DB, error) {
 		db.DB.Close()
 		return nil, err
 	}
+	db.deleteAllForBuildStmt, err = db.DB.PrepareContext(ctx, deleteAllForBuildSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
 	return db, nil
 }
 
+// DB is a wrapper around a SQL database that provides ready-made functions
+// for interacting with the database.
 type DB struct {
 	DB *sql.DB
 
 	// Prepared SQL statements.
-	putBuildStmt *sql.Stmt
+	putBuildStmt          *sql.Stmt
+	deleteAllForBuildStmt *sql.Stmt
 }
 
 // PutBuild writes the Build record to the DB and returns the ID.
@@ -74,4 +85,22 @@ func (d *DB) PutBuild(ctx context.Context, build *bulk.Build) (int, error) {
 	}
 	err = tx.Commit()
 	return id, err
+}
+
+func (d *DB) PutResults(ctx context.Context, results []bulk.Pkg, buildID int) error {
+	tx, err := d.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Delete all previous results for this build.
+	_, err = tx.StmtContext(ctx, d.deleteAllForBuildStmt).ExecContext(ctx, buildID)
+	if err != nil {
+		return err
+	}
+
+	// TODO: actually write results!
+
+	return tx.Commit()
 }

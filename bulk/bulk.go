@@ -157,6 +157,9 @@ scanLoop:
 type Pkg struct {
 	// Key is the string representation of the datastore key of this record.
 	Key string `datastore:"-"`
+	// BuildID is the numeric ID of the build that this belongs to.
+	BuildID int
+
 	// The first and last part of the package location. For example,
 	// if the location is "devel/libtool", Category would be "devel"
 	// and Dir "libtool".

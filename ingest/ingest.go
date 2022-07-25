@@ -25,12 +25,9 @@ package ingest
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dao"
-	"github.com/bsiegert/BulkTracker/dsbatch"
 	"github.com/bsiegert/BulkTracker/log"
 	ftp "github.com/smira/go-ftp-protocol/protocol"
 	"github.com/ulikunitz/xz"
-
-	"google.golang.org/appengine/datastore"
 
 	"compress/bzip2"
 	"compress/gzip"
@@ -69,7 +66,7 @@ type Status struct {
 
 // NewStatus allocates a new Status for report ingestion. As a side effect,
 // it also deletes old records, if any.
-func NewStatus(ctx context.Context, build *datastore.Key) *Status {
+func NewStatus(ctx context.Context, buildID int) *Status {
 	// s := &Status{
 	// 	key:      datastore.NewIncompleteKey(ctx, "status", build),
 	// 	cacheKey: "/json/status/" + build.String(),
@@ -184,7 +181,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	id, err := i.DB.PutBuild(ctx, build)
 	log.Infof(ctx, "wrote entry %v: %s", id, err)
-	//FetchReport(ctx, id, build.ReportURL)
+	i.FetchReport(ctx, id, build.ReportURL)
 }
 
 // fileSuffix returns the "file type" suffix of the file name, possibly
@@ -227,8 +224,8 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
-func FetchReport(ctx context.Context, build *datastore.Key, url string) {
-	status := NewStatus(ctx, build)
+func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int, url string) {
+	status := NewStatus(ctx, buildID)
 	status.URL = url
 	status.Current = Fetching
 	status.Put(ctx)
@@ -261,21 +258,7 @@ func FetchReport(ctx context.Context, build *datastore.Key, url string) {
 	status.Current = Writing
 	status.PkgsTotal = len(pkgs)
 	sort.Sort(bulk.PkgsByName(pkgs))
-	keys, err := datastore.NewQuery("pkg").Ancestor(build).KeysOnly().GetAll(ctx, nil)
-	if err != nil {
-		log.Warningf(ctx, "failed to get current records: %s", err)
-	}
-	for i := len(keys); i < len(pkgs); i++ {
-		keys = append(keys, datastore.NewIncompleteKey(ctx, "pkg", build))
-	}
-	if k, p := len(keys), len(pkgs); k > p {
-		dsbatch.DeleteMulti(ctx, keys[p:k])
-		keys = keys[:p]
-	}
-	if len(keys) == 0 {
-		return
-	}
-	if err = dsbatch.PutMulti(ctx, keys, pkgs, status); err != nil {
+	if err = i.DB.PutResults(ctx, pkgs, buildID); err != nil {
 		status.Current = Failed
 		status.LastErr = err
 		status.Put(ctx)

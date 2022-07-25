@@ -37,14 +37,15 @@ import (
 )
 
 var (
-	port = flag.Int("port", 8080, "The port to use.")
+	port   = flag.Int("port", 8080, "The port to use.")
+	dbPath = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
 )
 
 func main() {
 	flag.Parse()
 	ctx := context.Background()
 
-	db, err := dao.New(ctx)
+	db, err := dao.New(ctx, "sqlite3", *dbPath)
 	if err != nil {
 		log.Errorf(ctx, "failed to open database: %s", err)
 		os.Exit(1)
