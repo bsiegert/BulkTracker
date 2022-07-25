@@ -50,12 +50,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	putBuildStmt, err := db.PrepareContext(ctx, `INSERT INTO builds (platform, build_ts, branch, compiler, build_user, report_url) VALUES (?, ?, ?, ?, ?, ?) RETURNING build_id;`)
+	if err != nil {
+		log.Errorf(ctx, "failed to open database: %s", err)
+		os.Exit(1)
+	}
+
 	http.Handle("/", &ingest.IncomingMailHandler{
-		DB: db,
+		DB:           db,
+		PutBuildStmt: putBuildStmt,
 	})
 
+	log.Infof(ctx, "Listening on port %d", *port)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
-		log.Errorf(context.Background(), "%s", err)
+		log.Errorf(ctx, "%s", err)
 	}
 }
