@@ -27,26 +27,26 @@ CREATE TABLE IF NOT EXISTS builds (
     build_user text,
     report_url text,
 
-    num_ok int,
-    num_prefailed int,
-    num_failed int,
-    num_indirect_failed int,
-    num_indirect_prefailed int    
+    num_ok INTEGER,
+    num_prefailed INTEGER,
+    num_failed INTEGER,
+    num_indirect_failed INTEGER,
+    num_indirect_prefailed INTEGER    
 );
 
 CREATE TABLE IF NOT EXISTS pkgs (
-    pkg_id int PRIMARY KEY ASC,
+    pkg_id INTEGER PRIMARY KEY ASC,
     category text,
     dir text,
     UNIQUE (category, dir)
 );
 
 CREATE TABLE IF NOT EXISTS results (
-    result_id int PRIMARY KEY ASC,
-    build_id int REFERENCES builds,
-    pkg_id int REFERENCES pkgs,
+    result_id INTEGER PRIMARY KEY ASC,
+    build_id INTEGER REFERENCES builds,
+    pkg_id INTEGER REFERENCES pkgs,
     pkg_name text,
     build_status int8,
     failed_deps text[],
-    breaks int
+    breaks INTEGER
 );
