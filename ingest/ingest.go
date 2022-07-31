@@ -61,7 +61,7 @@ type Status struct {
 	LastErr error
 
 	// key      *datastore.Key `json:"-"`
-	cacheKey string `json:"-"`
+	// cacheKey string `json:"-"`
 }
 
 // NewStatus allocates a new Status for report ingestion. As a side effect,
@@ -180,7 +180,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	log.Debugf(ctx, "%#v, %s", build, err)
 
 	id, err := i.DB.PutBuild(ctx, build)
-	log.Infof(ctx, "wrote entry %v: %s", id, err)
+	log.Infof(ctx, "wrote entry %v: %v", id, err)
 	i.FetchReport(ctx, id, build.ReportURL)
 }
 

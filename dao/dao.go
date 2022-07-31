@@ -26,15 +26,24 @@ import (
 	"database/sql"
 
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/log"
 )
 
 const (
+	deleteAllForBuildSQL = `DELETE from results
+				WHERE build_id = ?;`
 	putBuildSQL = `INSERT INTO builds
 				(platform, build_ts, branch, compiler, build_user, report_url)
 				VALUES (?, ?, ?, ?, ?, ?)
 				RETURNING build_id;`
-	deleteAllForBuildSQL = `DELETE from results
-							WHERE build_id = ?;`
+	putPkgSQL = `INSERT OR IGNORE INTO pkgs
+				(category, dir)
+				VALUES (?, ?);`
+	getPkgIDSQL = `SELECT pkg_id FROM pkgs
+				WHERE category == ? and dir == ?;`
+	putResultSQL = `INSERT INTO results
+				(build_id, pkg_id, pkg_name, build_status, breaks)
+				VALUES (?, ?, ?, ?, ?)`
 )
 
 // New opens a new DB instance with the given SQL driver and connection string.
@@ -46,12 +55,27 @@ func New(ctx context.Context, driver, dbPath string) (*DB, error) {
 	db := &DB{
 		DB: sqldb,
 	}
+	db.deleteAllForBuildStmt, err = db.DB.PrepareContext(ctx, deleteAllForBuildSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+	db.getPkgIDStmt, err = db.DB.PrepareContext(ctx, getPkgIDSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
 	db.putBuildStmt, err = db.DB.PrepareContext(ctx, putBuildSQL)
 	if err != nil {
 		db.DB.Close()
 		return nil, err
 	}
-	db.deleteAllForBuildStmt, err = db.DB.PrepareContext(ctx, deleteAllForBuildSQL)
+	db.putPkgStmt, err = db.DB.PrepareContext(ctx, putPkgSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+	db.putResultStmt, err = db.DB.PrepareContext(ctx, putResultSQL)
 	if err != nil {
 		db.DB.Close()
 		return nil, err
@@ -65,8 +89,11 @@ type DB struct {
 	DB *sql.DB
 
 	// Prepared SQL statements.
-	putBuildStmt          *sql.Stmt
 	deleteAllForBuildStmt *sql.Stmt
+	getPkgIDStmt          *sql.Stmt
+	putBuildStmt          *sql.Stmt
+	putPkgStmt            *sql.Stmt
+	putResultStmt         *sql.Stmt
 }
 
 // PutBuild writes the Build record to the DB and returns the ID.
@@ -100,7 +127,28 @@ func (d *DB) PutResults(ctx context.Context, results []bulk.Pkg, buildID int) er
 		return err
 	}
 
-	// TODO: actually write results!
+	l := len(results)
+	for i, pkg := range results {
+		if i%1000 == 0 || i == l {
+			log.Debugf(ctx, "Inserting record %v/%v ...", i, len(results))
+		}
+		_, err := tx.StmtContext(ctx, d.putPkgStmt).ExecContext(ctx, pkg.Category, pkg.Dir)
+		if err != nil {
+			return err
+		}
+		row := tx.StmtContext(ctx, d.getPkgIDStmt).QueryRowContext(ctx, pkg.Category, pkg.Dir)
+		var pkgID int
+		err = row.Scan(&pkgID)
+		if err != nil {
+			return err
+		}
+		// TODO add (array-valued) failed_deps field
+		_, err = tx.StmtContext(ctx, d.putResultStmt).ExecContext(ctx, buildID, pkgID, pkg.PkgName, pkg.BuildStatus, pkg.Breaks)
+		if err != nil {
+			return err
+		}
+	}
 
+	log.Infof(ctx, "Successfully added results for build %v", buildID)
 	return tx.Commit()
 }
