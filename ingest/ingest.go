@@ -150,7 +150,7 @@ func HandleIncomingMail(w http.ResponseWriter, r *http.Request) {
 		from = fromAddr[0]
 	}
 	log.Infof(ctx, "new mail from %s", from)
-	if strings.Index(from.Address, "majordomo") != -1 {
+	if strings.Contains(from.Address, "majordomo") {
 		body, _ := ioutil.ReadAll(msg.Body)
 		log.Infof(ctx, "%s", body)
 		return

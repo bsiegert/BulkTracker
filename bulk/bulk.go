@@ -112,11 +112,12 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 	}
 	b.Platform = s.Text()
 
+scanLoop:
 	for {
 		if !s.Scan() {
 			break
 		}
-		if strings.Index(s.Text(), ":") == -1 {
+		if !strings.Contains(s.Text(), ":") {
 			continue
 		}
 		parts := strings.SplitN(s.Text(), ":", 2)
@@ -134,7 +135,7 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 				val = strings.TrimSpace(s.Text())
 			}
 			b.ReportURL = val
-			break
+			break scanLoop
 		case "Successfully built":
 			b.NumOK, _ = strconv.ParseInt(val, 10, 64)
 		case "Failed to build":
@@ -168,15 +169,6 @@ type Pkg struct {
 	FailedDeps []string
 	// Number of packages broken by this one.
 	Breaks int
-}
-
-func get(pkgs []Pkg, pkgname string) (*Pkg, bool) {
-	for i := range pkgs {
-		if pkgs[i].PkgName == pkgname {
-			return &pkgs[i], true
-		}
-	}
-	return nil, false
 }
 
 func PkgsFromReport(r io.Reader) ([]Pkg, error) {

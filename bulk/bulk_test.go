@@ -44,13 +44,13 @@ var pkgsFromReportTests = []struct {
 }{
 	{
 		pkgFoo,
-		[]Pkg{Pkg{PkgName: "foo-1.0", BuildStatus: IndirectFailed}},
+		[]Pkg{{PkgName: "foo-1.0", BuildStatus: IndirectFailed}},
 	},
 	{
 		pkgFoo + pkgBar,
 		[]Pkg{
-			Pkg{PkgName: "foo-1.0", BuildStatus: IndirectFailed, FailedDeps: []string{"bar-2.0"}},
-			Pkg{PkgName: "bar-2.0", BuildStatus: Failed, Breaks: 1},
+			{PkgName: "foo-1.0", BuildStatus: IndirectFailed, FailedDeps: []string{"bar-2.0"}},
+			{PkgName: "bar-2.0", BuildStatus: Failed, Breaks: 1},
 		},
 	},
 }
