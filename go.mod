@@ -1,6 +1,6 @@
 module github.com/bsiegert/BulkTracker
 
-go 1.15
+go 1.16
 
 require (
 	cloud.google.com/go/datastore v1.6.0

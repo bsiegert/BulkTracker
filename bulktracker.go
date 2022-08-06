@@ -18,32 +18,54 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-// Binary bulktracker is the main program for BulkTracker on App Engine.
+// Binary bulktracker serves the BulkTracker web app.
 package main
 
 import (
-	"github.com/bsiegert/BulkTracker/json"
-	"github.com/bsiegert/BulkTracker/log"
-	"github.com/bsiegert/BulkTracker/pages"
-
-	"google.golang.org/appengine"
-
+	"context"
+	"embed"
+	"flag"
 	"fmt"
 	"net/http"
+	"os"
+
+	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/bsiegert/BulkTracker/dao"
+	"github.com/bsiegert/BulkTracker/ingest"
+	"github.com/bsiegert/BulkTracker/log"
+	"github.com/bsiegert/BulkTracker/pages"
 )
 
+var (
+	port   = flag.Int("port", 8080, "The port to use.")
+	dbPath = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
+)
+
+//go:embed static
+var staticContent embed.FS
+
 func main() {
-	log.InitLogger()
+	flag.Parse()
+	ctx := context.Background()
 
-	http.Handle("/", &pages.StartPage{})
-	http.HandleFunc("/builds", pages.ShowBuilds)
-	http.HandleFunc("/build/", pages.BuildDetails)
-	http.HandleFunc("/pkg/", pages.PkgDetails)
-	// http.HandleFunc("/_ah/mail/", ingest.HandleIncomingMail)
-
-	for path, endpoint := range json.Mux {
-		path = fmt.Sprintf("/json/%s/", path)
-		http.Handle(path, endpoint)
+	db, err := dao.New(ctx, "sqlite3", *dbPath)
+	if err != nil {
+		log.Errorf(ctx, "failed to open database: %s", err)
+		os.Exit(1)
 	}
-	appengine.Main()
+
+	http.Handle("/", &pages.StartPage{
+		DB: db,
+	})
+	http.Handle("/static/", http.FileServer(http.FS(staticContent)))
+	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
+		DB: db,
+	})
+
+	log.Infof(ctx, "Listening on port %d", *port)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	if err != nil {
+		log.Errorf(ctx, "%s", err)
+	}
 }
