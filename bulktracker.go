@@ -26,6 +26,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -42,8 +43,23 @@ var (
 	dbPath = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
 )
 
-//go:embed static
+//go:embed images mock static robots.txt
 var staticContent embed.FS
+
+// fileHandler returns a HTTP handler for a file from static content.
+func fileHandler(name string) (http.HandlerFunc, error) {
+	f, err := staticContent.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.ServeContent(w, r, name, stat.ModTime(), f.(io.ReadSeeker))
+	}, nil
+}
 
 func main() {
 	flag.Parse()
@@ -58,10 +74,20 @@ func main() {
 	http.Handle("/", &pages.StartPage{
 		DB: db,
 	})
+	http.Handle("/robots.txt", http.FileServer(http.FS(staticContent)))
+	http.Handle("/images/", http.FileServer(http.FS(staticContent)))
+	http.Handle("/mock/", http.FileServer(http.FS(staticContent)))
 	http.Handle("/static/", http.FileServer(http.FS(staticContent)))
 	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
 		DB: db,
 	})
+
+	h, err := fileHandler("static/pkgresults.html")
+	if err != nil {
+		log.Errorf(ctx, "failed to create /pkgresults handler: %s", err)
+		os.Exit(1)
+	}
+	http.HandleFunc("/pkgresults/", h)
 
 	log.Infof(ctx, "Listening on port %d", *port)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
