@@ -82,6 +82,15 @@ func main() {
 		DB: db,
 	})
 
+	// http.HandleFunc("/builds", pages.ShowBuilds)
+	// http.HandleFunc("/build/", pages.BuildDetails)
+	// http.HandleFunc("/pkg/", pages.PkgDetails)
+
+	// for path, endpoint := range json.Mux {
+	// 	path = fmt.Sprintf("/json/%s/", path)
+	// 	http.Handle(path, endpoint)
+	// }
+
 	h, err := fileHandler("static/pkgresults.html")
 	if err != nil {
 		log.Errorf(ctx, "failed to create /pkgresults handler: %s", err)

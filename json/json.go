@@ -24,7 +24,7 @@ package json
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
-	"github.com/bsiegert/BulkTracker/data"
+	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/stateful"
 
@@ -165,7 +165,8 @@ func PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}
 	category, dir := params[0]+"/", params[1]
 
 	// Get results for each of the LatestBuilds.
-	builds, err := data.LatestBuilds(ctx)
+	var db *dao.DB
+	builds, err := db.LatestBuilds(ctx) // XXX CRASH
 	if err != nil {
 		return nil, fmt.Errorf("getting LatestBuilds: %s", err)
 	}
