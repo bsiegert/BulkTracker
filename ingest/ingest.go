@@ -123,8 +123,8 @@ var headAliases = map[string]bool{
 }
 
 // IncomingMailHandler provides an endpoint that is called (with a POST request)
-// by App Engine when a new mail comes in. It tries to parse it as a bulk build
-// report and ingests it, if successful.
+// when a new mail comes in. It tries to parse it as a bulk build report and
+// ingests it, if successful.
 type IncomingMailHandler struct {
 	DB *dao.DB
 }
