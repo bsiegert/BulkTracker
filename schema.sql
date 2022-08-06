@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS results (
     build_id INTEGER REFERENCES builds,
     pkg_id INTEGER REFERENCES pkgs,
     pkg_name text,
-    build_status int8,
-    failed_deps text[],
+    build_status INTEGER,
+    failed_deps text,
     breaks INTEGER
 );
