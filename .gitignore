@@ -1,3 +1,5 @@
 expireold/expireold
+standalone/standalone
 testing/btinject/btinject
 .zedstate
+*.db
