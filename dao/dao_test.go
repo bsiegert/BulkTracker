@@ -18,50 +18,30 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-// Binary standalone is the main entrypoint for BulkTracker as a stand-alone
-// (non-App Engine) app.
-package main
+package dao
 
 import (
-	"context"
-	"flag"
-	"fmt"
-	"net/http"
 	"os"
+	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-
-	"github.com/bsiegert/BulkTracker/dao"
-	"github.com/bsiegert/BulkTracker/ingest"
-	"github.com/bsiegert/BulkTracker/log"
-	"github.com/bsiegert/BulkTracker/pages"
 )
 
-var (
-	port   = flag.Int("port", 8080, "The port to use.")
-	dbPath = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
-)
-
-func main() {
-	flag.Parse()
-	ctx := context.Background()
-
-	db, err := dao.New(ctx, "sqlite3", *dbPath)
+func TestNew(t *testing.T) {
+	tempfile, err := os.CreateTemp("", "bulktracker*")
 	if err != nil {
-		log.Errorf(ctx, "failed to open database: %s", err)
-		os.Exit(1)
+		t.Fatal(err)
 	}
-
-	http.Handle("/", &pages.StartPage{
-		DB: db,
-	})
-	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
-		DB: db,
+	t.Cleanup(func() {
+		os.Remove(tempfile.Name())
+		tempfile.Close()
 	})
 
-	log.Infof(ctx, "Listening on port %d", *port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
-	if err != nil {
-		log.Errorf(ctx, "%s", err)
-	}
+	// ctx := context.Background()
+
+	// _, err = New(ctx, "sqlite3", tempfile.Name())
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+
 }

@@ -36,7 +36,10 @@ import (
 // Build holds aggregate information about a single bulk build.
 type Build struct {
 	// Key is the string representation of the datastore key of this record.
-	Key       string `datastore:"-"`
+	Key string `datastore:"-"`
+	// BuildID is the equivalent of Key in SQL land.
+	BuildID int `datastore:"-"`
+
 	Platform  string
 	Timestamp time.Time
 	Branch    string

@@ -23,10 +23,9 @@ package pages
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
-	"github.com/bsiegert/BulkTracker/data"
+	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/delete"
 	"github.com/bsiegert/BulkTracker/log"
-	"github.com/bsiegert/BulkTracker/stateful"
 	"github.com/bsiegert/BulkTracker/templates"
 
 	"google.golang.org/appengine/datastore"
@@ -39,7 +38,11 @@ import (
 	"strings"
 )
 
-func StartPage(w http.ResponseWriter, r *http.Request) {
+type StartPage struct {
+	DB *dao.DB
+}
+
+func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -47,9 +50,9 @@ func StartPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try prepopulating the autocomplete cache early.
-	stateful.MaybePrefillCache(ctx)
+	// stateful.MaybePrefillCache(ctx)
 
-	builds, err := data.LatestBuilds(ctx)
+	builds, err := s.DB.LatestBuilds(ctx)
 	if err != nil {
 		log.Errorf(ctx, "failed to read latest builds: %s", err)
 	}

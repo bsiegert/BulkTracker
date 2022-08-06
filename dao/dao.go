@@ -32,6 +32,11 @@ import (
 const (
 	deleteAllForBuildSQL = `DELETE from results
 				WHERE build_id = ?;`
+	getLatestBuildsSQL = `SELECT * FROM BUILDS
+				ORDER BY build_ts DESC
+				LIMIT 1000;`
+	getPkgIDSQL = `SELECT pkg_id FROM pkgs
+				WHERE category == ? and dir == ?;`
 	putBuildSQL = `INSERT INTO builds
 				(platform, build_ts, branch, compiler, build_user, report_url)
 				VALUES (?, ?, ?, ?, ?, ?)
@@ -39,8 +44,6 @@ const (
 	putPkgSQL = `INSERT OR IGNORE INTO pkgs
 				(category, dir)
 				VALUES (?, ?);`
-	getPkgIDSQL = `SELECT pkg_id FROM pkgs
-				WHERE category == ? and dir == ?;`
 	putResultSQL = `INSERT INTO results
 				(build_id, pkg_id, pkg_name, build_status, breaks)
 				VALUES (?, ?, ?, ?, ?)`
@@ -56,6 +59,11 @@ func New(ctx context.Context, driver, dbPath string) (*DB, error) {
 		DB: sqldb,
 	}
 	db.deleteAllForBuildStmt, err = db.DB.PrepareContext(ctx, deleteAllForBuildSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+	db.getLatestBuildsStmt, err = db.DB.PrepareContext(ctx, getLatestBuildsSQL)
 	if err != nil {
 		db.DB.Close()
 		return nil, err
@@ -90,6 +98,7 @@ type DB struct {
 
 	// Prepared SQL statements.
 	deleteAllForBuildStmt *sql.Stmt
+	getLatestBuildsStmt   *sql.Stmt
 	getPkgIDStmt          *sql.Stmt
 	putBuildStmt          *sql.Stmt
 	putPkgStmt            *sql.Stmt
@@ -151,4 +160,74 @@ func (d *DB) PutResults(ctx context.Context, results []bulk.Pkg, buildID int) er
 
 	log.Infof(ctx, "Successfully added results for build %v", buildID)
 	return tx.Commit()
+}
+
+// LatestBuilds returns a list of the latest 1000 (max) builds in the DB.
+func (d *DB) LatestBuilds(ctx context.Context) ([]bulk.Build, error) {
+	rs, err := d.getLatestBuildsStmt.QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		b      bulk.Build
+		builds []bulk.Build
+
+		ok, prefailed, failed, indirectFailed, indirectPrefailed *int64
+	)
+RowLoop:
+	for rs.Next() {
+		err = rs.Scan(
+			&b.BuildID,
+			&b.Platform,
+			&b.Timestamp,
+			&b.Branch,
+			&b.Compiler,
+			&b.User,
+			&b.ReportURL,
+			&ok,
+			&prefailed,
+			&failed,
+			&indirectFailed,
+			&indirectPrefailed,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if ok == nil {
+			b.NumOK = 0
+		} else {
+			b.NumOK = *ok
+		}
+		if failed == nil {
+			b.NumFailed = 0
+		} else {
+			b.NumFailed = *failed
+		}
+		if prefailed == nil {
+			b.NumPrefailed = 0
+		} else {
+			b.NumPrefailed = *prefailed
+		}
+		if indirectFailed == nil {
+			b.NumIndirectFailed = 0
+		} else {
+			b.NumIndirectFailed = *indirectFailed
+		}
+		if indirectPrefailed == nil {
+			b.NumIndirectPrefailed = 0
+		} else {
+			b.NumIndirectPrefailed = *indirectPrefailed
+		}
+
+		// Is this the first entry of this type?
+		// TODO(bsiegert) eliminate O(n2) algo.
+		for i := range builds {
+			bb := builds[i]
+			if b.Platform == bb.Platform && b.Branch == bb.Branch && b.Compiler == bb.Compiler && b.User == bb.User {
+				continue RowLoop
+			}
+		}
+		builds = append(builds, b)
+	}
+	return builds, rs.Err()
 }
