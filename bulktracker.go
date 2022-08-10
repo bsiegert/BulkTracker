@@ -74,6 +74,7 @@ func main() {
 	http.Handle("/", &pages.StartPage{
 		DB: db,
 	})
+	http.HandleFunc("/builds", pages.ShowBuilds)
 	http.Handle("/robots.txt", http.FileServer(http.FS(staticContent)))
 	http.Handle("/images/", http.FileServer(http.FS(staticContent)))
 	http.Handle("/mock/", http.FileServer(http.FS(staticContent)))
@@ -82,7 +83,6 @@ func main() {
 		DB: db,
 	})
 
-	// http.HandleFunc("/builds", pages.ShowBuilds)
 	// http.HandleFunc("/build/", pages.BuildDetails)
 	// http.HandleFunc("/pkg/", pages.PkgDetails)
 
