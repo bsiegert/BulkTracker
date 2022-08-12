@@ -23,13 +23,15 @@
 package json
 
 import (
+	"errors"
+	"sync"
+
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/stateful"
 
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/memcache"
 
 	"bytes"
 	"context"
@@ -52,7 +54,19 @@ const CacheExpiration = 30 * time.Minute
 // marshalled to JSON, or an error.
 type Endpoint func(ctx context.Context, params []string, form url.Values) (interface{}, error)
 
-func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+type cacheEntry struct {
+	timestamp time.Time
+	value     []byte
+}
+
+type API struct {
+	DB *dao.DB
+
+	mu    sync.Mutex
+	cache map[string]cacheEntry
+}
+
+func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	ctx := r.Context()
 	r.ParseForm()
@@ -67,11 +81,11 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 		return
 	}
-	if CacheGet(ctx, cacheKey, w) {
+	if a.CacheGet(ctx, cacheKey, w) {
 		return
 	}
 
-	result, err := e(ctx, paths[1:], r.Form)
+	result, err := a.dispatch(ctx, paths[0], paths[1:], r.Form)
 	if err != nil {
 		if result != nil {
 			json.NewEncoder(w).Encode(result)
@@ -79,48 +93,61 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Errorf(ctx, err.Error())
 		return
 	}
-	CacheAndWrite(ctx, result, cacheKey, w)
+	a.CacheAndWrite(ctx, result, cacheKey, w)
 }
 
-// Mux maps endpoint names to their implementations. It assumes that the results
-// of a successful endpoint call are cacheable.
-var Mux = map[string]Endpoint{
-	"build":         BuildDetails,
-	"allbuilds":     AllBuildDetails,
-	"pkgresults":    PkgResults,
-	"allpkgresults": AllPkgResults,
-	"dir":           Dir,
-	"autocomplete":  Autocomplete,
+func (a *API) dispatch(ctx context.Context, fn string, params []string, form url.Values) (interface{}, error) {
+	switch fn {
+	case "build":
+		return BuildDetails(ctx, params, form)
+	case "allbuilds":
+		return AllBuildDetails(ctx, params, form)
+	case "pkgresults":
+		return PkgResults(ctx, params, form)
+	case "allpkgresults":
+		return AllPkgResults(ctx, params, form)
+	case "dir":
+		return Dir(ctx, params, form)
+	case "autocomplete":
+		return Autocomplete(ctx, params, form)
+	}
+	return nil, errors.New("unknown function name")
 }
 
-// CacheAndWrite stores the JSON representation of v in the App Engine
-// memcache and writes it to w.
-func CacheAndWrite(ctx context.Context, v interface{}, cacheKey string, w io.Writer) {
+// CacheAndWrite stores the JSON representation of v in the cache and writes it
+// to w.
+func (a *API) CacheAndWrite(ctx context.Context, v interface{}, cacheKey string, w io.Writer) {
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(v)
-	err := memcache.Set(ctx, &memcache.Item{
-		Key:        cacheKey,
-		Value:      buf.Bytes(),
-		Expiration: CacheExpiration,
-	})
-	if err != nil {
-		log.Warningf(ctx, "failed to write %q to cache: %s", cacheKey, err)
+
+	a.mu.Lock()
+	a.cache[cacheKey] = cacheEntry{
+		value:     buf.Bytes(),
+		timestamp: time.Now(),
 	}
+	a.mu.Unlock()
+
 	io.Copy(w, &buf)
 }
 
 // CacheGet tries fetching the value with the given cacheKey from memcache and
 // writes it to w if it exists. It returns true if there was a cache hit.
-func CacheGet(ctx context.Context, cacheKey string, w http.ResponseWriter) bool {
-	item, err := memcache.Get(ctx, cacheKey)
-	if err != nil {
-		if err != memcache.ErrCacheMiss {
-			log.Warningf(ctx, "get from memcache: %s", err)
-		}
+func (a *API) CacheGet(ctx context.Context, cacheKey string, w http.ResponseWriter) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	item, ok := a.cache[cacheKey]
+	if !ok {
+		log.Infof(ctx, "cache miss for %q", cacheKey)
 		return false
 	}
-	log.Debugf(ctx, "%s: used cached result", cacheKey)
-	w.Write(item.Value)
+	if time.Since(item.timestamp) > CacheExpiration {
+		log.Infof(ctx, "cache entry too old for %q", cacheKey)
+		delete(a.cache, cacheKey)
+		return false
+	}
+	log.Debugf(ctx, "used cached result for %q", cacheKey)
+	w.Write(item.value)
 	return true
 }
 

@@ -34,6 +34,7 @@ import (
 
 	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/ingest"
+	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/pages"
 )
@@ -82,14 +83,12 @@ func main() {
 	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
 		DB: db,
 	})
+	http.Handle("/json/", &json.API{
+		DB: db,
+	})
 
 	// http.HandleFunc("/build/", pages.BuildDetails)
 	// http.HandleFunc("/pkg/", pages.PkgDetails)
-
-	// for path, endpoint := range json.Mux {
-	// 	path = fmt.Sprintf("/json/%s/", path)
-	// 	http.Handle(path, endpoint)
-	// }
 
 	h, err := fileHandler("static/pkgresults.html")
 	if err != nil {
