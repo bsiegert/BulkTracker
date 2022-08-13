@@ -32,9 +32,13 @@ import (
 const (
 	deleteAllForBuildSQL = `DELETE from results
 				WHERE build_id = ?;`
-	getLatestBuildsSQL = `SELECT * FROM BUILDS
+	getLatestBuildsSQL = `SELECT * FROM builds
 				ORDER BY build_ts DESC
 				LIMIT 1000;`
+	getAllPkgsSQL = `SELECT category || dir AS name
+				FROM pkgs
+				WHERE name LIKE ?
+				ORDER BY name;`
 	getPkgIDSQL = `SELECT pkg_id FROM pkgs
 				WHERE category == ? and dir == ?;`
 	putBuildSQL = `INSERT INTO builds
@@ -64,6 +68,11 @@ func New(ctx context.Context, driver, dbPath string) (*DB, error) {
 		return nil, err
 	}
 	db.getLatestBuildsStmt, err = db.DB.PrepareContext(ctx, getLatestBuildsSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+	db.getAllPkgsStmt, err = db.DB.PrepareContext(ctx, getAllPkgsSQL)
 	if err != nil {
 		db.DB.Close()
 		return nil, err
@@ -99,6 +108,7 @@ type DB struct {
 	// Prepared SQL statements.
 	deleteAllForBuildStmt *sql.Stmt
 	getLatestBuildsStmt   *sql.Stmt
+	getAllPkgsStmt        *sql.Stmt
 	getPkgIDStmt          *sql.Stmt
 	putBuildStmt          *sql.Stmt
 	putPkgStmt            *sql.Stmt
@@ -230,4 +240,23 @@ RowLoop:
 		builds = append(builds, b)
 	}
 	return builds, rs.Err()
+}
+
+func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, error) {
+	rs, err := d.getAllPkgsStmt.QueryContext(ctx, "%"+substr+"%")
+	if err != nil {
+		return nil, err
+	}
+	var (
+		name  string
+		names []string
+	)
+	for rs.Next() {
+		err = rs.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		names = append(names, name)
+	}
+	return names, nil
 }

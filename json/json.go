@@ -76,7 +76,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(r.Form) > 0 {
 		cacheKey += "?" + r.Form.Encode()
 	}
-	paths := strings.Split(strings.TrimPrefix(cacheKey, "/json/"), "/")
+	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/json/"), "/")
 	if len(paths) < 1 {
 		w.WriteHeader(404)
 		return
@@ -109,7 +109,7 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 	case "dir":
 		return Dir(ctx, params, form)
 	case "autocomplete":
-		return Autocomplete(ctx, params, form)
+		return a.Autocomplete(ctx, params, form)
 	}
 	return nil, errors.New("unknown function name")
 }
@@ -121,6 +121,9 @@ func (a *API) CacheAndWrite(ctx context.Context, v interface{}, cacheKey string,
 	json.NewEncoder(&buf).Encode(v)
 
 	a.mu.Lock()
+	if a.cache == nil {
+		a.cache = make(map[string]cacheEntry)
+	}
 	a.cache[cacheKey] = cacheEntry{
 		value:     buf.Bytes(),
 		timestamp: time.Now(),
@@ -302,7 +305,7 @@ func Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error
 	return result, nil
 }
 
-func Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}, error) {
+func (a *API) Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}, error) {
 	term := form.Get("term")
 	if term == "" {
 		return stateful.AutocompleteResponse{
@@ -310,15 +313,20 @@ func Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}
 			Results: []stateful.Result{},
 		}, nil
 	}
-	resp, err := stateful.Autocomplete(ctx, term)
+	// TODO(bsiegert) re-introduce caching. This goes to the DB each time.
+	names, err := a.DB.GetAllPkgsMatching(ctx, term)
 	if err != nil {
 		return stateful.AutocompleteResponse{
 			// select2 gets confused if the value is null.
 			Results: []stateful.Result{},
 		}, err
 	}
-	if resp.Results == nil {
-		resp.Results = []stateful.Result{}
+	resp := &stateful.AutocompleteResponse{
+		Results: make([]stateful.Result, len(names)),
+	}
+	for i := range names {
+		resp.Results[i].ID = names[i]
+		resp.Results[i].Text = names[i]
 	}
 	return resp, nil
 }
