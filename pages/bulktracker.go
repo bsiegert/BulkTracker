@@ -24,7 +24,6 @@ package pages
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dao"
-	"github.com/bsiegert/BulkTracker/delete"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/templates"
 
@@ -132,7 +131,7 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, templates.ReindexOK)
 		return
 	case "delete":
-		delete.DeleteBuildDetails.Call(ctx, key)
+		// delete.DeleteBuildDetails.Call(ctx, key)
 	}
 
 	templates.DataTable(w, `"order": [3, "desc"]`)
