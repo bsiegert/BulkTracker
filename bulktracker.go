@@ -75,6 +75,9 @@ func main() {
 	http.Handle("/", &pages.StartPage{
 		DB: db,
 	})
+	http.Handle("/build/", &pages.BuildDetails{
+		DB: db,
+	})
 	http.HandleFunc("/builds", pages.ShowBuilds)
 	http.Handle("/robots.txt", http.FileServer(http.FS(staticContent)))
 	http.Handle("/images/", http.FileServer(http.FS(staticContent)))
@@ -86,8 +89,6 @@ func main() {
 	http.Handle("/json/", &json.API{
 		DB: db,
 	})
-
-	// http.HandleFunc("/build/", pages.BuildDetails)
 	// http.HandleFunc("/pkg/", pages.PkgDetails)
 
 	h, err := fileHandler("static/pkgresults.html")

@@ -22,6 +22,8 @@
 package pages
 
 import (
+	"strconv"
+
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/log"
@@ -103,7 +105,11 @@ func writePackageList(ctx context.Context, w http.ResponseWriter, it *datastore.
 	io.WriteString(w, templates.TableEnd)
 }
 
-func BuildDetails(w http.ResponseWriter, r *http.Request) {
+type BuildDetails struct {
+	DB *dao.DB
+}
+
+func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
@@ -112,22 +118,21 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 	if len(paths) == 0 {
 		return
 	}
-	key, err := datastore.DecodeKey(paths[0])
+	buildID, err := strconv.Atoi(paths[0])
 	if err != nil {
 		log.Warningf(ctx, "error decoding key: %s", err)
 		return
 	}
 
-	b := &bulk.Build{}
-	err = datastore.Get(ctx, key, b)
+	build, err := b.DB.GetBuild(ctx, buildID)
 	if err != nil {
 		log.Warningf(ctx, "getting build record: %s", err)
 		return
 	}
-	templates.BulkBuildInfo(w, b)
+	templates.BulkBuildInfo(w, build)
 	switch r.URL.Query().Get("a") {
 	case "reindex":
-		// ingest.FetchReport(ctx, key, b.ReportURL)
+		// ingest.FetchReport(ctx, key, build.ReportURL)
 		io.WriteString(w, templates.ReindexOK)
 		return
 	case "delete":
@@ -136,26 +141,28 @@ func BuildDetails(w http.ResponseWriter, r *http.Request) {
 
 	templates.DataTable(w, `"order": [3, "desc"]`)
 
-	if len(paths) > 1 {
-		category := paths[1] + "/"
-		it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(10000).Run(ctx)
-		templates.Heading(w, category)
+	/*
+		if len(paths) > 1 {
+			category := paths[1] + "/"
+			it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(10000).Run(ctx)
+			templates.Heading(w, category)
+			writePackageList(ctx, w, it)
+			return
+		}
+
+		var categories []bulk.Pkg
+		_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(ctx, &categories)
+		if len(categories) == 0 {
+			templates.NoDetails(w, r.URL.Path)
+			return
+		}
+		templates.CategoryList(w, categories, r.URL.Path)
+
+		templates.Heading(w, "Packages breaking most other packages")
+
+		it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(ctx)
 		writePackageList(ctx, w, it)
-		return
-	}
-
-	var categories []bulk.Pkg
-	_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(ctx, &categories)
-	if len(categories) == 0 {
-		templates.NoDetails(w, r.URL.Path)
-		return
-	}
-	templates.CategoryList(w, categories, r.URL.Path)
-
-	templates.Heading(w, "Packages breaking most other packages")
-
-	it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(ctx)
-	writePackageList(ctx, w, it)
+	*/
 }
 
 func PkgDetails(w http.ResponseWriter, r *http.Request) {
