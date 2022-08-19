@@ -51,7 +51,7 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Try prepopulating the autocomplete cache early.
 	// stateful.MaybePrefillCache(ctx)
 
-	builds, err := s.DB.LatestBuilds(ctx)
+	builds, err := s.DB.LatestBuilds(ctx, true)
 	if err != nil {
 		log.Errorf(ctx, "failed to read latest builds: %s", err)
 	}

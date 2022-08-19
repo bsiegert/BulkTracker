@@ -102,7 +102,7 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 	case "build":
 		return a.BuildDetails(ctx, params, form)
 	case "allbuilds":
-		return AllBuildDetails(ctx, params, form)
+		return a.AllBuildDetails(ctx, params, form)
 	case "pkgresults":
 		return PkgResults(ctx, params, form)
 	case "allpkgresults":
@@ -167,16 +167,9 @@ func (a *API) BuildDetails(ctx context.Context, params []string, _ url.Values) (
 	return a.DB.GetBuild(ctx, int(buildID))
 }
 
-func AllBuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
-	var builds []bulk.Build
-	keys, err := datastore.NewQuery("build").Order("-Timestamp").GetAll(ctx, &builds)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query builds: %s", err)
-	}
-	for i := range keys {
-		builds[i].Key = keys[i].Encode()
-	}
-	return builds, nil
+// AllBuildDetails returns all build records.
+func (a *API) AllBuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+	return a.DB.LatestBuilds(ctx, false /* filter */)
 }
 
 type PkgResult struct {
@@ -192,7 +185,7 @@ func PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}
 
 	// Get results for each of the LatestBuilds.
 	var db *dao.DB
-	builds, err := db.LatestBuilds(ctx) // XXX CRASH
+	builds, err := db.LatestBuilds(ctx, true) // XXX CRASH
 	if err != nil {
 		return nil, fmt.Errorf("getting LatestBuilds: %s", err)
 	}

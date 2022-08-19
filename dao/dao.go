@@ -197,7 +197,7 @@ func (d *DB) PutResults(ctx context.Context, results []bulk.Pkg, buildID int) er
 
 // GetBuild returns the build record with the given ID.
 func (d *DB) GetBuild(ctx context.Context, buildID int) (*bulk.Build, error) {
-	builds, err := d.builds(ctx, d.getBuildStmt, buildID)
+	builds, err := d.builds(ctx, false /* filter */, d.getBuildStmt, buildID)
 	if err != nil {
 		return nil, err
 	}
@@ -208,11 +208,12 @@ func (d *DB) GetBuild(ctx context.Context, buildID int) (*bulk.Build, error) {
 }
 
 // LatestBuilds returns a list of the latest 1000 (max) builds in the DB.
-func (d *DB) LatestBuilds(ctx context.Context) ([]bulk.Build, error) {
-	return d.builds(ctx, d.getLatestBuildsStmt)
+// If filter is true, filter out older builds for the same platform.
+func (d *DB) LatestBuilds(ctx context.Context, filter bool) ([]bulk.Build, error) {
+	return d.builds(ctx, filter, d.getLatestBuildsStmt)
 }
 
-func (d *DB) builds(ctx context.Context, stmt *sql.Stmt, args ...interface{}) ([]bulk.Build, error) {
+func (d *DB) builds(ctx context.Context, filter bool, stmt *sql.Stmt, args ...interface{}) ([]bulk.Build, error) {
 	rs, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return nil, err
@@ -268,12 +269,14 @@ RowLoop:
 			b.NumIndirectPrefailed = *indirectPrefailed
 		}
 
-		// Is this the first entry of this type?
-		// TODO(bsiegert) eliminate O(n2) algo.
-		for i := range builds {
-			bb := builds[i]
-			if b.Platform == bb.Platform && b.Branch == bb.Branch && b.Compiler == bb.Compiler && b.User == bb.User {
-				continue RowLoop
+		if filter {
+			// Is this the first entry of this type?
+			// TODO(bsiegert) eliminate O(n2) algo.
+			for i := range builds {
+				bb := builds[i]
+				if b.Platform == bb.Platform && b.Branch == bb.Branch && b.Compiler == bb.Compiler && b.User == bb.User {
+					continue RowLoop
+				}
 			}
 		}
 		builds = append(builds, b)
