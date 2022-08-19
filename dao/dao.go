@@ -24,6 +24,7 @@ package dao
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/log"
@@ -31,6 +32,8 @@ import (
 
 const (
 	deleteAllForBuildSQL = `DELETE from results
+				WHERE build_id = ?;`
+	getBuildSQL = `SELECT * FROM builds
 				WHERE build_id = ?;`
 	getLatestBuildsSQL = `SELECT * FROM builds
 				ORDER BY build_ts DESC
@@ -42,8 +45,10 @@ const (
 	getPkgIDSQL = `SELECT pkg_id FROM pkgs
 				WHERE category == ? and dir == ?;`
 	putBuildSQL = `INSERT INTO builds
-				(platform, build_ts, branch, compiler, build_user, report_url)
-				VALUES (?, ?, ?, ?, ?, ?)
+				(platform, build_ts, branch, compiler, build_user, report_url,
+				num_ok, num_prefailed, num_failed,
+				num_indirect_failed, num_indirect_prefailed)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				RETURNING build_id;`
 	putPkgSQL = `INSERT OR IGNORE INTO pkgs
 				(category, dir)
@@ -63,6 +68,11 @@ func New(ctx context.Context, driver, dbPath string) (*DB, error) {
 		DB: sqldb,
 	}
 	db.deleteAllForBuildStmt, err = db.DB.PrepareContext(ctx, deleteAllForBuildSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+	db.getBuildStmt, err = db.DB.PrepareContext(ctx, getLatestBuildsSQL)
 	if err != nil {
 		db.DB.Close()
 		return nil, err
@@ -107,6 +117,7 @@ type DB struct {
 
 	// Prepared SQL statements.
 	deleteAllForBuildStmt *sql.Stmt
+	getBuildStmt          *sql.Stmt
 	getLatestBuildsStmt   *sql.Stmt
 	getAllPkgsStmt        *sql.Stmt
 	getPkgIDStmt          *sql.Stmt
@@ -121,7 +132,19 @@ func (d *DB) PutBuild(ctx context.Context, build *bulk.Build) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	row := tx.StmtContext(ctx, d.putBuildStmt).QueryRowContext(ctx, build.Platform, build.Timestamp, build.Branch, build.Compiler, build.User, build.ReportURL)
+	row := tx.StmtContext(ctx, d.putBuildStmt).QueryRowContext(ctx,
+		build.Platform,
+		build.Timestamp,
+		build.Branch,
+		build.Compiler,
+		build.User,
+		build.ReportURL,
+		build.NumOK,
+		build.NumPrefailed,
+		build.NumFailed,
+		build.NumIndirectFailed,
+		build.NumIndirectPrefailed,
+	)
 
 	var id int
 	err = row.Scan(&id)
@@ -172,9 +195,25 @@ func (d *DB) PutResults(ctx context.Context, results []bulk.Pkg, buildID int) er
 	return tx.Commit()
 }
 
+// GetBuild returns the build record with the given ID.
+func (d *DB) GetBuild(ctx context.Context, buildID int) (*bulk.Build, error) {
+	builds, err := d.builds(ctx, d.getBuildStmt, buildID)
+	if err != nil {
+		return nil, err
+	}
+	if len(builds) == 0 {
+		return nil, errors.New("build not found")
+	}
+	return &builds[0], nil
+}
+
 // LatestBuilds returns a list of the latest 1000 (max) builds in the DB.
 func (d *DB) LatestBuilds(ctx context.Context) ([]bulk.Build, error) {
-	rs, err := d.getLatestBuildsStmt.QueryContext(ctx)
+	return d.builds(ctx, d.getLatestBuildsStmt)
+}
+
+func (d *DB) builds(ctx context.Context, stmt *sql.Stmt, args ...interface{}) ([]bulk.Build, error) {
+	rs, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}

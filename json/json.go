@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019
+ * Copyright (c) 2014-2019, 2022
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -24,6 +24,7 @@ package json
 
 import (
 	"errors"
+	"strconv"
 	"sync"
 
 	"github.com/bsiegert/BulkTracker/bulk"
@@ -99,7 +100,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (a *API) dispatch(ctx context.Context, fn string, params []string, form url.Values) (interface{}, error) {
 	switch fn {
 	case "build":
-		return BuildDetails(ctx, params, form)
+		return a.BuildDetails(ctx, params, form)
 	case "allbuilds":
 		return AllBuildDetails(ctx, params, form)
 	case "pkgresults":
@@ -154,21 +155,16 @@ func (a *API) CacheGet(ctx context.Context, cacheKey string, w http.ResponseWrit
 	return true
 }
 
-func BuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+// BuildDetails returns a single build record identified by ID.
+func (a *API) BuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) == 0 {
 		return nil, nil
 	}
-	key, err := datastore.DecodeKey(params[0])
+	buildID, err := strconv.Atoi(params[0])
 	if err != nil {
-		return nil, fmt.Errorf("error decoding key: %s", err)
+		return nil, fmt.Errorf("error parsing build ID %q", params[0])
 	}
-
-	b := &bulk.Build{Key: key.Encode()}
-	err = datastore.Get(ctx, key, b)
-	if err != nil {
-		return nil, fmt.Errorf("getting build record: %s", err)
-	}
-	return b, nil
+	return a.DB.GetBuild(ctx, int(buildID))
 }
 
 func AllBuildDetails(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
