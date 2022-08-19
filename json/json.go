@@ -296,13 +296,12 @@ func Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error
 
 func (a *API) Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}, error) {
 	term := form.Get("term")
-	if term == "" {
+	if len(term) < 2 {
 		return stateful.AutocompleteResponse{
 			// select2 gets confused if the value is null.
 			Results: []stateful.Result{},
 		}, nil
 	}
-	// TODO(bsiegert) re-introduce caching. This goes to the DB each time.
 	names, err := a.DB.GetAllPkgsMatching(ctx, term)
 	if err != nil {
 		return stateful.AutocompleteResponse{
