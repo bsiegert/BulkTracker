@@ -41,7 +41,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"sort"
 	"strings"
 	"time"
 )
@@ -108,7 +107,7 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 	case "allpkgresults":
 		return AllPkgResults(ctx, params, form)
 	case "dir":
-		return Dir(ctx, params, form)
+		return a.Dir(ctx, params, form)
 	case "autocomplete":
 		return a.Autocomplete(ctx, params, form)
 	}
@@ -257,7 +256,7 @@ func AllPkgResults(ctx context.Context, params []string, _ url.Values) (interfac
 	return results, nil
 }
 
-func Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+func (a *API) Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	var category string
 	if len(params) > 0 {
 		category = params[0]
@@ -266,32 +265,13 @@ func Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error
 		category += "/"
 	}
 
-	var pkgs []bulk.Pkg
-	var result []string
 	if category == "" {
 		// List all categories.
-		_, err := datastore.NewQuery("pkg").Project("Category").Distinct().GetAll(ctx, &pkgs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to query packages: %s", err)
-		}
-		result = make([]string, len(pkgs))
-		for i := range pkgs {
-			result[i] = pkgs[i].Category
-		}
+		return a.DB.GetCategories(ctx)
 	} else {
 		// List all pkgnames in a category (union of all builds).
-		_, err := datastore.NewQuery("pkg").Filter("Category =", category).Project("Dir").Distinct().GetAll(ctx, &pkgs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to query packages: %s", err)
-		}
-		result = make([]string, len(pkgs))
-		for i := range pkgs {
-			result[i] = pkgs[i].Dir
-		}
+		return a.DB.GetPkgsInCategory(ctx, category)
 	}
-
-	sort.Strings(result)
-	return result, nil
 }
 
 func (a *API) Autocomplete(ctx context.Context, _ []string, form url.Values) (interface{}, error) {

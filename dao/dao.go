@@ -35,6 +35,9 @@ const (
 				WHERE build_id = ?;`
 	getBuildSQL = `SELECT * FROM builds
 				WHERE build_id = ?;`
+	getCategoriesSQL = `SELECT DISTINCT category
+				FROM pkgs
+				ORDER BY category;`
 	getLatestBuildsSQL = `SELECT * FROM builds
 				ORDER BY build_ts DESC
 				LIMIT 1000;`
@@ -42,6 +45,10 @@ const (
 				FROM pkgs
 				WHERE name LIKE ?
 				ORDER BY name;`
+	getPkgsInCategorySQL = `SELECT DISTINCT dir
+				FROM pkgs
+				WHERE category = ?
+				ORDER BY dir;`
 	getPkgIDSQL = `SELECT pkg_id FROM pkgs
 				WHERE category == ? and dir == ?;`
 	putBuildSQL = `INSERT INTO builds
@@ -77,6 +84,12 @@ func New(ctx context.Context, driver, dbPath string) (*DB, error) {
 		db.DB.Close()
 		return nil, err
 	}
+	db.getCategoriesStmt, err = db.DB.PrepareContext(ctx, getCategoriesSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+
 	db.getLatestBuildsStmt, err = db.DB.PrepareContext(ctx, getLatestBuildsSQL)
 	if err != nil {
 		db.DB.Close()
@@ -88,6 +101,11 @@ func New(ctx context.Context, driver, dbPath string) (*DB, error) {
 		return nil, err
 	}
 	db.getPkgIDStmt, err = db.DB.PrepareContext(ctx, getPkgIDSQL)
+	if err != nil {
+		db.DB.Close()
+		return nil, err
+	}
+	db.getPkgsInCategoryStmt, err = db.DB.PrepareContext(ctx, getPkgsInCategorySQL)
 	if err != nil {
 		db.DB.Close()
 		return nil, err
@@ -118,9 +136,11 @@ type DB struct {
 	// Prepared SQL statements.
 	deleteAllForBuildStmt *sql.Stmt
 	getBuildStmt          *sql.Stmt
+	getCategoriesStmt     *sql.Stmt
 	getLatestBuildsStmt   *sql.Stmt
 	getAllPkgsStmt        *sql.Stmt
 	getPkgIDStmt          *sql.Stmt
+	getPkgsInCategoryStmt *sql.Stmt
 	putBuildStmt          *sql.Stmt
 	putPkgStmt            *sql.Stmt
 	putResultStmt         *sql.Stmt
@@ -289,12 +309,32 @@ func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+	return extractStringList(rs)
+}
+
+func (d *DB) GetCategories(ctx context.Context) ([]string, error) {
+	rs, err := d.getCategoriesStmt.QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return extractStringList(rs)
+}
+
+func (d *DB) GetPkgsInCategory(ctx context.Context, category string) ([]string, error) {
+	rs, err := d.getCategoriesStmt.QueryContext(ctx, category)
+	if err != nil {
+		return nil, err
+	}
+	return extractStringList(rs)
+}
+
+func extractStringList(rs *sql.Rows) ([]string, error) {
 	var (
 		name  string
 		names []string
 	)
 	for rs.Next() {
-		err = rs.Scan(&name)
+		err := rs.Scan(&name)
 		if err != nil {
 			return nil, err
 		}
