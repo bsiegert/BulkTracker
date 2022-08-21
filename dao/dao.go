@@ -321,7 +321,7 @@ func (d *DB) GetCategories(ctx context.Context) ([]string, error) {
 }
 
 func (d *DB) GetPkgsInCategory(ctx context.Context, category string) ([]string, error) {
-	rs, err := d.getCategoriesStmt.QueryContext(ctx, category)
+	rs, err := d.getPkgsInCategoryStmt.QueryContext(ctx, category)
 	if err != nil {
 		return nil, err
 	}
