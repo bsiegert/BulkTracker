@@ -176,6 +176,7 @@ func (d *DB) PutBuild(ctx context.Context, build *bulk.Build) (int, error) {
 	return id, err
 }
 
+// PutResults writes the results for the given build ID to the database.
 func (d *DB) PutResults(ctx context.Context, results []bulk.Pkg, buildID int) error {
 	tx, err := d.DB.BeginTx(ctx, nil)
 	if err != nil {
@@ -225,6 +226,14 @@ func (d *DB) GetBuild(ctx context.Context, buildID int) (*bulk.Build, error) {
 		return nil, errors.New("build not found")
 	}
 	return &builds[0], nil
+}
+
+// GetPkgID returns the ID of the package with the given category and dir.
+func (d *DB) GetPkgID(ctx context.Context, category, dir string) (int, error) {
+	row := d.getPkgIDStmt.QueryRowContext(ctx, category, dir)
+	var pkgID int
+	err := row.Scan(&pkgID)
+	return pkgID, err
 }
 
 // LatestBuilds returns a list of the latest 1000 (max) builds in the DB.
@@ -304,6 +313,8 @@ RowLoop:
 	return builds, rs.Err()
 }
 
+// GetAllPkgsMatching returns all packages (category/dir) that contain
+// substr as a substring match.
 func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, error) {
 	rs, err := d.getAllPkgsStmt.QueryContext(ctx, "%"+substr+"%")
 	if err != nil {
@@ -312,6 +323,7 @@ func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, e
 	return extractStringList(rs)
 }
 
+// GetCategories returns all distinct categories.
 func (d *DB) GetCategories(ctx context.Context) ([]string, error) {
 	rs, err := d.getCategoriesStmt.QueryContext(ctx)
 	if err != nil {
@@ -320,6 +332,7 @@ func (d *DB) GetCategories(ctx context.Context) ([]string, error) {
 	return extractStringList(rs)
 }
 
+// GetPkgsInCategory returns all package dirs in the given category.
 func (d *DB) GetPkgsInCategory(ctx context.Context, category string) ([]string, error) {
 	rs, err := d.getPkgsInCategoryStmt.QueryContext(ctx, category)
 	if err != nil {
@@ -328,6 +341,8 @@ func (d *DB) GetPkgsInCategory(ctx context.Context, category string) ([]string, 
 	return extractStringList(rs)
 }
 
+// extractStringLists converts a single string-valued Rows set to a list of
+// strings.
 func extractStringList(rs *sql.Rows) ([]string, error) {
 	var (
 		name  string

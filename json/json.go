@@ -103,7 +103,7 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 	case "allbuilds":
 		return a.AllBuildDetails(ctx, params, form)
 	case "pkgresults":
-		return PkgResults(ctx, params, form)
+		return a.PkgResults(ctx, params, form)
 	case "allpkgresults":
 		return AllPkgResults(ctx, params, form)
 	case "dir":
@@ -176,15 +176,19 @@ type PkgResult struct {
 	Pkg   *bulk.Pkg
 }
 
-func PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+func (a *API) PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
 		return nil, nil
 	}
 	category, dir := params[0]+"/", params[1]
+	pkgID, err := a.DB.GetPkgID(ctx, category, dir)
+	if err != nil {
+		return nil, fmt.Errorf("package not found: %s", err)
+	}
+	_ = pkgID // XXX
 
 	// Get results for each of the LatestBuilds.
-	var db *dao.DB
-	builds, err := db.LatestBuilds(ctx, true) // XXX CRASH
+	builds, err := a.DB.LatestBuilds(ctx, true)
 	if err != nil {
 		return nil, fmt.Errorf("getting LatestBuilds: %s", err)
 	}
