@@ -21,7 +21,9 @@
 package dao
 
 import (
+	"context"
 	"os"
+	"os/exec"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -37,11 +39,22 @@ func TestNew(t *testing.T) {
 		tempfile.Close()
 	})
 
-	// ctx := context.Background()
+	schema, err := os.Open("../schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// _, err = New(ctx, "sqlite3", tempfile.Name())
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, "sqlite3", tempfile.Name())
+	cmd.Stdin = schema
+	err = cmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = New(ctx, "sqlite3", tempfile.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 }
