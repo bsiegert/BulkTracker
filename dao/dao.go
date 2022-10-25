@@ -214,7 +214,7 @@ func (d *DB) builds(ctx context.Context, filter bool, stmtID int, args ...interf
 		b      bulk.Build
 		builds []bulk.Build
 
-		ok, prefailed, failed, indirectFailed, indirectPrefailed *int64
+		ok, prefailed, failed, indirectFailed, indirectPrefailed sql.NullInt64
 	)
 RowLoop:
 	for rs.Next() {
@@ -235,30 +235,30 @@ RowLoop:
 		if err != nil {
 			return nil, err
 		}
-		if ok == nil {
+		if ok.Valid {
+			b.NumOK = ok.Int64
+		} else {
 			b.NumOK = 0
-		} else {
-			b.NumOK = *ok
 		}
-		if failed == nil {
+		if failed.Valid {
+			b.NumFailed = failed.Int64
+		} else {
 			b.NumFailed = 0
-		} else {
-			b.NumFailed = *failed
 		}
-		if prefailed == nil {
+		if prefailed.Valid {
+			b.NumPrefailed = prefailed.Int64
+		} else {
 			b.NumPrefailed = 0
-		} else {
-			b.NumPrefailed = *prefailed
 		}
-		if indirectFailed == nil {
+		if indirectFailed.Valid {
+			b.NumIndirectFailed = indirectFailed.Int64
+		} else {
 			b.NumIndirectFailed = 0
-		} else {
-			b.NumIndirectFailed = *indirectFailed
 		}
-		if indirectPrefailed == nil {
-			b.NumIndirectPrefailed = 0
+		if indirectPrefailed.Valid {
+			b.NumIndirectPrefailed = indirectPrefailed.Int64
 		} else {
-			b.NumIndirectPrefailed = *indirectPrefailed
+			b.NumIndirectPrefailed = 0
 		}
 
 		if filter {
