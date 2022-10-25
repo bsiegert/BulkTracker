@@ -20,24 +20,24 @@
 
 CREATE TABLE IF NOT EXISTS builds (
     build_id INTEGER PRIMARY KEY ASC,
-    platform text,
-    build_ts timestamp,
-    branch text,
-    compiler text,
-    build_user text,
-    report_url text,
+    platform text NOT NULL,
+    build_ts timestamp NOT NULL,
+    branch text NOT NULL,
+    compiler text NOT NULL,
+    build_user text NOT NULL,
+    report_url text NOT NULL,
 
-    num_ok INTEGER,
-    num_prefailed INTEGER,
-    num_failed INTEGER,
-    num_indirect_failed INTEGER,
-    num_indirect_prefailed INTEGER    
+    num_ok INTEGER NOT NULL,
+    num_prefailed INTEGER NOT NULL,
+    num_failed INTEGER NOT NULL,
+    num_indirect_failed INTEGER NOT NULL,
+    num_indirect_prefailed INTEGER NOT NULL    
 );
 
 CREATE TABLE IF NOT EXISTS pkgs (
     pkg_id INTEGER PRIMARY KEY ASC,
-    category text,
-    dir text,
+    category text NOT NULL,
+    dir text NOT NULL,
     UNIQUE (category, dir)
 );
 
@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS results (
     result_id INTEGER PRIMARY KEY ASC,
     build_id INTEGER REFERENCES builds,
     pkg_id INTEGER REFERENCES pkgs,
-    pkg_name text,
-    build_status INTEGER,
-    failed_deps text,
-    breaks INTEGER
+    pkg_name text NOT NULL,
+    build_status INTEGER NOT NULL,
+    failed_deps text NOT NULL,
+    breaks INTEGER NOT NULL
 );
