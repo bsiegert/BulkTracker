@@ -26,16 +26,7 @@ import (
 	"embed"
 	"html/template"
 	"io"
-	"io/ioutil"
 )
-
-func readFile(name string) string {
-	s, err := ioutil.ReadFile("templates/" + name)
-	if err != nil {
-		panic(err)
-	}
-	return string(s)
-}
 
 var (
 	//go:embed header.html
@@ -91,9 +82,9 @@ func DatastoreError(w io.Writer, err error) {
 	t.ExecuteTemplate(w, "datastore_error.html", err)
 }
 
-func CategoryList(w io.Writer, categories []bulk.Pkg, path string) {
+func CategoryList(w io.Writer, categories []string, path string) {
 	t.ExecuteTemplate(w, "category_list.html", struct {
-		Categories []bulk.Pkg
+		Categories []string
 		CurrentURL string
 	}{categories, path})
 }

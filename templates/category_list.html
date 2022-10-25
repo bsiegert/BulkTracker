@@ -2,6 +2,6 @@
 
   <ul class="list-inline">
   {{$url := .CurrentURL}}{{range $c := .Categories}}
-    <li style="width: 14em"><a href="{{$url}}/{{.Category}}">{{.Category}}</a></li>
+    <li style="width: 14em"><a href="{{$url}}/{{.}}">{{.}}</a></li>
   {{end}}
   </ul>

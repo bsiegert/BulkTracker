@@ -149,15 +149,19 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			writePackageList(ctx, w, it)
 			return
 		}
+	*/
 
-		var categories []bulk.Pkg
-		_, err = datastore.NewQuery("pkg").Ancestor(key).Project("Category").Distinct().GetAll(ctx, &categories)
-		if len(categories) == 0 {
-			templates.NoDetails(w, r.URL.Path)
-			return
-		}
-		templates.CategoryList(w, categories, r.URL.Path)
+	// NOTE: This used to be the list of categories for the current build.
+	// Approximate by just showing all categories. The list of categories
+	// does not change often.
+	categories, _ := b.DB.GetCategories(ctx)
+	if len(categories) == 0 {
+		templates.NoDetails(w, r.URL.Path)
+		return
+	}
+	templates.CategoryList(w, categories, r.URL.Path)
 
+	/*
 		templates.Heading(w, "Packages breaking most other packages")
 
 		it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(ctx)
