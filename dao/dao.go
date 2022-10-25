@@ -206,7 +206,7 @@ func (d *DB) LatestBuilds(ctx context.Context, filter bool) ([]bulk.Build, error
 }
 
 func (d *DB) builds(ctx context.Context, filter bool, stmtID int, args ...interface{}) ([]bulk.Build, error) {
-	rs, err := d.stmts[stmtID].QueryContext(ctx)
+	rs, err := d.stmts[stmtID].QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err
 	}
