@@ -177,7 +177,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	if headAliases[build.Branch] {
 		build.Branch = "HEAD"
 	}
-	log.Debugf(ctx, "%#v, %s", build, err)
+	log.Infof(ctx, "%#v, %s", build, err)
 
 	id, err := i.DB.PutBuild(ctx, build)
 	log.Infof(ctx, "wrote entry %v: %v", id, err)
