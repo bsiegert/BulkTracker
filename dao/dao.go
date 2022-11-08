@@ -74,8 +74,8 @@ var sqlTxt = [...]string{
 				(category, dir)
 				VALUES (?, ?);`,
 	putResult: `INSERT INTO results
-				(build_id, pkg_id, pkg_name, build_status, breaks)
-				VALUES (?, ?, ?, ?, ?)`,
+				(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps)
+				VALUES (?, ?, ?, ?, ?, '')`,
 }
 
 // New opens a new DB instance with the given SQL driver and connection string.
