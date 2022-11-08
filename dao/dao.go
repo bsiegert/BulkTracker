@@ -80,7 +80,7 @@ var sqlTxt = [...]string{
 
 // New opens a new DB instance with the given SQL driver and connection string.
 func New(ctx context.Context, driver, dbPath string) (*DB, error) {
-	sqldb, err := sql.Open(driver, dbPath)
+	sqldb, err := sql.Open(driver, dbPath+"?_fk=true")
 	if err != nil {
 		return nil, err
 	}

@@ -25,11 +25,17 @@ import (
 	"os"
 	"os/exec"
 	"testing"
+	"time"
 
+	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func TestNew(t *testing.T) {
+func setup(t *testing.T) *DB {
+	t.Helper()
+
 	tempfile, err := os.CreateTemp("", "bulktracker*")
 	if err != nil {
 		t.Fatal(err)
@@ -52,9 +58,58 @@ func TestNew(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = New(ctx, "sqlite3", tempfile.Name())
+	db, err := New(ctx, "sqlite3", tempfile.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	return db
+}
+
+func TestNew(t *testing.T) {
+	setup(t)
+}
+
+var compareBuilds = cmpopts.IgnoreFields(bulk.Build{}, "Key", "BuildID")
+
+func TestGetPutBuild(t *testing.T) {
+	myBuilds := []*bulk.Build{
+		{
+			Platform:             "Linux",
+			Timestamp:            time.Now(),
+			Branch:               "HEAD",
+			Compiler:             "gcc",
+			User:                 "a@b.com",
+			ReportURL:            "",
+			NumOK:                12345,
+			NumPrefailed:         9,
+			NumFailed:            87,
+			NumIndirectFailed:    65,
+			NumIndirectPrefailed: 43,
+		},
+	}
+	db := setup(t)
+	ctx := context.Background()
+
+	t.Logf("Putting %d builds", len(myBuilds))
+	var buildIDs []int
+	for _, b := range myBuilds {
+		id, err := db.PutBuild(ctx, b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		buildIDs = append(buildIDs, id)
+	}
+
+	t.Logf("Getting %d builds back", len(buildIDs))
+	for i := range buildIDs {
+		b, err := db.GetBuild(ctx, buildIDs[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if diff := cmp.Diff(myBuilds[i], b, compareBuilds); diff != "" {
+			t.Errorf("[%d] Unexpected diff (-want +got):\n%s", i, diff)
+		}
+	}
 }

@@ -5,6 +5,7 @@ go 1.18
 require (
 	cloud.google.com/go/datastore v1.6.0
 	github.com/TV4/logrus-stackdriver-formatter v0.1.0
+	github.com/google/go-cmp v0.5.6
 	github.com/mattn/go-sqlite3 v1.14.14
 	github.com/sirupsen/logrus v1.8.1
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
@@ -25,7 +26,6 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/jlaffaye/ftp v0.0.0-20210307004419-5d4190119067 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
