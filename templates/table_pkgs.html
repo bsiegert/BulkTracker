@@ -1,9 +1,9 @@
       <tr>
 	<td>
-	  <a href="/pkg/{{.Key}}">{{.Category}}{{.Dir}}</a>
+	  <a href="/pkg/{{.PkgID}}">{{.Category}}{{.Dir}}</a>
 	</td>
 	<td>
-	  <a href="/pkg/{{.Key}}">{{.PkgName}}</a>
+	  <a href="/pkg/{{.PkgID}}">{{.PkgName}}</a>
 	</td>
 	{{if eq .BuildStatus 0}}
 	<td class="success text-success">ok</td>

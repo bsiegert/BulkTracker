@@ -52,9 +52,9 @@ function PkgResultsTable(event) {
       {data: "Build.Compiler"}
     ],
     createdRow: function(row, data, dataIndex) {
-      $('td:eq(0)', row).wrapInner('<a href="/pkg/'+data.Pkg.Key+'"></a>');
+      $('td:eq(0)', row).wrapInner('<a href="/pkg/'+data.Pkg.PkgID+'"></a>');
       $('td:eq(1)', row).addClass(classes[data.Pkg.BuildStatus]);
-      $('td:eq(4)', row).wrapInner('<a href="/build/'+data.Build.Key+'"></a>');
+      $('td:eq(4)', row).wrapInner('<a href="/build/'+data.Build.BuildID+'"></a>');
     }
   });  
 }

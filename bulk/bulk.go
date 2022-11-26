@@ -35,8 +35,6 @@ import (
 
 // Build holds aggregate information about a single bulk build.
 type Build struct {
-	// Key is the string representation of the datastore key of this record.
-	Key string `datastore:"-"`
 	// BuildID is the equivalent of Key in SQL land.
 	BuildID int `datastore:"-"`
 
@@ -160,6 +158,8 @@ scanLoop:
 type Pkg struct {
 	// Key is the string representation of the datastore key of this record.
 	Key string `datastore:"-"`
+	// PkgID is the numeric ID of this result.
+	PkgID int
 	// BuildID is the numeric ID of the build that this belongs to.
 	BuildID int
 

@@ -11,12 +11,7 @@ bt.builds.columns = [
   {data: "Platform"},
   {
     render: function (data, type, row) {
-      return "<span class=\"text-danger\">" + row.NumFailed
-	+ " failed</span> / <span class=\"text-warning\">"
-	+ row.NumIndirectFailed 
-	+ " indirect-failed</span> / <span class=\"text-success\">"
-	+ row.NumOK
-	+ " ok</span>"
+      return `<span class=\"text-danger\">${row.NumFailed} failed</span> / <span class=\"text-warning\">${row.NumIndirectFailed} indirect-failed</span> / <span class=\"text-success\">${row.NumOK} ok</span>`
     }
   },
   {data: "User"}
@@ -24,7 +19,7 @@ bt.builds.columns = [
 
 bt.builds.createdRow = function (row, data) {
   $('td', row).filter(function (i) { return i < 3 })
-    .wrapInner('<a href="/build/'+data.Key+'"></a>');
+    .wrapInner(`<a href="/build/${data.BuildID}"></a>`);
 };
 
 bt.builds.init = function () {

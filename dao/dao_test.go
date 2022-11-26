@@ -70,7 +70,7 @@ func TestNew(t *testing.T) {
 	setup(t)
 }
 
-var compareBuilds = cmpopts.IgnoreFields(bulk.Build{}, "Key", "BuildID")
+var compareBuilds = cmpopts.IgnoreFields(bulk.Build{}, "BuildID")
 
 var myBuilds = []*bulk.Build{
 	{
@@ -143,6 +143,10 @@ func TestGetPkgResult(t *testing.T) {
 		}
 		if len(allresults) != 2 {
 			t.Errorf("expected 2 results, got %d\n%v", len(allresults), allresults)
+		}
+		a := allresults[0]
+		if a.Build.BuildID == 0 {
+			t.Error("result did not have build ID set")
 		}
 	})
 	// t.Run("Results", func(t *testing.T) {
