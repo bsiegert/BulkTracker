@@ -32,8 +32,6 @@ import (
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/stateful"
 
-	"google.golang.org/appengine/datastore"
-
 	"bytes"
 	"context"
 	"encoding/json"
@@ -105,7 +103,7 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 	case "pkgresults":
 		return a.PkgResults(ctx, params, form)
 	case "allpkgresults":
-		return AllPkgResults(ctx, params, form)
+		return a.AllPkgResults(ctx, params, form)
 	case "dir":
 		return a.Dir(ctx, params, form)
 	case "autocomplete":
@@ -171,93 +169,42 @@ func (a *API) AllBuildDetails(ctx context.Context, params []string, _ url.Values
 	return a.DB.LatestBuilds(ctx, false /* filter */)
 }
 
-type PkgResult struct {
-	Build *bulk.Build
-	Pkg   *bulk.Pkg
-}
-
 func (a *API) PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
-		return nil, nil
+		return []bulk.PkgResult{}, nil
 	}
 	category, dir := params[0]+"/", params[1]
-	pkgID, err := a.DB.GetPkgID(ctx, category, dir)
-	if err != nil {
-		return nil, fmt.Errorf("package not found: %s", err)
-	}
-	_ = pkgID // XXX
 
-	// Get results for each of the LatestBuilds.
-	builds, err := a.DB.LatestBuilds(ctx, true)
+	all, err := a.DB.GetAllPkgResults(ctx, category, dir)
 	if err != nil {
-		return nil, fmt.Errorf("getting LatestBuilds: %s", err)
+		return nil, err
 	}
-	// Limit for now.
-	if len(builds) > 40 {
-		builds = builds[:40]
-	}
+	var results []bulk.PkgResult
 
-	// Fan out to datastore, all in parallel.
-	ch := make(chan []PkgResult, 10)
-	for i := range builds {
-		go func(b *bulk.Build) {
-			var pkgs []bulk.Pkg
-			key, err := datastore.DecodeKey(b.Key)
-			if err != nil {
-				log.Errorf(ctx, "unable to decode key: %s", err)
-			}
-			pkgkeys, err := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Filter("Dir =", dir).Limit(10).GetAll(ctx, &pkgs)
-			if err != nil {
-				log.Errorf(ctx, "failed to query packages: %s", err)
-			}
-			for j := range pkgkeys {
-				pkgs[j].Key = pkgkeys[j].Encode()
-			}
-			results := make([]PkgResult, len(pkgs))
-			for j := range results {
-				results[j].Build = b
-				results[j].Pkg = &pkgs[j]
-			}
-			ch <- results
-		}(&builds[i])
-	}
-	var results []PkgResult
-	for range builds {
-		results = append(results, <-ch...)
+	// Only keep the first (i.e. most recent) result.
+	buildsSeen := make(map[bulk.Build]bool)
+	for _, r := range all {
+		b := bulk.Build{
+			Platform: r.Build.Platform,
+			Branch:   r.Build.Branch,
+			Compiler: r.Build.Compiler,
+			User:     r.Build.User,
+		}
+		if !buildsSeen[b] {
+			results = append(results, r)
+		}
+		buildsSeen[b] = true
 	}
 	return results, nil
 }
 
-func AllPkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+func (a *API) AllPkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
-		return []bulk.Pkg{}, nil
+		return []bulk.PkgResult{}, nil
 	}
 	category, dir := params[0]+"/", params[1]
 
-	var pkgs []bulk.Pkg
-	pkgkeys, err := datastore.NewQuery("pkg").Filter("Category =", category).Filter("Dir =", dir).Limit(1000).GetAll(ctx, &pkgs)
-	if err != nil {
-		log.Errorf(ctx, "failed to query packages: %s", err)
-	}
-	for j := range pkgkeys {
-		pkgs[j].Key = pkgkeys[j].Encode()
-	}
-	results := make([]PkgResult, len(pkgs))
-	for j := range results {
-		results[j].Pkg = &pkgs[j]
-
-		// TODO(bsiegert) do this in parallel and/or cache repeated values.
-		// One way would be to build a list of empty build records and desired
-		// keys, then call GetMulti.
-		buildKey := pkgkeys[j].Parent()
-		b := &bulk.Build{Key: buildKey.Encode()}
-		err = datastore.Get(ctx, buildKey, b)
-		if err != nil {
-			log.Errorf(ctx, "getting build record: %s", err)
-		}
-		results[j].Build = b
-	}
-	return results, nil
+	return a.DB.GetAllPkgResults(ctx, category, dir)
 }
 
 func (a *API) Dir(ctx context.Context, params []string, _ url.Values) (interface{}, error) {

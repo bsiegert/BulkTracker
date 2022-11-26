@@ -36,6 +36,7 @@ const (
 	getCategories
 	getLatestBuilds
 	getAllPkgs
+	getAllPkgResults
 	getPkgsInCategory
 	getPkgID
 	putBuild
@@ -58,6 +59,10 @@ var sqlTxt = [...]string{
 				FROM pkgs
 				WHERE name LIKE ?
 				ORDER BY name;`,
+	getAllPkgResults: `SELECT r.pkg_name, r.build_status, r.failed_deps, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+				FROM results r, builds b
+				WHERE r.build_id == b.build_id AND r.pkg_id == ?
+				ORDER BY b.build_ts DESC;`,
 	getPkgsInCategory: `SELECT DISTINCT dir
 				FROM pkgs
 				WHERE category = ?
@@ -284,6 +289,50 @@ func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, e
 		return nil, err
 	}
 	return extractStringList(rs)
+}
+
+// GetAllPkgResults returns all results for the given category and dir.
+func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]bulk.PkgResult, error) {
+	tx, err := d.DB.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	row := tx.StmtContext(ctx, d.stmts[getPkgID]).QueryRowContext(ctx, category, dir)
+	var pkgID int
+	err = row.Scan(&pkgID)
+	if err != nil {
+		return nil, err
+	}
+	rs, err := tx.StmtContext(ctx, d.stmts[getAllPkgResults]).QueryContext(ctx, pkgID)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []bulk.PkgResult
+	for rs.Next() {
+		r := bulk.PkgResult{
+			Build: &bulk.Build{},
+			Pkg:   &bulk.Pkg{},
+		}
+		err = rs.Scan(
+			&r.Pkg.PkgName,
+			&r.Pkg.BuildStatus,
+			&r.Pkg.FailedDeps,
+			&r.Pkg.Breaks,
+			&r.Build.BuildID,
+			&r.Build.Platform,
+			&r.Build.Timestamp,
+			&r.Build.Branch,
+			&r.Build.Compiler,
+			&r.Build.User,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return results, nil
 }
 
 // GetCategories returns all distinct categories.

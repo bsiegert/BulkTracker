@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2018, 2022
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -245,4 +245,10 @@ func (p PkgsByName) Less(i, j int) bool {
 
 func (p PkgsByName) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
+}
+
+// PkgResult is a pair of build and package.
+type PkgResult struct {
+	Build *Build
+	Pkg   *Pkg
 }
