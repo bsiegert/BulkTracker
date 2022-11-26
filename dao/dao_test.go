@@ -72,22 +72,23 @@ func TestNew(t *testing.T) {
 
 var compareBuilds = cmpopts.IgnoreFields(bulk.Build{}, "Key", "BuildID")
 
+var myBuilds = []*bulk.Build{
+	{
+		Platform:             "Linux",
+		Timestamp:            time.Now(),
+		Branch:               "HEAD",
+		Compiler:             "gcc",
+		User:                 "a@b.com",
+		ReportURL:            "",
+		NumOK:                12345,
+		NumPrefailed:         9,
+		NumFailed:            87,
+		NumIndirectFailed:    65,
+		NumIndirectPrefailed: 43,
+	},
+}
+
 func TestGetPutBuild(t *testing.T) {
-	myBuilds := []*bulk.Build{
-		{
-			Platform:             "Linux",
-			Timestamp:            time.Now(),
-			Branch:               "HEAD",
-			Compiler:             "gcc",
-			User:                 "a@b.com",
-			ReportURL:            "",
-			NumOK:                12345,
-			NumPrefailed:         9,
-			NumFailed:            87,
-			NumIndirectFailed:    65,
-			NumIndirectPrefailed: 43,
-		},
-	}
 	db := setup(t)
 	ctx := context.Background()
 
@@ -112,4 +113,46 @@ func TestGetPutBuild(t *testing.T) {
 			t.Errorf("[%d] Unexpected diff (-want +got):\n%s", i, diff)
 		}
 	}
+}
+
+func TestGetPkgResult(t *testing.T) {
+	db := setup(t)
+	ctx := context.Background()
+
+	id, err := db.PutBuild(ctx, myBuilds[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	someResult := bulk.Pkg{
+		BuildID:  id,
+		Category: "a/",
+		Dir:      "b",
+		PkgName:  "b-1.0",
+	}
+	err = db.PutResults(ctx, []bulk.Pkg{someResult, someResult}, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("AllPkgResults", func(t *testing.T) {
+		// GetAllPkgResults should return all (=2) results
+		allresults, err := db.GetAllPkgResults(ctx, "a/", "b")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(allresults) != 2 {
+			t.Errorf("expected 2 results, got %d\n%v", len(allresults), allresults)
+		}
+	})
+	// t.Run("Results", func(t *testing.T) {
+	// 	// GetPkgResults should filter the second result and only return one.
+	// 	results, err := db.GetPkgResults(ctx, "a/", "b")
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+	// 	if len(results) != 1 {
+	// 		t.Errorf("expected 1 filtered result, got %d\n%v", len(results), results)
+	// 	}
+	// })
 }

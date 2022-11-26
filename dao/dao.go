@@ -59,7 +59,7 @@ var sqlTxt = [...]string{
 				FROM pkgs
 				WHERE name LIKE ?
 				ORDER BY name;`,
-	getAllPkgResults: `SELECT r.pkg_name, r.build_status, r.failed_deps, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+	getAllPkgResults: `SELECT r.pkg_name, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
 				FROM results r, builds b
 				WHERE r.build_id == b.build_id AND r.pkg_id == ?
 				ORDER BY b.build_ts DESC;`,
@@ -319,7 +319,7 @@ func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]bulk
 		err = rs.Scan(
 			&r.Pkg.PkgName,
 			&r.Pkg.BuildStatus,
-			&r.Pkg.FailedDeps,
+			// &r.Pkg.FailedDeps,
 			&r.Pkg.Breaks,
 			&r.Build.BuildID,
 			&r.Build.Platform,
@@ -331,6 +331,7 @@ func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]bulk
 		if err != nil {
 			return nil, err
 		}
+		results = append(results, r)
 	}
 	return results, nil
 }
