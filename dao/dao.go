@@ -39,6 +39,7 @@ const (
 	getAllPkgResults
 	getPkgsInCategory
 	getPkgID
+	getResultsInCategory
 	putBuild
 	putPkg
 	putResult
@@ -69,6 +70,10 @@ var sqlTxt = [...]string{
 				ORDER BY dir;`,
 	getPkgID: `SELECT pkg_id FROM pkgs
 				WHERE category == ? and dir == ?;`,
+	getResultsInCategory: `SELECT r.*, p.*
+				FROM results r
+				JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+				WHERE p.category == ? AND r.build_id == ?;`,
 	putBuild: `INSERT INTO builds
 				(platform, build_ts, branch, compiler, build_user, report_url,
 				num_ok, num_prefailed, num_failed,
