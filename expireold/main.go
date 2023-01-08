@@ -30,6 +30,7 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/expireold/dsbatch"
 	"google.golang.org/api/iterator"
 )
 
@@ -76,7 +77,7 @@ func main() {
 	}
 
 	fmt.Printf("Deleting %d builds\n", len(keys))
-	err = DeleteMulti(ctx, client, keys)
+	err = dsbatch.DeleteMulti(ctx, client, *numParallel, keys)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +100,7 @@ func RemoveDetails(ctx context.Context, client *datastore.Client, buildKey *data
 		return ErrNoDetails
 	}
 	fmt.Printf("\tRemoving %v records (%s) ... ", len(keys), time.Since(startTime))
-	err = DeleteMulti(ctx, client, keys)
+	err = dsbatch.DeleteMulti(ctx, client, *numParallel, keys)
 	if err != nil {
 		return err
 	}

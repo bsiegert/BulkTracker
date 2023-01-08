@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2021
+ * Copyright (c) 2014-2021, 2023
  *	Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -18,7 +18,8 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-package main
+// Package dsbatch allows removing datastore records in bulk.
+package dsbatch
 
 import (
 	"context"
@@ -31,7 +32,7 @@ import (
 // Maximum number of records per call to PutMulti.
 const MaxPerCall = 500
 
-func DeleteMulti(ctx context.Context, client *datastore.Client, keys []*datastore.Key) error {
+func DeleteMulti(ctx context.Context, client *datastore.Client, numParallel int, keys []*datastore.Key) error {
 	l := len(keys)
 	ch := make(chan []*datastore.Key)
 	group, cctx := errgroup.WithContext(ctx)
@@ -47,7 +48,7 @@ func DeleteMulti(ctx context.Context, client *datastore.Client, keys []*datastor
 		}
 		return nil
 	}
-	for i := 0; i < *numParallel; i++ {
+	for i := 0; i < numParallel; i++ {
 		group.Go(deleteChunk)
 	}
 
