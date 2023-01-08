@@ -37,6 +37,7 @@ import (
 var (
 	numResults  = flag.Int("n", 1, "Number of results")
 	numParallel = flag.Int("parallel", 2, "Number of parallel datastore calls")
+	minAge      = flag.Duration("min_age", 365*24*time.Hour, "Minimum age for expiring builds")
 )
 
 var ErrNoDetails = errors.New("no details")
@@ -64,8 +65,13 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%s (%v on %v)\n", key.Encode(), build.Platform, build.Date())
-		keys = append(keys, key)
 
+		if time.Since(build.Timestamp) < *minAge {
+			fmt.Println("\ttoo new, stopping")
+			break
+		}
+
+		keys = append(keys, key)
 		err = RemoveDetails(ctx, client, key)
 		if err == ErrNoDetails {
 			continue
