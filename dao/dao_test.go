@@ -75,12 +75,11 @@ var compareBuilds = cmpopts.IgnoreFields(bulk.Build{}, "BuildID")
 var myBuilds = []*bulk.Build{
 	{
 		Platform:             "Linux",
-		Timestamp:            time.Now(),
+		BuildTs:              time.Now(),
 		Branch:               "HEAD",
 		Compiler:             "gcc",
-		User:                 "a@b.com",
-		ReportURL:            "",
-		NumOK:                12345,
+		BuildUser:            "a@b.com",
+		NumOk:                12345,
 		NumPrefailed:         9,
 		NumFailed:            87,
 		NumIndirectFailed:    65,

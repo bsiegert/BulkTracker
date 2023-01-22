@@ -185,10 +185,10 @@ func (a *API) PkgResults(ctx context.Context, params []string, _ url.Values) (in
 	buildsSeen := make(map[bulk.Build]bool)
 	for _, r := range all {
 		b := bulk.Build{
-			Platform: r.Build.Platform,
-			Branch:   r.Build.Branch,
-			Compiler: r.Build.Compiler,
-			User:     r.Build.User,
+			Platform:  r.Build.Platform,
+			Branch:    r.Build.Branch,
+			Compiler:  r.Build.Compiler,
+			BuildUser: r.Build.BuildUser,
 		}
 		if !buildsSeen[b] {
 			results = append(results, r)

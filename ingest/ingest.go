@@ -181,7 +181,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	id, err := i.DB.PutBuild(ctx, build)
 	log.Infof(ctx, "wrote entry %v: %v", id, err)
-	i.FetchReport(ctx, id, build.ReportURL)
+	i.FetchReport(ctx, id, build.ReportUrl)
 }
 
 // fileSuffix returns the "file type" suffix of the file name, possibly

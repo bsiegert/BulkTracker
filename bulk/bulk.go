@@ -33,36 +33,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 )
 
 // Build holds aggregate information about a single bulk build.
-type Build struct {
-	// BuildID is the equivalent of Key in SQL land.
-	BuildID int `datastore:"-"`
-
-	Platform  string
-	Timestamp time.Time
-	Branch    string
-	Compiler  string
-	User      string
-	ReportURL string
-	// The following are aggregate statistics giving
-	// the number of packages with each status.
-	NumOK, NumPrefailed, NumFailed, NumIndirectFailed, NumIndirectPrefailed int64
-}
-
-// Date returns the date part of the build timestamp.
-func (b *Build) Date() string {
-	return b.Timestamp.Format("2006-01-02")
-}
-
-func (b *Build) BaseURL() string {
-	if n := strings.Index(b.ReportURL, "meta/"); n != -1 {
-		return b.ReportURL[:n]
-	}
-	return path.Base(b.ReportURL)
-}
+type Build = ddao.Build
 
 // Status of a package build.
 const (
@@ -92,7 +68,7 @@ var ErrParse = errors.New("bulk: parse error")
 // BuildFromReport parses the start of a bulk report email to fill in the
 // fields.
 func BuildFromReport(from string, r io.Reader) (*Build, error) {
-	b := &Build{User: from}
+	b := &Build{BuildUser: from}
 	s := bufio.NewScanner(r)
 	for {
 		if !s.Scan() {
@@ -130,7 +106,7 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 		case "Compiler":
 			b.Compiler = val
 		case "Build start":
-			b.Timestamp, _ = time.Parse("2006-01-02 15:04", val)
+			b.BuildTs, _ = time.Parse("2006-01-02 15:04", val)
 		case "Machine readable version":
 			if val == "" {
 				if !s.Scan() {
@@ -138,9 +114,9 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 				}
 				val = strings.TrimSpace(s.Text())
 			}
-			b.ReportURL = val
+			b.ReportUrl = val
 		case "Successfully built":
-			b.NumOK, _ = strconv.ParseInt(val, 10, 64)
+			b.NumOk, _ = strconv.ParseInt(val, 10, 64)
 		case "Failed to build":
 			b.NumFailed, _ = strconv.ParseInt(val, 10, 64)
 		case "Depending on failed package":

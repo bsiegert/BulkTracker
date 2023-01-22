@@ -127,12 +127,12 @@ func (d *DB) PutBuild(ctx context.Context, build *bulk.Build) (int, error) {
 	}
 	row := tx.StmtContext(ctx, d.stmts[putBuild]).QueryRowContext(ctx,
 		build.Platform,
-		build.Timestamp,
+		build.BuildTs,
 		build.Branch,
 		build.Compiler,
-		build.User,
-		build.ReportURL,
-		build.NumOK,
+		build.BuildUser,
+		build.ReportUrl,
+		build.NumOk,
 		build.NumPrefailed,
 		build.NumFailed,
 		build.NumIndirectFailed,
@@ -231,11 +231,11 @@ RowLoop:
 		err = rs.Scan(
 			&b.BuildID,
 			&b.Platform,
-			&b.Timestamp,
+			&b.BuildTs,
 			&b.Branch,
 			&b.Compiler,
-			&b.User,
-			&b.ReportURL,
+			&b.BuildUser,
+			&b.ReportUrl,
 			&ok,
 			&prefailed,
 			&failed,
@@ -246,9 +246,9 @@ RowLoop:
 			return nil, err
 		}
 		if ok.Valid {
-			b.NumOK = ok.Int64
+			b.NumOk = ok.Int64
 		} else {
-			b.NumOK = 0
+			b.NumOk = 0
 		}
 		if failed.Valid {
 			b.NumFailed = failed.Int64
@@ -276,7 +276,7 @@ RowLoop:
 			// TODO(bsiegert) eliminate O(n2) algo.
 			for i := range builds {
 				bb := builds[i]
-				if b.Platform == bb.Platform && b.Branch == bb.Branch && b.Compiler == bb.Compiler && b.User == bb.User {
+				if b.Platform == bb.Platform && b.Branch == bb.Branch && b.Compiler == bb.Compiler && b.BuildUser == bb.BuildUser {
 					continue RowLoop
 				}
 			}
@@ -328,10 +328,10 @@ func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]bulk
 			&r.Pkg.Breaks,
 			&r.Build.BuildID,
 			&r.Build.Platform,
-			&r.Build.Timestamp,
+			&r.Build.BuildTs,
 			&r.Build.Branch,
 			&r.Build.Compiler,
-			&r.Build.User,
+			&r.Build.BuildUser,
 		)
 		if err != nil {
 			return nil, err
