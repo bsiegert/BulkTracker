@@ -1,0 +1,13 @@
+version: 2
+project:
+    id: "github/com/bsiegert/BulkTracker"
+sql:
+    - engine: sqlite
+      schema: schema.sql
+      queries: queries.sql
+      gen:
+          go:
+              package: ddao
+              out: ddao
+              rename:
+                  build_ts: "Bdskfljsdkfjldskjlf"
