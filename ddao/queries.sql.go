@@ -73,36 +73,6 @@ func (q *Queries) GetAllPkgResults(ctx context.Context, pkgID sql.NullInt64) ([]
 	return items, nil
 }
 
-const getAllPkgs = `-- name: GetAllPkgs :many
-SELECT category || dir AS name
-FROM pkgs
-WHERE (category || dir) LIKE ?
-ORDER BY name
-`
-
-func (q *Queries) GetAllPkgs(ctx context.Context, dollar_1 interface{}) ([]interface{}, error) {
-	rows, err := q.db.QueryContext(ctx, getAllPkgs, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []interface{}
-	for rows.Next() {
-		var name interface{}
-		if err := rows.Scan(&name); err != nil {
-			return nil, err
-		}
-		items = append(items, name)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getBuild = `-- name: GetBuild :one
 SELECT build_id, platform, build_ts, branch, compiler, build_user, report_url, num_ok, num_prefailed, num_failed, num_indirect_failed, num_indirect_prefailed FROM builds
 WHERE build_id = ?
@@ -157,14 +127,22 @@ func (q *Queries) GetCategories(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const getLatestBuilds = `-- name: GetLatestBuilds :many
+const getLatestBuildsPerPlatform = `-- name: GetLatestBuildsPerPlatform :many
+
 SELECT build_id, platform, build_ts, branch, compiler, build_user, report_url, num_ok, num_prefailed, num_failed, num_indirect_failed, num_indirect_prefailed FROM builds
+WHERE build_id IN (
+	SELECT DISTINCT
+	MAX(build_id) OVER (PARTITION BY platform, branch, compiler, build_user)
+	FROM builds
+) 
 ORDER BY build_ts DESC
 LIMIT 1000
 `
 
-func (q *Queries) GetLatestBuilds(ctx context.Context) ([]Build, error) {
-	rows, err := q.db.QueryContext(ctx, getLatestBuilds)
+// This relies on the fact that IDs are monotonically increasing, so a newer
+// build will have a higher ID. There is probably a cleaner way.
+func (q *Queries) GetLatestBuildsPerPlatform(ctx context.Context) ([]Build, error) {
+	rows, err := q.db.QueryContext(ctx, getLatestBuildsPerPlatform)
 	if err != nil {
 		return nil, err
 	}
@@ -306,6 +284,7 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 }
 
 const putBuild = `-- name: PutBuild :one
+
 INSERT INTO builds
 (platform, build_ts, branch, compiler, build_user, report_url, num_ok,
 	num_prefailed, num_failed, num_indirect_failed, num_indirect_prefailed)
@@ -327,6 +306,7 @@ type PutBuildParams struct {
 	NumIndirectPrefailed int64
 }
 
+// PutBuild writes the Build record to the DB and returns the ID.
 func (q *Queries) PutBuild(ctx context.Context, arg PutBuildParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, putBuild,
 		arg.Platform,
@@ -385,4 +365,76 @@ func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
 		arg.Breaks,
 	)
 	return err
+}
+
+const getAllPkgs = `-- name: getAllPkgs :many
+SELECT category || dir AS name
+FROM pkgs
+WHERE (category || dir) LIKE ?
+ORDER BY name
+`
+
+func (q *Queries) getAllPkgs(ctx context.Context, dollar_1 interface{}) ([]interface{}, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPkgs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []interface{}
+	for rows.Next() {
+		var name interface{}
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLatestBuilds = `-- name: getLatestBuilds :many
+SELECT build_id, platform, build_ts, branch, compiler, build_user, report_url, num_ok, num_prefailed, num_failed, num_indirect_failed, num_indirect_prefailed FROM builds
+ORDER BY build_ts DESC
+LIMIT 1000
+`
+
+func (q *Queries) getLatestBuilds(ctx context.Context) ([]Build, error) {
+	rows, err := q.db.QueryContext(ctx, getLatestBuilds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Build
+	for rows.Next() {
+		var i Build
+		if err := rows.Scan(
+			&i.BuildID,
+			&i.Platform,
+			&i.BuildTs,
+			&i.Branch,
+			&i.Compiler,
+			&i.BuildUser,
+			&i.ReportUrl,
+			&i.NumOk,
+			&i.NumPrefailed,
+			&i.NumFailed,
+			&i.NumIndirectFailed,
+			&i.NumIndirectPrefailed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -9,5 +9,3 @@ sql:
           go:
               package: ddao
               out: ddao
-              rename:
-                  build_ts: "Bdskfljsdkfjldskjlf"

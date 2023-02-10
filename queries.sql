@@ -11,12 +11,25 @@ SELECT DISTINCT category
 FROM pkgs
 ORDER BY category;
 
--- name: GetLatestBuilds :many
+-- name: getLatestBuilds :many
 SELECT * FROM builds
 ORDER BY build_ts DESC
 LIMIT 1000;
 
--- name: GetAllPkgs :many
+-- name: GetLatestBuildsPerPlatform :many
+
+-- This relies on the fact that IDs are monotonically increasing, so a newer
+-- build will have a higher ID. There is probably a cleaner way.
+SELECT * FROM builds
+WHERE build_id IN (
+	SELECT DISTINCT
+	MAX(build_id) OVER (PARTITION BY platform, branch, compiler, build_user)
+	FROM builds
+) 
+ORDER BY build_ts DESC
+LIMIT 1000;
+
+-- name: getAllPkgs :many
 SELECT category || dir AS name
 FROM pkgs
 WHERE (category || dir) LIKE ?
@@ -46,6 +59,8 @@ JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE p.category == ? AND r.build_id == ?;
 
 -- name: PutBuild :one
+
+-- PutBuild writes the Build record to the DB and returns the ID.
 INSERT INTO builds
 (platform, build_ts, branch, compiler, build_user, report_url, num_ok,
 	num_prefailed, num_failed, num_indirect_failed, num_indirect_prefailed)
