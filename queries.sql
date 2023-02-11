@@ -29,11 +29,11 @@ WHERE build_id IN (
 ORDER BY build_ts DESC
 LIMIT 1000;
 
--- name: getAllPkgs :many
-SELECT category || dir AS name
-FROM pkgs
-WHERE (category || dir) LIKE ?
-ORDER BY name;
+-- name: getAllPkgsMatching :many
+SELECT pkgpath
+FROM pkgpaths
+WHERE pkgpath LIKE @name
+ORDER BY pkgpath;
 
 
 -- name: GetAllPkgResults :many

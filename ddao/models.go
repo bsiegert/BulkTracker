@@ -30,6 +30,10 @@ type Pkg struct {
 	Dir      string
 }
 
+type Pkgpath struct {
+	Pkgpath interface{}
+}
+
 type Result struct {
 	ResultID    int64
 	BuildID     sql.NullInt64

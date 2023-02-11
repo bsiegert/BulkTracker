@@ -41,6 +41,10 @@ CREATE TABLE IF NOT EXISTS pkgs (
     UNIQUE (category, dir)
 );
 
+CREATE VIEW IF NOT EXISTS pkgpaths (
+    pkgpath
+) AS SELECT (category || dir) AS pkgpath FROM pkgs;
+
 CREATE TABLE IF NOT EXISTS results (
     result_id INTEGER PRIMARY KEY ASC,
     build_id INTEGER REFERENCES builds,

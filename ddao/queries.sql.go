@@ -367,26 +367,26 @@ func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
 	return err
 }
 
-const getAllPkgs = `-- name: getAllPkgs :many
-SELECT category || dir AS name
-FROM pkgs
-WHERE (category || dir) LIKE ?
-ORDER BY name
+const getAllPkgsMatching = `-- name: getAllPkgsMatching :many
+SELECT pkgpath
+FROM pkgpaths
+WHERE pkgpath LIKE @name
+ORDER BY pkgpath
 `
 
-func (q *Queries) getAllPkgs(ctx context.Context, dollar_1 interface{}) ([]interface{}, error) {
-	rows, err := q.db.QueryContext(ctx, getAllPkgs, dollar_1)
+func (q *Queries) getAllPkgsMatching(ctx context.Context, pkgpath interface{}) ([]interface{}, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPkgsMatching, pkgpath)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	var items []interface{}
 	for rows.Next() {
-		var name interface{}
-		if err := rows.Scan(&name); err != nil {
+		var pkgpath interface{}
+		if err := rows.Scan(&pkgpath); err != nil {
 			return nil, err
 		}
-		items = append(items, name)
+		items = append(items, pkgpath)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

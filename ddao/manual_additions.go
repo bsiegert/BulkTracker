@@ -121,15 +121,26 @@ func (d *DB) LatestBuilds(ctx context.Context, filter bool) ([]Build, error) {
 // GetAllPkgsMatching returns all packages (category/dir) that contain
 // substr as a substring match.
 func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, error) {
-	pkgs, err := d.getAllPkgs(ctx, "%"+substr+"%")
+	rows, err := d.Queries.db.QueryContext(ctx, getAllPkgsMatching, "%"+substr+"%")
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO figure out how to get rid of the awkward conversion
-	rv := make([]string, len(pkgs))
-	for i := range pkgs {
-		rv[i] = pkgs[i].(string)
+	// This is a copy of the generated code.
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var pkgpath string
+		if err := rows.Scan(&pkgpath); err != nil {
+			return nil, err
+		}
+		items = append(items, pkgpath)
 	}
-	return rv, nil
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

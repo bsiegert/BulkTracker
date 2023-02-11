@@ -9,3 +9,6 @@ sql:
           go:
               package: ddao
               out: ddao
+              overrides:
+                  - column: "pkgpaths.pkgpath"
+                    go_type: "string"
