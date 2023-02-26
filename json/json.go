@@ -28,7 +28,7 @@ import (
 	"sync"
 
 	"github.com/bsiegert/BulkTracker/bulk"
-	"github.com/bsiegert/BulkTracker/dao"
+	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/stateful"
 
@@ -58,7 +58,7 @@ type cacheEntry struct {
 }
 
 type API struct {
-	DB *dao.DB
+	DB *ddao.DB
 
 	mu    sync.Mutex
 	cache map[string]cacheEntry
@@ -157,11 +157,11 @@ func (a *API) BuildDetails(ctx context.Context, params []string, _ url.Values) (
 	if len(params) == 0 {
 		return nil, nil
 	}
-	buildID, err := strconv.Atoi(params[0])
+	buildID, err := strconv.ParseInt(params[0], 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing build ID %q", params[0])
 	}
-	return a.DB.GetBuild(ctx, int(buildID))
+	return a.DB.GetBuild(ctx, buildID)
 }
 
 // AllBuildDetails returns all build records.
@@ -179,16 +179,16 @@ func (a *API) PkgResults(ctx context.Context, params []string, _ url.Values) (in
 	if err != nil {
 		return nil, err
 	}
-	var results []bulk.PkgResult
+	var results []ddao.GetAllPkgResultsRow
 
 	// Only keep the first (i.e. most recent) result.
-	buildsSeen := make(map[bulk.Build]bool)
+	buildsSeen := make(map[ddao.Build]bool)
 	for _, r := range all {
-		b := bulk.Build{
-			Platform:  r.Build.Platform,
-			Branch:    r.Build.Branch,
-			Compiler:  r.Build.Compiler,
-			BuildUser: r.Build.BuildUser,
+		b := ddao.Build{
+			Platform:  r.Platform,
+			Branch:    r.Branch,
+			Compiler:  r.Compiler,
+			BuildUser: r.BuildUser,
 		}
 		if !buildsSeen[b] {
 			results = append(results, r)

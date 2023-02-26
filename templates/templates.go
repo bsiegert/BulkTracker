@@ -22,6 +22,7 @@ package templates
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/ddao"
 
 	"embed"
 	"html/template"
@@ -55,7 +56,7 @@ func TableBegin(w io.Writer, columns ...string) {
 	t.ExecuteTemplate(w, "table_begin.html", columns)
 }
 
-func TableBuilds(w io.Writer, b *bulk.Build) {
+func TableBuilds(w io.Writer, b *ddao.Build) {
 	t.ExecuteTemplate(w, "table_builds.html", b)
 }
 

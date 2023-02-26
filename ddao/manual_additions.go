@@ -144,3 +144,26 @@ func (d *DB) GetAllPkgsMatching(ctx context.Context, substr string) ([]string, e
 	}
 	return items, nil
 }
+
+// GetAllPkgResults returns all results for the given category and dir.
+func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]GetAllPkgResultsRow, error) {
+	tx, err := d.db.(*sql.DB).BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	q := d.Queries.WithTx(tx)
+
+	pkgID, err := q.GetPkgID(ctx, GetPkgIDParams{
+		Category: category,
+		Dir:      dir,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return q.GetAllPkgResults(ctx, sql.NullInt64{
+		Int64: pkgID,
+		Valid: true,
+	})
+}

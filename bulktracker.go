@@ -33,6 +33,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/bsiegert/BulkTracker/dao"
+	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/log"
@@ -71,12 +72,14 @@ func main() {
 		log.Errorf(ctx, "failed to open database: %s", err)
 		os.Exit(1)
 	}
+	var ddb ddao.DB
+	ddb.Queries = *ddao.New(db.DB)
 
 	http.Handle("/", &pages.StartPage{
-		DB: db,
+		DB: &ddb,
 	})
 	http.Handle("/build/", &pages.BuildDetails{
-		DB: db,
+		DB: &ddb,
 	})
 	http.HandleFunc("/builds", pages.ShowBuilds)
 	http.Handle("/robots.txt", http.FileServer(http.FS(staticContent)))
@@ -87,7 +90,7 @@ func main() {
 		DB: db,
 	})
 	http.Handle("/json/", &json.API{
-		DB: db,
+		DB: &ddb,
 	})
 	// http.HandleFunc("/pkg/", pages.PkgDetails)
 

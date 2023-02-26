@@ -25,7 +25,7 @@ import (
 	"strconv"
 
 	"github.com/bsiegert/BulkTracker/bulk"
-	"github.com/bsiegert/BulkTracker/dao"
+	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/templates"
 
@@ -40,7 +40,7 @@ import (
 )
 
 type StartPage struct {
-	DB *dao.DB
+	DB *ddao.DB
 }
 
 func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +78,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `<script src="/static/builds.js"></script>`)
 }
 
-func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []bulk.Build) {
+func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []ddao.Build) {
 	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
 	for i := range builds {
 		templates.TableBuilds(w, &builds[i])
@@ -106,7 +106,7 @@ func writePackageList(ctx context.Context, w http.ResponseWriter, it *datastore.
 }
 
 type BuildDetails struct {
-	DB *dao.DB
+	DB *ddao.DB
 }
 
 func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +118,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(paths) == 0 {
 		return
 	}
-	buildID, err := strconv.Atoi(paths[0])
+	buildID, err := strconv.ParseInt(paths[0], 10, 64)
 	if err != nil {
 		log.Warningf(ctx, "error decoding key: %s", err)
 		return
@@ -129,7 +129,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Warningf(ctx, "getting build record: %s", err)
 		return
 	}
-	templates.BulkBuildInfo(w, build)
+	templates.BulkBuildInfo(w, &build)
 	switch r.URL.Query().Get("a") {
 	case "reindex":
 		// ingest.FetchReport(ctx, key, build.ReportURL)
