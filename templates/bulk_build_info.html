@@ -7,9 +7,9 @@
 	  <dt>Compiler</dt>
 	  <dd>{{.Compiler}}</dd>
 	  <dt>Timestamp</dt>
-	  <dd>{{.Date}}</dd>
+	  <dd>{{.BuildTs}}</dd>
 	  <dt>User</dt>
-	  <dd>{{.User}}</dd>
+	  <dd>{{.BuildUser}}</dd>
 	</dl>
       </div>
       <div class="col-md-4"><div id="bulk-pie"></div></div>
@@ -22,7 +22,7 @@
 	  // Create and populate the data table.
 	  var data = google.visualization.arrayToDataTable([
 	    ['Number', 'Status'],
-	    ['ok', {{.NumOK}}],
+	    ['ok', {{.NumOk}}],
 	    ['prefailed', {{.NumPrefailed}}],
 	    ['indirect-failed', {{.NumIndirectFailed}}],
 	    ['failed', {{.NumFailed}}],
