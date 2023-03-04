@@ -4,17 +4,19 @@ bt.builds = bt.builds || {};
 
 bt.builds.columns = [
   {
-    data: "Timestamp",
-    render: function (data) { return data.split("T")[0] }
+    data: "BuildTs",
+    render: function (data) { 
+      if (!data) return;
+      return data.split("T")[0]
+    }
   },
   {data: "Branch"},
   {data: "Platform"},
   {
-    render: function (data, type, row) {
-      return `<span class=\"text-danger\">${row.NumFailed} failed</span> / <span class=\"text-warning\">${row.NumIndirectFailed} indirect-failed</span> / <span class=\"text-success\">${row.NumOK} ok</span>`
-    }
+    render: (data, type, row) =>
+      `<span class=\"text-danger\">${row.NumFailed} failed</span> / <span class=\"text-warning\">${row.NumIndirectFailed} indirect-failed</span> / <span class=\"text-success\">${row.NumOk} ok</span>`
   },
-  {data: "User"}
+  {data: "BuildUser"}
 ];
 
 bt.builds.createdRow = function (row, data) {
