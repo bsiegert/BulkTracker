@@ -23,6 +23,7 @@
 package json
 
 import (
+	"database/sql"
 	"errors"
 	"strconv"
 	"sync"
@@ -171,12 +172,16 @@ func (a *API) AllBuildDetails(ctx context.Context, params []string, _ url.Values
 
 func (a *API) PkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
-		return []bulk.PkgResult{}, nil
+		return []ddao.GetAllPkgResultsRow{}, nil
 	}
 	category, dir := params[0]+"/", params[1]
 
 	all, err := a.DB.GetAllPkgResults(ctx, category, dir)
 	if err != nil {
+		// No results is not an error.
+		if errors.Is(err, sql.ErrNoRows) {
+			return []ddao.GetAllPkgResultsRow{}, nil
+		}
 		return nil, err
 	}
 	var results []ddao.GetAllPkgResultsRow
