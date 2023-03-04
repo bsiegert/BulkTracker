@@ -37,7 +37,7 @@ ORDER BY pkgpath;
 
 
 -- name: GetAllPkgResults :many
-SELECT r.pkg_name, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+SELECT r.result_id, r.pkg_name, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
 FROM results r, builds b
 WHERE r.build_id == b.build_id AND r.pkg_id == ?
 ORDER BY b.build_ts DESC;

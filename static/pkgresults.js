@@ -30,37 +30,38 @@ function PkgResultsTable(event) {
   $('.table').dataTable({
     destroy: true,
     ajax: {
-      url:     `/json/${event.data}/${pkgname}`,
+      url: `/json/${event.data}/${pkgname}`,
       dataSrc: ""
     },
     columns: [
-      {data: "Pkg.PkgName"},
+      { data: "PkgName" },
       {
-	data:   "Pkg.BuildStatus",
-	render: function(data, type, row, meta) {
-	  return statuses[data];
-	}
+        data: "BuildStatus",
+        render: function (data, type, row, meta) {
+          return statuses[data];
+        }
       },
       {
-	data:   "Build.Timestamp",
-	render: function(data, type, row, meta) {
-	  return data.split("T")[0];
-	}
+        data: "BuildTs",
+        render: function (data, type, row, meta) {
+          if (!data) return;
+          return data.split("T")[0];
+        }
       },
-      {data: "Build.Branch"},
-      {data: "Build.Platform"},
-      {data: "Build.Compiler"}
+      { data: "Branch" },
+      { data: "Platform" },
+      { data: "Compiler" }
     ],
-    createdRow: function(row, data, dataIndex) {
-      $('td:eq(0)', row).wrapInner('<a href="/pkg/'+data.Pkg.PkgID+'"></a>');
-      $('td:eq(1)', row).addClass(classes[data.Pkg.BuildStatus]);
-      $('td:eq(4)', row).wrapInner('<a href="/build/'+data.Build.BuildID+'"></a>');
+    createdRow: function (row, data, dataIndex) {
+      $('td:eq(0)', row).wrapInner('<a href="/pkg/' + data.ResultID + '"></a>');
+      $('td:eq(1)', row).addClass(classes[data.BuildStatus]);
+      $('td:eq(2)', row).wrapInner('<a href="/build/' + data.BuildID + '"></a>');
     }
-  });  
+  });
 }
 
-$(document).ready(function() {
-  PkgResultsTable({data: "pkgresults"});
+$(document).ready(function () {
+  PkgResultsTable({ data: "pkgresults" });
   $("#latest").on("click", null, "pkgresults", PkgResultsTable);
   $("#all").on("click", null, "allpkgresults", PkgResultsTable);
 });

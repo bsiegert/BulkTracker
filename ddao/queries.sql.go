@@ -22,13 +22,14 @@ func (q *Queries) DeleteAllForBuild(ctx context.Context, buildID sql.NullInt64) 
 }
 
 const getAllPkgResults = `-- name: GetAllPkgResults :many
-SELECT r.pkg_name, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+SELECT r.result_id, r.pkg_name, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
 FROM results r, builds b
 WHERE r.build_id == b.build_id AND r.pkg_id == ?
 ORDER BY b.build_ts DESC
 `
 
 type GetAllPkgResultsRow struct {
+	ResultID    int64
 	PkgName     string
 	BuildStatus int64
 	Breaks      int64
@@ -50,6 +51,7 @@ func (q *Queries) GetAllPkgResults(ctx context.Context, pkgID sql.NullInt64) ([]
 	for rows.Next() {
 		var i GetAllPkgResultsRow
 		if err := rows.Scan(
+			&i.ResultID,
 			&i.PkgName,
 			&i.BuildStatus,
 			&i.Breaks,
