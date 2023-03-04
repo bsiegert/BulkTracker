@@ -15,7 +15,7 @@ var classes = {
 
 function PkgResultsTable(event) {
   var pkgname = null;
-  var pkgname_re = /^[A-Za-z0-9+-_]+\/[A-Za-z0-9+-_]+$/;
+  var pkgname_re = /^[A-Za-z0-9+\-_]+\/[A-Za-z0-9+\-_]+$/;
   var fragment = window.location.pathname.split("/pkgresults/")[1];
   if (fragment && pkgname_re.test(fragment)) {
     pkgname = fragment;
