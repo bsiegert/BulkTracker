@@ -285,6 +285,62 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 	return items, nil
 }
 
+const getSingleResult = `-- name: GetSingleResult :one
+SELECT
+	r.result_id,
+	r.pkg_name,
+	r.build_status,
+	r.failed_deps,
+	r.breaks,
+	p.category,
+	p.dir,
+	b.build_id,
+	b.platform,
+	b.build_ts,
+	b.branch,
+	b.compiler,
+	b.build_user
+FROM results r, builds b, pkgs p
+WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.result_id == ?
+`
+
+type GetSingleResultRow struct {
+	ResultID    int64
+	PkgName     string
+	BuildStatus int64
+	FailedDeps  string
+	Breaks      int64
+	Category    string
+	Dir         string
+	BuildID     int64
+	Platform    string
+	BuildTs     time.Time
+	Branch      string
+	Compiler    string
+	BuildUser   string
+}
+
+func (q *Queries) GetSingleResult(ctx context.Context, resultID int64) (GetSingleResultRow, error) {
+	row := q.db.QueryRowContext(ctx, getSingleResult, resultID)
+	var i GetSingleResultRow
+	err := row.Scan(
+		&i.ResultID,
+		&i.PkgName,
+		&i.BuildStatus,
+		&i.FailedDeps,
+		&i.Breaks,
+		&i.Category,
+		&i.Dir,
+		&i.BuildID,
+		&i.Platform,
+		&i.BuildTs,
+		&i.Branch,
+		&i.Compiler,
+		&i.BuildUser,
+	)
+	return i, err
+}
+
 const putBuild = `-- name: PutBuild :one
 
 INSERT INTO builds

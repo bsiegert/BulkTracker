@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2022
+ * Copyright (c) 2014-2023
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -22,6 +22,8 @@
 package pages
 
 import (
+	"database/sql"
+	"errors"
 	"strconv"
 
 	"github.com/bsiegert/BulkTracker/bulk"
@@ -35,7 +37,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 	"strings"
 )
 
@@ -169,60 +170,63 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	*/
 }
 
-func PkgDetails(w http.ResponseWriter, r *http.Request) {
+type PkgDetails struct {
+	DB *ddao.DB
+}
+
+func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	io.WriteString(w, templates.PageHeader)
 	defer io.WriteString(w, templates.PageFooter)
 
-	pkgKey, err := datastore.DecodeKey(path.Base(r.URL.Path))
+	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/pkg/"), "/")
+	if len(paths) == 0 {
+		return
+	}
+	resultID, err := strconv.ParseInt(paths[0], 10, 64)
 	if err != nil {
-		log.Warningf(ctx, "error decoding pkg key: %s", err)
+		log.Warningf(ctx, "error decoding key: %s", err)
 		return
 	}
-	buildKey := pkgKey.Parent()
 
-	p := &bulk.Pkg{}
-	b := &bulk.Build{}
-	if err = datastore.Get(ctx, pkgKey, p); err != nil {
-		log.Warningf(ctx, "getting pkg record: %s", err)
-		return
-	}
-	if buildKey != nil {
-		if err = datastore.Get(ctx, buildKey, b); err != nil {
-			log.Warningf(ctx, "getting build record: %s", err)
-			return
+	res, err := p.DB.GetSingleResult(ctx, resultID)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Errorf(ctx, "GetSingleResult: %v", err)
 		}
+		return
 	}
 
-	templates.PkgInfo(w, p, b)
+	templates.PkgInfo(w, res)
 	templates.DataTable(w, "")
 
 	// Failed, breaking other packages.
-	if p.Breaks > 0 {
-		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", p.Breaks)
-		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
-		writePackageList(ctx, w, it)
+	if res.Breaks > 0 {
+		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", res.Breaks)
+		//it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
+		//writePackageList(ctx, w, it)
 	}
 
 	// Failed to build because of dependencies.
-	if p.FailedDeps == nil {
+	if res.FailedDeps == "" {
 		return
 	}
-	fmt.Fprintf(w, "<h2>This package has %d failed dependencies:</h2>", len(p.FailedDeps))
-	// TODO(bsiegert) Unfortunately, we save a list of package names, not a
-	// list of corresponding datastore keys. So we need to fetch them one by
-	// one.
-	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
-	dp := &bulk.Pkg{}
-	for _, dep := range p.FailedDeps {
-		it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(ctx)
-		key, err := it.Next(dp)
-		if err != nil {
-			continue
-		}
-		dp.Key = key.Encode()
-		templates.TablePkgs(w, dp)
-	}
-	io.WriteString(w, templates.TableEnd)
+	failedDeps := strings.Split(res.FailedDeps, ",")
+	fmt.Fprintf(w, "<h2>This package has %d failed dependencies:</h2>", len(failedDeps))
+	// // TODO(bsiegert) Unfortunately, we save a list of package names, not a
+	// // list of corresponding datastore keys. So we need to fetch them one by
+	// // one.
+	// templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
+	// dp := &bulk.Pkg{}
+	// for _, dep := range p.FailedDeps {
+	// 	it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(ctx)
+	// 	key, err := it.Next(dp)
+	// 	if err != nil {
+	// 		continue
+	// 	}
+	// 	dp.Key = key.Encode()
+	// 	templates.TablePkgs(w, dp)
+	// }
+	// io.WriteString(w, templates.TableEnd)
 
 }

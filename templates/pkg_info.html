@@ -1,41 +1,42 @@
     <dl class="dl-horizontal" style="font-size: 120%">
       <dt>Package location</dt>
-      <dd><a href="http://pkgsrc.se/{{.Pkg.Category}}{{.Pkg.Dir}}">{{.Pkg.Category}}{{.Pkg.Dir}}</a></dd>
+      <dd><a href="http://pkgsrc.se/{{.Category}}{{.Dir}}">{{.Category}}{{.Dir}}</a></dd>
       <dt>Package name</dt>
-      <dd>{{.Pkg.PkgName}}</dd>
+      <dd>{{.PkgName}}</dd>
       <dt>Build Status</dt>
-      {{if eq .Pkg.BuildStatus 0}}
+      {{if eq .BuildStatus 0}}
       <dd><span class="label label-success">ok</span></dd>
-      {{else if eq .Pkg.BuildStatus 1}}
+      {{else if eq .BuildStatus 1}}
       <dd><span class="label label-info">prefailed</span></dd>
-      {{else if eq .Pkg.BuildStatus 2}}
+      {{else if eq .BuildStatus 2}}
       <dd><span class="label label-danger">failed</span></dd>
-      {{else if eq .Pkg.BuildStatus 3}}
+      {{else if eq .BuildStatus 3}}
       <dd><span class="label label-warning">indirect-failed</span></dd>
-      {{else if eq .Pkg.BuildStatus 4}}
+      {{else if eq .BuildStatus 4}}
       <dd><span class="label label-info">indirect-prefailed</span></dd>
       {{end}}
-      {{if eq .Pkg.BuildStatus 2}}
+      {{if eq .BuildStatus 2}}
       <dt>Build Logs</dt>
       <dd>
         <div class="btn-group btn-group-sm">
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/work.log" class="btn btn-default">work</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/depends.log" class="btn btn-default">depends</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/configure.log" class="btn btn-default">configure</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/build.log" class="btn btn-default">build</a>
-	  <a href="{{.Build.BaseURL}}/{{.Pkg.PkgName}}/install.log" class="btn btn-default">install</a>
+    <!-- TODO(bsiegert) check BaseURL -->
+	  <a href="{{.BaseURL}}/{{.PkgName}}/work.log" class="btn btn-default">work</a>
+	  <a href="{{.BaseURL}}/{{.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
+	  <a href="{{.BaseURL}}/{{.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
+	  <a href="{{.BaseURL}}/{{.PkgName}}/depends.log" class="btn btn-default">depends</a>
+	  <a href="{{.BaseURL}}/{{.PkgName}}/configure.log" class="btn btn-default">configure</a>
+	  <a href="{{.BaseURL}}/{{.PkgName}}/build.log" class="btn btn-default">build</a>
+	  <a href="{{.BaseURL}}/{{.PkgName}}/install.log" class="btn btn-default">install</a>
 	</div>
       </dd>
       {{end}}
       <dt>Platform</dt>
-      <dd>{{.Build.Platform}}</dd>
+      <dd>{{.Platform}}</dd>
       <dt>Compiler</dt>
-      <dd>{{.Build.Compiler}}</dd>
+      <dd>{{.Compiler}}</dd>
       <dt>Built on</dt>
-      <dd>{{.Build.Date}}</dd>
+      <dd>{{.BuildTs}}</dd>
       <dt>Built by</dt>
-      <dd>{{.Build.User}}</dd>
+      <dd>{{.BuildUser}}</dd>
     </dl>
   </div><div class="row">`

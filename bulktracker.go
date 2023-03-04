@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2022
+ * Copyright (c) 2014-2023
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -92,7 +92,9 @@ func main() {
 	http.Handle("/json/", &json.API{
 		DB: &ddb,
 	})
-	// http.HandleFunc("/pkg/", pages.PkgDetails)
+	http.Handle("/pkg/", &pages.PkgDetails{
+		DB: &ddb,
+	})
 
 	h, err := fileHandler("static/pkgresults.html")
 	if err != nil {

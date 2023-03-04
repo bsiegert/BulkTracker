@@ -68,11 +68,8 @@ func BulkBuildInfo(w io.Writer, b *bulk.Build) {
 	t.ExecuteTemplate(w, "bulk_build_info.html", b)
 }
 
-func PkgInfo(w io.Writer, p *bulk.Pkg, b *bulk.Build) {
-	t.ExecuteTemplate(w, "pkg_info.html", struct {
-		Pkg   *bulk.Pkg
-		Build *bulk.Build
-	}{p, b})
+func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
+	t.ExecuteTemplate(w, "pkg_info.html", res)
 }
 
 func NoDetails(w io.Writer, path string) {
