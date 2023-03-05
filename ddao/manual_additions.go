@@ -34,11 +34,11 @@ func (b *Build) Date() string {
 	return b.BuildTs.Format("2006-01-02")
 }
 
-func (b *Build) BaseURL() string {
-	if n := strings.Index(b.ReportUrl, "meta/"); n != -1 {
-		return b.ReportUrl[:n]
+func (r *GetSingleResultRow) BaseURL() string {
+	if n := strings.Index(r.ReportUrl, "meta/"); n != -1 {
+		return r.ReportUrl[:n]
 	}
-	return path.Base(b.ReportUrl)
+	return path.Base(r.ReportUrl)
 }
 
 // A PkgResult is a build result for a package.

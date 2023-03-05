@@ -299,7 +299,8 @@ SELECT
 	b.build_ts,
 	b.branch,
 	b.compiler,
-	b.build_user
+	b.build_user,
+	b.report_url
 FROM results r, builds b, pkgs p
 WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.result_id == ?
 `
@@ -318,6 +319,7 @@ type GetSingleResultRow struct {
 	Branch      string
 	Compiler    string
 	BuildUser   string
+	ReportUrl   string
 }
 
 func (q *Queries) GetSingleResult(ctx context.Context, resultID int64) (GetSingleResultRow, error) {
@@ -337,6 +339,7 @@ func (q *Queries) GetSingleResult(ctx context.Context, resultID int64) (GetSingl
 		&i.Branch,
 		&i.Compiler,
 		&i.BuildUser,
+		&i.ReportUrl,
 	)
 	return i, err
 }

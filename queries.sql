@@ -56,7 +56,8 @@ SELECT
 	b.build_ts,
 	b.branch,
 	b.compiler,
-	b.build_user
+	b.build_user,
+	b.report_url
 FROM results r, builds b, pkgs p
 WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.result_id == ?;
 
