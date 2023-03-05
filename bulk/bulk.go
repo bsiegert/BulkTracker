@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2022
+ * Copyright (c) 2014-2018, 2022-2023
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -131,8 +131,6 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 }
 
 // Pkg holds a single build result for a package.
-// TODO(bsiegert) Does this need a field for the build key,
-// or is the datastore "ancestor" enough?
 type Pkg struct {
 	// Key is the string representation of the datastore key of this record.
 	Key string `datastore:"-"`
@@ -142,7 +140,7 @@ type Pkg struct {
 	BuildID int
 
 	// The first and last part of the package location. For example,
-	// if the location is "devel/libtool", Category would be "devel"
+	// if the location is "devel/libtool", Category would be "devel/"
 	// and Dir "libtool".
 	Category, Dir string
 	PkgName       string
