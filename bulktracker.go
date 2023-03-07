@@ -63,6 +63,18 @@ func fileHandler(name string) (http.HandlerFunc, error) {
 	}, nil
 }
 
+func registerCategories(ctx context.Context, ddb *ddao.DB, handler http.Handler) error {
+	categories, err := ddb.GetCategories(ctx)
+	if err != nil {
+		return err
+	}
+	for _, c := range categories {
+		log.Infof(ctx, "Handling %v", c)
+		http.Handle("/"+c, handler)
+	}
+	return nil
+}
+
 func main() {
 	flag.Parse()
 	ctx := context.Background()
@@ -102,6 +114,10 @@ func main() {
 		os.Exit(1)
 	}
 	http.HandleFunc("/pkgresults/", h)
+	err = registerCategories(ctx, &ddb, h)
+	if err != nil {
+		log.Errorf(ctx, "%s", err)
+	}
 
 	log.Infof(ctx, "Listening on port %d", *port)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
