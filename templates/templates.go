@@ -60,8 +60,8 @@ func TableBuilds(w io.Writer, b *ddao.Build) {
 	t.ExecuteTemplate(w, "table_builds.html", b)
 }
 
-func TablePkgs(w io.Writer, p *bulk.Pkg) {
-	t.ExecuteTemplate(w, "table_pkgs.html", p)
+func TablePkgs(w io.Writer, rows []ddao.GetResultsInCategoryRow) {
+	t.ExecuteTemplate(w, "table_pkgs.html", rows)
 }
 
 func BulkBuildInfo(w io.Writer, b *bulk.Build) {

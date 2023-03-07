@@ -26,12 +26,9 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/templates"
-
-	"google.golang.org/appengine/datastore"
 
 	"context"
 	"fmt"
@@ -88,21 +85,9 @@ func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []ddao
 }
 
 // writePackageList writes a table of package results from the iterator it to w.
-func writePackageList(ctx context.Context, w http.ResponseWriter, it *datastore.Iterator) {
+func writePackageList(ctx context.Context, w http.ResponseWriter, rows []ddao.GetResultsInCategoryRow) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
-	p := &bulk.Pkg{}
-	for {
-		key, err := it.Next(p)
-		if err == datastore.Done {
-			break
-		} else if err != nil {
-			log.Errorf(ctx, "failed to read pkg: %s", err)
-			w.WriteHeader(500)
-			return
-		}
-		p.Key = key.Encode()
-		templates.TablePkgs(w, p)
-	}
+	templates.TablePkgs(w, rows)
 	io.WriteString(w, templates.TableEnd)
 }
 
@@ -142,15 +127,22 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	templates.DataTable(w, `"order": [3, "desc"]`)
 
-	/*
-		if len(paths) > 1 {
-			category := paths[1] + "/"
-			it := datastore.NewQuery("pkg").Ancestor(key).Filter("Category =", category).Order("Dir").Order("PkgName").Limit(10000).Run(ctx)
-			templates.Heading(w, category)
-			writePackageList(ctx, w, it)
-			return
+	if len(paths) > 1 {
+		category := paths[1] + "/"
+		results, err := b.DB.GetResultsInCategory(ctx, ddao.GetResultsInCategoryParams{
+			BuildID: sql.NullInt64{
+				Int64: buildID,
+				Valid: true,
+			},
+			Category: category,
+		})
+		if err != nil {
+			log.Errorf(ctx, "GetResultsInCategory: %v", err)
 		}
-	*/
+		templates.Heading(w, category)
+		writePackageList(ctx, w, results)
+		return
+	}
 
 	// NOTE: This used to be the list of categories for the current build.
 	// Approximate by just showing all categories. The list of categories

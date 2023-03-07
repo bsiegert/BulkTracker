@@ -1,9 +1,10 @@
+{{range .}}
       <tr>
 	<td>
-	  <a href="/pkg/{{.PkgID}}">{{.Category}}{{.Dir}}</a>
+	  <a href="/pkg/{{.ResultID}}">{{.Category}}{{.Dir}}</a>
 	</td>
 	<td>
-	  <a href="/pkg/{{.PkgID}}">{{.PkgName}}</a>
+	  <a href="/pkg/{{.ResultID}}">{{.PkgName}}</a>
 	</td>
 	{{if eq .BuildStatus 0}}
 	<td class="success text-success">ok</td>
@@ -20,3 +21,4 @@
 	  {{.Breaks}}
 	</td>
       </tr>
+{{end}}
