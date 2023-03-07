@@ -42,6 +42,9 @@ var (
 	//go:embed start_page_lead.html
 	StartPageLead string
 
+	//go:embed start_page_lead2.html
+	StartPageLead2 string
+
 	//go:embed table_end.html
 	TableEnd string
 )

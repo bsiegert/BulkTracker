@@ -51,14 +51,22 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Try prepopulating the autocomplete cache early.
 	// stateful.MaybePrefillCache(ctx)
 
+	io.WriteString(w, templates.PageHeader)
+	defer io.WriteString(w, templates.PageFooter)
+	io.WriteString(w, templates.StartPageLead)
+
+	categories, _ := s.DB.GetCategories(ctx)
+	if len(categories) > 0 {
+		templates.CategoryList(w, categories, "")
+	}
+
+	io.WriteString(w, templates.StartPageLead2)
+
 	builds, err := s.DB.LatestBuilds(ctx, true)
 	if err != nil {
 		log.Errorf(ctx, "failed to read latest builds: %s", err)
 	}
 
-	io.WriteString(w, templates.PageHeader)
-	defer io.WriteString(w, templates.PageFooter)
-	io.WriteString(w, templates.StartPageLead)
 	if len(builds) == 0 {
 		templates.DatastoreError(w, err)
 	}
@@ -152,6 +160,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		templates.NoDetails(w, r.URL.Path)
 		return
 	}
+	templates.Heading(w, "Results by Category")
 	templates.CategoryList(w, categories, r.URL.Path)
 
 	/*
