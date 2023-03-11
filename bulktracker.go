@@ -114,7 +114,10 @@ func main() {
 		os.Exit(1)
 	}
 	http.HandleFunc("/pkgresults/", h)
-	err = registerCategories(ctx, &ddb, h)
+	err = registerCategories(ctx, &ddb, &pages.Dirs{
+		DB:         &ddb,
+		PkgResults: h,
+	})
 	if err != nil {
 		log.Errorf(ctx, "%s", err)
 	}

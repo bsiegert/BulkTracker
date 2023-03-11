@@ -231,3 +231,34 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// io.WriteString(w, templates.TableEnd)
 
 }
+
+// Dirs is a handler for a subpage showing all the package directories for a given category.
+type Dirs struct {
+	DB         *ddao.DB
+	PkgResults http.Handler
+}
+
+func (d *Dirs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	paths := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(paths) == 0 {
+		return
+	}
+	if len(paths) > 1 {
+		d.PkgResults.ServeHTTP(w, r)
+		return
+	}
+	io.WriteString(w, templates.PageHeader)
+	defer io.WriteString(w, templates.PageFooter)
+
+	category := paths[0] + "/"
+
+	templates.Heading(w, category)
+
+	dirs, err := d.DB.GetPkgsInCategory(ctx, category)
+	if err != nil {
+		log.Errorf(ctx, "Dirs: GetPkgsInCategory: %v", err)
+	}
+
+	templates.CategoryList(w, dirs, "/"+category)
+}
