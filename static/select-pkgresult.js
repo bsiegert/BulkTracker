@@ -1,7 +1,7 @@
 $(document).ready(function() {
   $('#pkgresults').submit(function() {
     var pkg = encodeURIComponent($('select#results-pkg').val()).replace(/%2F/gi, "/");
-    $(location).attr('href', "/pkgresults/" + pkg);
+    $(location).attr('href', `/${pkg}`);
     return false;
   });
   
