@@ -35,7 +35,7 @@ func (b *Build) Date() string {
 	return b.BuildTs.Format("2006-01-02")
 }
 
-func (r *GetSingleResultRow) BaseURL() string {
+func (r GetSingleResultRow) BaseURL() string {
 	if n := strings.Index(r.ReportUrl, "meta/"); n != -1 {
 		return r.ReportUrl[:n]
 	}
