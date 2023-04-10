@@ -23,6 +23,7 @@ package ddao
 import (
 	"context"
 	"database/sql"
+	"net/url"
 	"path"
 	"strings"
 
@@ -38,7 +39,12 @@ func (r *GetSingleResultRow) BaseURL() string {
 	if n := strings.Index(r.ReportUrl, "meta/"); n != -1 {
 		return r.ReportUrl[:n]
 	}
-	return path.Base(r.ReportUrl)
+	u, err := url.Parse(r.ReportUrl)
+	if err != nil {
+		return ""
+	}
+	u.Path = path.Dir(u.Path)
+	return u.String()
 }
 
 // A PkgResult is a build result for a package.
