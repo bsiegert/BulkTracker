@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2018, 2023
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -24,6 +24,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/bsiegert/BulkTracker/ddao"
 )
 
 const pkgFoo = `
@@ -40,17 +42,33 @@ DEPENDS=
 
 var pkgsFromReportTests = []struct {
 	report string
-	want   []Pkg
+	want   []ddao.PkgResult
 }{
 	{
 		pkgFoo,
-		[]Pkg{{PkgName: "foo-1.0", BuildStatus: IndirectFailed}},
+		[]ddao.PkgResult{{
+			Result: ddao.Result{
+				PkgName:     "foo-1.0",
+				BuildStatus: IndirectFailed,
+			},
+		}},
 	},
 	{
 		pkgFoo + pkgBar,
-		[]Pkg{
-			{PkgName: "foo-1.0", BuildStatus: IndirectFailed, FailedDeps: []string{"bar-2.0"}},
-			{PkgName: "bar-2.0", BuildStatus: Failed, Breaks: 1},
+		[]ddao.PkgResult{
+			{
+				Result: ddao.Result{
+					PkgName:     "foo-1.0",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "bar-2.0",
+				},
+			}, {
+				Result: ddao.Result{
+					PkgName:     "bar-2.0",
+					BuildStatus: Failed,
+					Breaks:      1,
+				},
+			},
 		},
 	},
 }

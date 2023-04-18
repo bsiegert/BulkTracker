@@ -55,7 +55,7 @@ const (
 	IndirectPrefailed
 )
 
-var statuses = map[string]int8{
+var statuses = map[string]int64{
 	"done":               OK,
 	"prefailed":          Prefailed,
 	"failed":             Failed,
@@ -153,11 +153,11 @@ type Pkg struct {
 	Breaks int
 }
 
-func PkgsFromReport(r io.Reader) ([]Pkg, error) {
-	var pkgs []Pkg
+func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
+	var pkgs []ddao.PkgResult
 	// Failed packages. The key is the name, the value an index into pkgs.
 	var failedPkgs = make(map[string]int)
-	var p *Pkg
+	var p *ddao.PkgResult
 	n := 0
 
 	s := bufio.NewScanner(r)
@@ -171,7 +171,7 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 		switch {
 		case bytes.Equal(key, []byte("PKGNAME")):
 			// Next package, finish the one before.
-			pkgs = append(pkgs, Pkg{})
+			pkgs = append(pkgs, ddao.PkgResult{})
 			p = &pkgs[n]
 			n++
 			p.PkgName = string(val)
@@ -184,17 +184,18 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 				failedPkgs[p.PkgName] = n - 1
 			}
 		case bytes.Equal(key, []byte("DEPENDS")):
-			p.FailedDeps = strings.Fields(string(val))
+			p.FailedDeps = string(val)
 		}
 	}
 	// Do another run over all indirect-failed packages, only keep
 	// dependencies that actually failed.
 	for i := range pkgs {
 		if pkgs[i].BuildStatus != IndirectFailed && pkgs[i].BuildStatus != IndirectPrefailed {
-			pkgs[i].FailedDeps = nil
+			pkgs[i].FailedDeps = ""
 		}
-		f := make([]string, 0, len(pkgs[i].FailedDeps))
-		for _, dep := range pkgs[i].FailedDeps {
+		failedDeps := strings.Fields(pkgs[i].FailedDeps)
+		f := make([]string, 0, len(failedDeps))
+		for _, dep := range failedDeps {
 			if fp, ok := failedPkgs[dep]; ok {
 				f = append(f, dep)
 				pkgs[fp].Breaks++
@@ -203,7 +204,7 @@ func PkgsFromReport(r io.Reader) ([]Pkg, error) {
 		if len(f) == 0 {
 			f = nil
 		}
-		pkgs[i].FailedDeps = f
+		pkgs[i].FailedDeps = strings.Join(f, " ")
 	}
 	return pkgs, s.Err()
 }

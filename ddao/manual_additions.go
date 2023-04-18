@@ -23,6 +23,7 @@ package ddao
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/url"
 	"path"
 	"strings"
@@ -59,9 +60,18 @@ type DB struct {
 	Queries
 }
 
+// BeginTransaction starts a new transaction iff not currently within a transaction.
+func (d *DB) BeginTransaction(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+	database, ok := d.db.(*sql.DB)
+	if !ok {
+		return nil, errors.New("already within a transaction")
+	}
+	return database.BeginTx(ctx, opts)
+}
+
 // PutResults writes the results for the given build ID to the database.
 func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64) error {
-	tx, err := d.db.(*sql.DB).BeginTx(ctx, nil)
+	tx, err := d.BeginTransaction(ctx, nil)
 	if err != nil {
 		return err
 	}

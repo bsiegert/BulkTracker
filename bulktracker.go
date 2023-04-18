@@ -99,7 +99,7 @@ func main() {
 	http.Handle("/mock/", http.FileServer(http.FS(staticContent)))
 	http.Handle("/static/", http.FileServer(http.FS(staticContent)))
 	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
-		DB: db,
+		DB: &ddb,
 	})
 	http.Handle("/json/", &json.API{
 		DB: &ddb,

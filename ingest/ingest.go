@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2022
+ * Copyright (c) 2014-2023
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -24,7 +24,7 @@ package ingest
 
 import (
 	"github.com/bsiegert/BulkTracker/bulk"
-	"github.com/bsiegert/BulkTracker/dao"
+	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	ftp "github.com/smira/go-ftp-protocol/protocol"
 	"github.com/ulikunitz/xz"
@@ -39,7 +39,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/mail"
-	"sort"
 	"strings"
 )
 
@@ -66,7 +65,7 @@ type Status struct {
 
 // NewStatus allocates a new Status for report ingestion. As a side effect,
 // it also deletes old records, if any.
-func NewStatus(ctx context.Context, buildID int) *Status {
+func NewStatus(ctx context.Context, buildID int64) *Status {
 	// s := &Status{
 	// 	key:      datastore.NewIncompleteKey(ctx, "status", build),
 	// 	cacheKey: "/json/status/" + build.String(),
@@ -126,7 +125,7 @@ var headAliases = map[string]bool{
 // when a new mail comes in. It tries to parse it as a bulk build report and
 // ingests it, if successful.
 type IncomingMailHandler struct {
-	DB *dao.DB
+	DB *ddao.DB
 }
 
 func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -179,7 +178,19 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 	log.Infof(ctx, "%#v, %s", build, err)
 
-	id, err := i.DB.PutBuild(ctx, build)
+	id, err := i.DB.PutBuild(ctx, ddao.PutBuildParams{
+		Platform:             build.Platform,
+		BuildTs:              build.BuildTs,
+		Branch:               build.Branch,
+		Compiler:             build.Compiler,
+		BuildUser:            build.BuildUser,
+		ReportUrl:            build.ReportUrl,
+		NumOk:                build.NumOk,
+		NumPrefailed:         build.NumPrefailed,
+		NumFailed:            build.NumFailed,
+		NumIndirectFailed:    build.NumIndirectFailed,
+		NumIndirectPrefailed: build.NumIndirectPrefailed,
+	})
 	log.Infof(ctx, "wrote entry %v: %v", id, err)
 	i.FetchReport(ctx, id, build.ReportUrl)
 }
@@ -224,7 +235,7 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
-func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int, url string) {
+func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, url string) {
 	status := NewStatus(ctx, buildID)
 	status.URL = url
 	status.Current = Fetching
@@ -257,7 +268,7 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int, url 
 
 	status.Current = Writing
 	status.PkgsTotal = len(pkgs)
-	sort.Sort(bulk.PkgsByName(pkgs))
+	// sort.Sort(bulk.PkgsByName(pkgs))
 	if err = i.DB.PutResults(ctx, pkgs, buildID); err != nil {
 		status.Current = Failed
 		status.LastErr = err
