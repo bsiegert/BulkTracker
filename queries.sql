@@ -77,6 +77,15 @@ FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE p.category == ? AND r.build_id == ?;
 
+-- name: GetPkgsBreakingMostOthers :many
+SELECT r.*, p.*
+FROM results r
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.build_id == ? AND r.breaks > 0
+ORDER BY r.breaks DESC
+LIMIT 100;
+
+
 -- name: PutBuild :one
 
 -- PutBuild writes the Build record to the DB and returns the ID.

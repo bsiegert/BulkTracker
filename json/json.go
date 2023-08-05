@@ -105,6 +105,8 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 		return a.PkgResults(ctx, params, form)
 	case "allpkgresults":
 		return a.AllPkgResults(ctx, params, form)
+	case "pkgsbreakingmostothers":
+		return a.PackagesBreakingMostOthers(ctx, params, form)
 	case "dir":
 		return a.Dir(ctx, params, form)
 	case "autocomplete":
@@ -253,4 +255,18 @@ func (a *API) Autocomplete(ctx context.Context, _ []string, form url.Values) (in
 		resp.Results[i].Text = names[i]
 	}
 	return resp, nil
+}
+
+func (a *API) PackagesBreakingMostOthers(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+	if len(params) == 0 {
+		return nil, nil
+	}
+	var buildID sql.NullInt64
+	var err error
+	buildID.Int64, err = strconv.ParseInt(params[0], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing build ID %q", params[0])
+	}
+	buildID.Valid = true
+	return a.DB.GetPkgsBreakingMostOthers(ctx, buildID)
 }

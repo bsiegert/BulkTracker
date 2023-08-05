@@ -196,6 +196,62 @@ func (q *Queries) GetPkgID(ctx context.Context, arg GetPkgIDParams) (int64, erro
 	return pkg_id, err
 }
 
+const getPkgsBreakingMostOthers = `-- name: GetPkgsBreakingMostOthers :many
+SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, p.pkg_id, p.category, p.dir
+FROM results r
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.build_id == ? AND r.breaks > 0
+ORDER BY r.breaks DESC
+LIMIT 100
+`
+
+type GetPkgsBreakingMostOthersRow struct {
+	ResultID    int64
+	BuildID     sql.NullInt64
+	PkgID       sql.NullInt64
+	PkgName     string
+	BuildStatus int64
+	FailedDeps  string
+	Breaks      int64
+	PkgID_2     int64
+	Category    string
+	Dir         string
+}
+
+func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.NullInt64) ([]GetPkgsBreakingMostOthersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPkgsBreakingMostOthers, buildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPkgsBreakingMostOthersRow
+	for rows.Next() {
+		var i GetPkgsBreakingMostOthersRow
+		if err := rows.Scan(
+			&i.ResultID,
+			&i.BuildID,
+			&i.PkgID,
+			&i.PkgName,
+			&i.BuildStatus,
+			&i.FailedDeps,
+			&i.Breaks,
+			&i.PkgID_2,
+			&i.Category,
+			&i.Dir,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPkgsInCategory = `-- name: GetPkgsInCategory :many
 SELECT DISTINCT dir
 FROM pkgs
