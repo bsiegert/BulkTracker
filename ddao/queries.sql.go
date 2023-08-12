@@ -555,3 +555,55 @@ func (q *Queries) getLatestBuilds(ctx context.Context) ([]Build, error) {
 	}
 	return items, nil
 }
+
+const getPkgsBrokenBy = `-- name: getPkgsBrokenBy :many
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	r.build_status,
+	r.failed_deps,
+	r.breaks
+FROM results r
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.failed_deps LIKE ?
+`
+
+type getPkgsBrokenByRow struct {
+	ResultID    int64
+	PkgPath     interface{}
+	PkgName     string
+	BuildStatus int64
+	FailedDeps  string
+	Breaks      int64
+}
+
+func (q *Queries) getPkgsBrokenBy(ctx context.Context, failedDeps string) ([]getPkgsBrokenByRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPkgsBrokenBy, failedDeps)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getPkgsBrokenByRow
+	for rows.Next() {
+		var i getPkgsBrokenByRow
+		if err := rows.Scan(
+			&i.ResultID,
+			&i.PkgPath,
+			&i.PkgName,
+			&i.BuildStatus,
+			&i.FailedDeps,
+			&i.Breaks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

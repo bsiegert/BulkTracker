@@ -91,6 +91,17 @@ WHERE r.build_id == ? AND r.build_status > 0
 ORDER BY r.breaks DESC
 LIMIT 100;
 
+-- name: getPkgsBrokenBy :many
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	r.build_status,
+	r.failed_deps,
+	r.breaks
+FROM results r
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.failed_deps LIKE ?;
 
 -- name: PutBuild :one
 

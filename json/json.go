@@ -106,7 +106,9 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 	case "allpkgresults":
 		return a.AllPkgResults(ctx, params, form)
 	case "pkgsbreakingmostothers":
-		return a.PackagesBreakingMostOthers(ctx, params, form)
+		return a.PkgsBreakingMostOthers(ctx, params, form)
+	case "pkgsbrokenby":
+		return a.PkgsBrokenBy(ctx, params, form)
 	case "dir":
 		return a.Dir(ctx, params, form)
 	case "autocomplete":
@@ -257,7 +259,7 @@ func (a *API) Autocomplete(ctx context.Context, _ []string, form url.Values) (in
 	return resp, nil
 }
 
-func (a *API) PackagesBreakingMostOthers(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+func (a *API) PkgsBreakingMostOthers(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) == 0 {
 		return nil, nil
 	}
@@ -269,4 +271,16 @@ func (a *API) PackagesBreakingMostOthers(ctx context.Context, params []string, _
 	}
 	buildID.Valid = true
 	return a.DB.GetPkgsBreakingMostOthers(ctx, buildID)
+}
+
+func (a *API) PkgsBrokenBy(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+	if len(params) == 0 {
+		return nil, nil
+	}
+	resultID, err := strconv.ParseInt(params[0], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing result ID %q", params[0])
+	}
+
+	return a.DB.GetPkgsBrokenBy(ctx, resultID)
 }
