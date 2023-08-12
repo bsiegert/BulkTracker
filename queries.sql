@@ -78,10 +78,16 @@ JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE p.category == ? AND r.build_id == ?;
 
 -- name: GetPkgsBreakingMostOthers :many
-SELECT r.*, p.*
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	r.build_status,
+	r.failed_deps,
+	r.breaks
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-WHERE r.build_id == ? AND r.breaks > 0
+WHERE r.build_id == ? AND r.build_status > 0
 ORDER BY r.breaks DESC
 LIMIT 100;
 

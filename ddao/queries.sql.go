@@ -197,25 +197,27 @@ func (q *Queries) GetPkgID(ctx context.Context, arg GetPkgIDParams) (int64, erro
 }
 
 const getPkgsBreakingMostOthers = `-- name: GetPkgsBreakingMostOthers :many
-SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, p.pkg_id, p.category, p.dir
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	r.build_status,
+	r.failed_deps,
+	r.breaks
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-WHERE r.build_id == ? AND r.breaks > 0
+WHERE r.build_id == ? AND r.build_status > 0
 ORDER BY r.breaks DESC
 LIMIT 100
 `
 
 type GetPkgsBreakingMostOthersRow struct {
 	ResultID    int64
-	BuildID     sql.NullInt64
-	PkgID       sql.NullInt64
+	PkgPath     interface{}
 	PkgName     string
 	BuildStatus int64
 	FailedDeps  string
 	Breaks      int64
-	PkgID_2     int64
-	Category    string
-	Dir         string
 }
 
 func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.NullInt64) ([]GetPkgsBreakingMostOthersRow, error) {
@@ -229,15 +231,11 @@ func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.Nul
 		var i GetPkgsBreakingMostOthersRow
 		if err := rows.Scan(
 			&i.ResultID,
-			&i.BuildID,
-			&i.PkgID,
+			&i.PkgPath,
 			&i.PkgName,
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
-			&i.PkgID_2,
-			&i.Category,
-			&i.Dir,
 		); err != nil {
 			return nil, err
 		}
