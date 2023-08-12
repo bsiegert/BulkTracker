@@ -108,12 +108,20 @@ func main() {
 		DB: &ddb,
 	})
 
-	h, err := fileHandler("static/pkgresults.html")
+	h, err := fileHandler("static/favicon.ico")
+	if err != nil {
+		log.Errorf(ctx, "failed to create /favicon.ico handler: %s", err)
+		os.Exit(1)
+	}
+	http.HandleFunc("/favicon.ico", h)
+
+	h, err = fileHandler("static/pkgresults.html")
 	if err != nil {
 		log.Errorf(ctx, "failed to create /pkgresults handler: %s", err)
 		os.Exit(1)
 	}
 	http.HandleFunc("/pkgresults/", h)
+
 	err = registerCategories(ctx, &ddb, &pages.Dirs{
 		DB:         &ddb,
 		PkgResults: h,
