@@ -92,7 +92,7 @@ func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []ddao
 	io.WriteString(w, templates.TableEnd)
 }
 
-// writePackageList writes a table of package results from the iterator it to w.
+// writePackageList writes a table of package results from the list of rows to w.
 func writePackageList(ctx context.Context, w http.ResponseWriter, rows []ddao.GetResultsInCategoryRow) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	templates.TablePkgs(w, rows)
@@ -133,8 +133,6 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// delete.DeleteBuildDetails.Call(ctx, key)
 	}
 
-	templates.DataTable(w, `"order": [3, "desc"]`)
-
 	if len(paths) > 1 {
 		category := paths[1] + "/"
 		results, err := b.DB.GetResultsInCategory(ctx, ddao.GetResultsInCategoryParams{
@@ -163,12 +161,10 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.Heading(w, "Results by Category")
 	templates.CategoryList(w, categories, r.URL.Path)
 
-	/*
-		templates.Heading(w, "Packages breaking most other packages")
-
-		it := datastore.NewQuery("pkg").Ancestor(key).Filter("BuildStatus >", bulk.Prefailed).Order("BuildStatus").Order("-Breaks").Limit(100).Run(ctx)
-		writePackageList(ctx, w, it)
-	*/
+	templates.Heading(w, "Packages breaking most other packages")
+	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
+	io.WriteString(w, templates.TableEnd)
+	io.WriteString(w, `<script src="/static/builddetails.js"></script>`)
 }
 
 type PkgDetails struct {
