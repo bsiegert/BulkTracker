@@ -147,6 +147,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		templates.Heading(w, category)
 		writePackageList(ctx, w, results)
+		templates.DataTable(w, `"order": [0, "asc"]`)
 		return
 	}
 
