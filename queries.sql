@@ -109,4 +109,4 @@ VALUES (?, ?);
 -- name: PutResult :exec
 INSERT INTO results
 (build_id, pkg_id, pkg_name, build_status, breaks, failed_deps)
-VALUES (?, ?, ?, ?, ?, '');
+VALUES (?, ?, ?, ?, ?, ?);

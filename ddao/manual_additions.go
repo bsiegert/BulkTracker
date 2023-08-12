@@ -104,7 +104,6 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 			return err
 		}
 
-		// TODO add (array-valued) failed_deps field
 		err = q.PutResult(ctx, PutResultParams{
 			BuildID: sql.NullInt64{
 				Int64: buildID,
@@ -117,6 +116,7 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 			PkgName:     result.PkgName,
 			BuildStatus: result.BuildStatus,
 			Breaks:      result.Breaks,
+			FailedDeps:  result.FailedDeps,
 		})
 		if err != nil {
 			return err

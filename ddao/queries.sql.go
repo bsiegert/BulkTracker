@@ -460,7 +460,7 @@ func (q *Queries) PutPkg(ctx context.Context, arg PutPkgParams) error {
 const putResult = `-- name: PutResult :exec
 INSERT INTO results
 (build_id, pkg_id, pkg_name, build_status, breaks, failed_deps)
-VALUES (?, ?, ?, ?, ?, '')
+VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type PutResultParams struct {
@@ -469,6 +469,7 @@ type PutResultParams struct {
 	PkgName     string
 	BuildStatus int64
 	Breaks      int64
+	FailedDeps  string
 }
 
 func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
@@ -478,6 +479,7 @@ func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
 		arg.PkgName,
 		arg.BuildStatus,
 		arg.Breaks,
+		arg.FailedDeps,
 	)
 	return err
 }
