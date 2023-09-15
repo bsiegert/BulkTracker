@@ -29,8 +29,13 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/exporter-toolkit/web"
 
 	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/ddao"
@@ -41,8 +46,9 @@ import (
 )
 
 var (
-	port   = flag.Int("port", 8080, "The port to use.")
-	dbPath = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
+	port        = flag.Int("port", 8080, "The port to use.")
+	metricsAddr = flag.String("metrics_addr", "", "host:port for serving Prometheus metrics, or 'main' to serve them on the main port")
+	dbPath      = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
 )
 
 //go:embed images mock static robots.txt
@@ -128,6 +134,49 @@ func main() {
 	})
 	if err != nil {
 		log.Errorf(ctx, "%s", err)
+	}
+
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
+	switch *metricsAddr {
+	case "":
+		log.Infof(context.Background(), "Not exporting Prometheus metrics")
+	case "main":
+		log.Infof(context.Background(), "Exporting Prometheus metrics on /metrics")
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+	default:
+		a := *metricsAddr
+		if _, metricsPort, ok := strings.Cut(a, ":"); ok {
+			a = "localhost:" + metricsPort
+		}
+		log.Infof(context.Background(), "Exporting Prometheus metrics on http://%v/metrics", a)
+
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+		landingPage, err := web.NewLandingPage(web.LandingConfig{
+			Name: "BulkTracker",
+			Links: []web.LandingLinks{
+				{
+					Address: fmt.Sprintf("http://localhost:%v/", *port),
+					Text:    "Web UI",
+				},
+				{
+					Address: "/metrics",
+					Text:    "Metrics",
+				},
+			},
+		})
+		if err != nil {
+			log.Errorf(context.Background(), "Setting up metrics landing page: %v", err)
+			os.Exit(1)
+		}
+		mux.Handle("/", landingPage)
+		go func() {
+			log.Errorf(context.Background(), "%v", http.ListenAndServe(*metricsAddr, mux))
+		}()
 	}
 
 	log.Infof(ctx, "Listening on port %d", *port)
