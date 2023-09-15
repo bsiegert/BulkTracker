@@ -29,6 +29,7 @@ function PkgResultsTable(event) {
 
   $('.table').dataTable({
     destroy: true,
+    paging: false,
     ajax: {
       url:     `/json/${event.data}/${pkgname}`,
       dataSrc: ""
