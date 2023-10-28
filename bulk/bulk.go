@@ -25,12 +25,15 @@ package bulk
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"path"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bsiegert/BulkTracker/log"
 )
 
 // Build holds aggregate information about a single bulk build.
@@ -112,11 +115,11 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 	}
 	b.Platform = s.Text()
 
-scanLoop:
 	for {
 		if !s.Scan() {
 			break
 		}
+		log.Debugf(context.Background(), "*** %v", s.Text())
 		if !strings.Contains(s.Text(), ":") {
 			continue
 		}
@@ -135,7 +138,6 @@ scanLoop:
 				val = strings.TrimSpace(s.Text())
 			}
 			b.ReportURL = val
-			break scanLoop
 		case "Successfully built":
 			b.NumOK, _ = strconv.ParseInt(val, 10, 64)
 		case "Failed to build":
