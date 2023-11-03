@@ -51,16 +51,16 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Try prepopulating the autocomplete cache early.
 	// stateful.MaybePrefillCache(ctx)
 
-	io.WriteString(w, templates.PageHeader)
-	defer io.WriteString(w, templates.PageFooter)
-	io.WriteString(w, templates.StartPageLead)
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
+	templates.StartPageLead(w)
 
 	categories, _ := s.DB.GetCategories(ctx)
 	if len(categories) > 0 {
 		templates.CategoryList(w, categories, "")
 	}
 
-	io.WriteString(w, templates.StartPageLead2)
+	templates.StartPageLead2(w)
 
 	builds, err := s.DB.LatestBuilds(ctx, true)
 	if err != nil {
@@ -75,12 +75,12 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, templates.PageHeader)
-	defer io.WriteString(w, templates.PageFooter)
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
 	templates.Heading(w, "List of Builds")
 
 	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
-	io.WriteString(w, templates.TableEnd)
+	templates.TableEnd(w)
 	io.WriteString(w, `<script src="/static/builds.js"></script>`)
 }
 
@@ -89,14 +89,14 @@ func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []ddao
 	for i := range builds {
 		templates.TableBuilds(w, &builds[i])
 	}
-	io.WriteString(w, templates.TableEnd)
+	templates.TableEnd(w)
 }
 
 // writePackageList writes a table of package results from the list of rows to w.
 func writePackageList(ctx context.Context, w http.ResponseWriter, rows []ddao.GetResultsInCategoryRow) {
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	templates.TablePkgs(w, rows)
-	io.WriteString(w, templates.TableEnd)
+	templates.TableEnd(w)
 }
 
 type BuildDetails struct {
@@ -105,8 +105,8 @@ type BuildDetails struct {
 
 func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	io.WriteString(w, templates.PageHeader)
-	defer io.WriteString(w, templates.PageFooter)
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
 
 	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/build/"), "/")
 	if len(paths) == 0 {
@@ -127,7 +127,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Query().Get("a") {
 	case "reindex":
 		// ingest.FetchReport(ctx, key, build.ReportURL)
-		io.WriteString(w, templates.ReindexOK)
+		templates.ReindexOK(w)
 		return
 	case "delete":
 		// delete.DeleteBuildDetails.Call(ctx, key)
@@ -164,7 +164,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	templates.Heading(w, "Packages breaking most other packages")
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
-	io.WriteString(w, templates.TableEnd)
+	templates.TableEnd(w)
 	io.WriteString(w, `<script src="/static/builddetails.js"></script>`)
 }
 
@@ -174,8 +174,8 @@ type PkgDetails struct {
 
 func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	io.WriteString(w, templates.PageHeader)
-	defer io.WriteString(w, templates.PageFooter)
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
 
 	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/pkg/"), "/")
 	if len(paths) == 0 {
@@ -200,7 +200,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Failed, breaking other packages.
 	if res.Breaks > 0 {
-		fmt.Fprintf(w, "<h2>This package breaks %d others:</h2>", res.Breaks)
+		fmt.Fprintf(w, "<h2>This package breaks %d others</h2>", res.Breaks)
 		//it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
 		//writePackageList(ctx, w, it)
 	}
@@ -210,7 +210,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	failedDeps := strings.Split(res.FailedDeps, ",")
-	fmt.Fprintf(w, "<h2>This package has %d failed dependencies:</h2>", len(failedDeps))
+	fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", len(failedDeps))
 	// // TODO(bsiegert) Unfortunately, we save a list of package names, not a
 	// // list of corresponding datastore keys. So we need to fetch them one by
 	// // one.
@@ -245,8 +245,8 @@ func (d *Dirs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		d.PkgResults.ServeHTTP(w, r)
 		return
 	}
-	io.WriteString(w, templates.PageHeader)
-	defer io.WriteString(w, templates.PageFooter)
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
 
 	category := paths[0] + "/"
 

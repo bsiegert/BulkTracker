@@ -29,31 +29,35 @@ import (
 	"io"
 )
 
-var (
-	//go:embed header.html
-	PageHeader string
-
-	//go:embed footer.html
-	PageFooter string
-
-	//go:embed reindex_ok.html
-	ReindexOK string
-
-	//go:embed start_page_lead.html
-	StartPageLead string
-
-	//go:embed start_page_lead2.html
-	StartPageLead2 string
-
-	//go:embed table_end.html
-	TableEnd string
-)
-
 //go:embed *.html
 var emb embed.FS
 
 // t is the top-level template object.
 var t = template.Must(template.ParseFS(emb, "*.html"))
+
+func PageHeader(w io.Writer) {
+	t.ExecuteTemplate(w, "header.html", nil)
+}
+
+func PageFooter(w io.Writer) {
+	t.ExecuteTemplate(w, "footer.html", nil)
+}
+
+func StartPageLead(w io.Writer) {
+	t.ExecuteTemplate(w, "start_page_lead.html", nil)
+}
+
+func StartPageLead2(w io.Writer) {
+	t.ExecuteTemplate(w, "start_page_lead2.html", nil)
+}
+
+func ReindexOK(w io.Writer) {
+	t.ExecuteTemplate(w, "reindex_ok.html", nil)
+}
+
+func TableEnd(w io.Writer) {
+	t.ExecuteTemplate(w, "table_end.html", nil)
+}
 
 func TableBegin(w io.Writer, columns ...string) {
 	t.ExecuteTemplate(w, "table_begin.html", columns)
