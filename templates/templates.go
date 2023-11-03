@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2021-2022
+ * Copyright (c) 2014-2018, 2021-2023
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
