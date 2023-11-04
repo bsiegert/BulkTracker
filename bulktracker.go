@@ -76,9 +76,19 @@ func registerCategories(ctx context.Context, ddb *ddao.DB, handler http.Handler)
 	}
 	for _, c := range categories {
 		log.Infof(ctx, "Handling %v", c)
-		http.Handle("/"+c, handler)
+		handle("/"+c, handler)
 	}
 	return nil
+}
+
+// handle wraps http.Handle.
+func handle(path string, handler http.Handler) {
+	http.Handle(path, handler)
+}
+
+// handleFunc wraps http.HandleFunc.
+func handleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
+	http.HandleFunc(path, handler)
 }
 
 func main() {
@@ -93,24 +103,24 @@ func main() {
 	var ddb ddao.DB
 	ddb.Queries = *ddao.New(db.DB)
 
-	http.Handle("/", &pages.StartPage{
+	handle("/", &pages.StartPage{
 		DB: &ddb,
 	})
-	http.Handle("/build/", &pages.BuildDetails{
+	handle("/build/", &pages.BuildDetails{
 		DB: &ddb,
 	})
-	http.HandleFunc("/builds", pages.ShowBuilds)
-	http.Handle("/robots.txt", http.FileServer(http.FS(staticContent)))
-	http.Handle("/images/", http.FileServer(http.FS(staticContent)))
-	http.Handle("/mock/", http.FileServer(http.FS(staticContent)))
-	http.Handle("/static/", http.FileServer(http.FS(staticContent)))
-	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
+	handleFunc("/builds", pages.ShowBuilds)
+	handle("/robots.txt", http.FileServer(http.FS(staticContent)))
+	handle("/images/", http.FileServer(http.FS(staticContent)))
+	handle("/mock/", http.FileServer(http.FS(staticContent)))
+	handle("/static/", http.FileServer(http.FS(staticContent)))
+	handle("/_ah/mail/", &ingest.IncomingMailHandler{
 		DB: &ddb,
 	})
-	http.Handle("/json/", &json.API{
+	handle("/json/", &json.API{
 		DB: &ddb,
 	})
-	http.Handle("/pkg/", &pages.PkgDetails{
+	handle("/pkg/", &pages.PkgDetails{
 		DB: &ddb,
 	})
 
@@ -119,14 +129,14 @@ func main() {
 		log.Errorf(ctx, "failed to create /favicon.ico handler: %s", err)
 		os.Exit(1)
 	}
-	http.HandleFunc("/favicon.ico", h)
+	handleFunc("/favicon.ico", h)
 
 	h, err = fileHandler("static/pkgresults.html")
 	if err != nil {
 		log.Errorf(ctx, "failed to create /pkgresults handler: %s", err)
 		os.Exit(1)
 	}
-	http.HandleFunc("/pkgresults/", h)
+	handleFunc("/pkgresults/", h)
 
 	err = registerCategories(ctx, &ddb, &pages.Dirs{
 		DB:         &ddb,
@@ -146,7 +156,7 @@ func main() {
 		log.Infof(context.Background(), "Not exporting Prometheus metrics")
 	case "main":
 		log.Infof(context.Background(), "Exporting Prometheus metrics on /metrics")
-		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+		handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	default:
 		a := *metricsAddr
 		if _, metricsPort, ok := strings.Cut(a, ":"); ok {
