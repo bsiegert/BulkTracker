@@ -101,7 +101,8 @@ func main() {
 	ddb.Queries = *ddao.New(db.DB)
 
 	mux.Handle("/", &pages.StartPage{
-		DB: &ddb,
+		DB:       &ddb,
+		BasePath: templates.BasePath,
 	})
 	mux.Handle("/build/", &pages.BuildDetails{
 		DB: &ddb,

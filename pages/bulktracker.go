@@ -38,7 +38,8 @@ import (
 var errNoArg = errors.New("no argument")
 
 type StartPage struct {
-	DB *ddao.DB
+	DB       *ddao.DB
+	BasePath string
 }
 
 func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +58,7 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	categories, _ := s.DB.GetCategories(ctx)
 	if len(categories) > 0 {
-		templates.CategoryList(w, categories, "")
+		templates.CategoryList(w, categories, s.BasePath)
 	}
 
 	templates.StartPageLead2(w)
