@@ -138,6 +138,7 @@ func main() {
 	err = registerCategories(ctx, mux, &ddb, &pages.Dirs{
 		DB:         &ddb,
 		PkgResults: h,
+		BasePath:   templates.BasePath,
 	})
 	if err != nil {
 		log.Errorf(ctx, "%s", err)

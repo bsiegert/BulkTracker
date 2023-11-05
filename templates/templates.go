@@ -21,12 +21,13 @@
 package templates
 
 import (
-	"github.com/bsiegert/BulkTracker/bulk"
-	"github.com/bsiegert/BulkTracker/ddao"
-
 	"embed"
+	"fmt"
 	"html/template"
 	"io"
+
+	"github.com/bsiegert/BulkTracker/bulk"
+	"github.com/bsiegert/BulkTracker/ddao"
 )
 
 //go:embed *.html
@@ -113,4 +114,8 @@ func DataTable(w io.Writer, settings string) {
 		js = &s
 	}
 	t.ExecuteTemplate(w, "data_table.html", js)
+}
+
+func LoadScript(w io.Writer, filename string) {
+	fmt.Fprintf(w, `<script src="%sstatic/%s"></script>`, BasePath, filename)
 }

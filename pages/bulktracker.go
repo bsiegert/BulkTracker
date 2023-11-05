@@ -22,20 +22,20 @@
 package pages
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/templates"
-
-	"context"
-	"fmt"
-	"io"
-	"net/http"
-	"strings"
 )
+
+var errNoArg = errors.New("no argument")
 
 type StartPage struct {
 	DB *ddao.DB
@@ -81,7 +81,7 @@ func ShowBuilds(w http.ResponseWriter, r *http.Request) {
 
 	templates.TableBegin(w, "Date", "Branch", "Platform", "Stats", "User")
 	templates.TableEnd(w)
-	io.WriteString(w, `<script src="/static/builds.js"></script>`)
+	templates.LoadScript(w, "builds.js")
 }
 
 func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []ddao.Build) {
@@ -165,11 +165,24 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.Heading(w, "Packages breaking most other packages")
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	templates.TableEnd(w)
-	io.WriteString(w, `<script src="/static/builddetails.js"></script>`)
+	templates.LoadScript(w, "builddetails.js")
 }
 
 type PkgDetails struct {
 	DB *ddao.DB
+}
+
+func (PkgDetails) arg(r *http.Request) (int64, error) {
+	_, arg, ok := strings.Cut(r.URL.Path, "/pkg/")
+	if !ok || arg == "" {
+		return 0, errNoArg
+	}
+
+	paths := strings.Split(arg, "/")
+	if len(paths) == 0 {
+		return 0, errNoArg
+	}
+	return strconv.ParseInt(paths[0], 10, 64)
 }
 
 func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -177,13 +190,11 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.PageHeader(w)
 	defer templates.PageFooter(w)
 
-	paths := strings.Split(strings.TrimPrefix(r.URL.Path, "/pkg/"), "/")
-	if len(paths) == 0 {
-		return
-	}
-	resultID, err := strconv.ParseInt(paths[0], 10, 64)
+	resultID, err := p.arg(r)
 	if err != nil {
-		log.Warningf(ctx, "error decoding key: %s", err)
+		if err != errNoArg {
+			log.Warningf(ctx, "failed to decode result ID: %v", err)
+		}
 		return
 	}
 
@@ -233,11 +244,16 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type Dirs struct {
 	DB         *ddao.DB
 	PkgResults http.Handler
+	BasePath   string
+}
+
+func (d *Dirs) args(r *http.Request) []string {
+	return strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 }
 
 func (d *Dirs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	paths := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	paths := d.args(r)
 	if len(paths) == 0 {
 		return
 	}
@@ -257,5 +273,5 @@ func (d *Dirs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Errorf(ctx, "Dirs: GetPkgsInCategory: %v", err)
 	}
 
-	templates.CategoryList(w, dirs, "/"+category)
+	templates.CategoryList(w, dirs, d.BasePath+category)
 }
