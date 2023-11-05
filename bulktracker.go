@@ -43,14 +43,18 @@ import (
 	"github.com/bsiegert/BulkTracker/json"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/pages"
+	"github.com/bsiegert/BulkTracker/templates"
 )
 
 var (
 	port        = flag.Int("port", 8080, "The port to use.")
 	metricsAddr = flag.String("metrics_addr", "", "host:port for serving Prometheus metrics, or 'main' to serve them on the main port")
 	dbPath      = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
-	basePath    = flag.String("base_path", "/", "The path under which to serve the UI, e.g. '/bulktracker/'.")
 )
+
+func init() {
+	flag.StringVar(&templates.BasePath, "base_path", "/", "The path under which to serve the UI, e.g. '/bulktracker/'.")
+}
 
 //go:embed images mock static robots.txt
 var staticContent embed.FS
@@ -183,10 +187,10 @@ func main() {
 	}
 
 	log.Infof(ctx, "Listening on port %d", *port)
-	if *basePath != "/" {
-		http.Handle("/", http.RedirectHandler(*basePath, http.StatusSeeOther))
+	if templates.BasePath != "/" {
+		http.Handle("/", http.RedirectHandler(templates.BasePath, http.StatusSeeOther))
 	}
-	http.Handle(*basePath, http.StripPrefix(strings.TrimRight(*basePath, "/"), mux))
+	http.Handle(templates.BasePath, http.StripPrefix(strings.TrimRight(templates.BasePath, "/"), mux))
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Errorf(ctx, "%s", err)

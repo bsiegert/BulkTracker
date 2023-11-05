@@ -1,7 +1,7 @@
 $(document).ready(function() {
   $('#pkgresults').submit(function() {
     var pkg = encodeURIComponent($('select#results-pkg').val()).replace(/%2F/gi, "/");
-    $(location).attr('href', `/${pkg}`);
+    $(location).attr('href', `${bt.basePath}${pkg}`);
     return false;
   });
   
@@ -9,7 +9,7 @@ $(document).ready(function() {
     theme: 'bootstrap',
     tags: true,
     ajax: {
-      url: '/json/autocomplete/',
+      url: bt.basePath+'json/autocomplete/',
       dataType: 'json'
     }
   });

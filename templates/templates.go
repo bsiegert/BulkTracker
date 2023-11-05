@@ -32,11 +32,19 @@ import (
 //go:embed *.html
 var emb embed.FS
 
+// BasePath is the path at which the UI is served.
+var BasePath = "/"
+
+// bp is a shim type that avoids allocations in common templates.
+type bp struct{}
+
+func (bp) BasePath() string { return BasePath }
+
 // t is the top-level template object.
 var t = template.Must(template.ParseFS(emb, "*.html"))
 
 func PageHeader(w io.Writer) {
-	t.ExecuteTemplate(w, "header.html", nil)
+	t.ExecuteTemplate(w, "header.html", bp{})
 }
 
 func PageFooter(w io.Writer) {
@@ -44,7 +52,7 @@ func PageFooter(w io.Writer) {
 }
 
 func StartPageLead(w io.Writer) {
-	t.ExecuteTemplate(w, "start_page_lead.html", nil)
+	t.ExecuteTemplate(w, "start_page_lead.html", bp{})
 }
 
 func StartPageLead2(w io.Writer) {
