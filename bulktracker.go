@@ -49,6 +49,7 @@ var (
 	port        = flag.Int("port", 8080, "The port to use.")
 	metricsAddr = flag.String("metrics_addr", "", "host:port for serving Prometheus metrics, or 'main' to serve them on the main port")
 	dbPath      = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
+	basePath    = flag.String("base_path", "/", "The path under which to serve the UI, e.g. '/bulktracker/'.")
 )
 
 //go:embed images mock static robots.txt
@@ -69,31 +70,23 @@ func fileHandler(name string) (http.HandlerFunc, error) {
 	}, nil
 }
 
-func registerCategories(ctx context.Context, ddb *ddao.DB, handler http.Handler) error {
+func registerCategories(ctx context.Context, mux *http.ServeMux, ddb *ddao.DB, handler http.Handler) error {
 	categories, err := ddb.GetCategories(ctx)
 	if err != nil {
 		return err
 	}
 	for _, c := range categories {
 		log.Infof(ctx, "Handling %v", c)
-		handle("/"+c, handler)
+		mux.Handle("/"+c, handler)
 	}
 	return nil
-}
-
-// handle wraps http.Handle.
-func handle(path string, handler http.Handler) {
-	http.Handle(path, handler)
-}
-
-// handleFunc wraps http.HandleFunc.
-func handleFunc(path string, handler func(http.ResponseWriter, *http.Request)) {
-	http.HandleFunc(path, handler)
 }
 
 func main() {
 	flag.Parse()
 	ctx := context.Background()
+
+	mux := http.NewServeMux()
 
 	db, err := dao.New(ctx, "sqlite3", *dbPath)
 	if err != nil {
@@ -103,24 +96,24 @@ func main() {
 	var ddb ddao.DB
 	ddb.Queries = *ddao.New(db.DB)
 
-	handle("/", &pages.StartPage{
+	mux.Handle("/", &pages.StartPage{
 		DB: &ddb,
 	})
-	handle("/build/", &pages.BuildDetails{
+	mux.Handle("/build/", &pages.BuildDetails{
 		DB: &ddb,
 	})
-	handleFunc("/builds", pages.ShowBuilds)
-	handle("/robots.txt", http.FileServer(http.FS(staticContent)))
-	handle("/images/", http.FileServer(http.FS(staticContent)))
-	handle("/mock/", http.FileServer(http.FS(staticContent)))
-	handle("/static/", http.FileServer(http.FS(staticContent)))
-	handle("/_ah/mail/", &ingest.IncomingMailHandler{
+	mux.HandleFunc("/builds", pages.ShowBuilds)
+	mux.Handle("/robots.txt", http.FileServer(http.FS(staticContent)))
+	mux.Handle("/images/", http.FileServer(http.FS(staticContent)))
+	mux.Handle("/mock/", http.FileServer(http.FS(staticContent)))
+	mux.Handle("/static/", http.FileServer(http.FS(staticContent)))
+	mux.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
 		DB: &ddb,
 	})
-	handle("/json/", &json.API{
+	mux.Handle("/json/", &json.API{
 		DB: &ddb,
 	})
-	handle("/pkg/", &pages.PkgDetails{
+	mux.Handle("/pkg/", &pages.PkgDetails{
 		DB: &ddb,
 	})
 
@@ -129,16 +122,16 @@ func main() {
 		log.Errorf(ctx, "failed to create /favicon.ico handler: %s", err)
 		os.Exit(1)
 	}
-	handleFunc("/favicon.ico", h)
+	mux.HandleFunc("/favicon.ico", h)
 
 	h, err = fileHandler("static/pkgresults.html")
 	if err != nil {
 		log.Errorf(ctx, "failed to create /pkgresults handler: %s", err)
 		os.Exit(1)
 	}
-	handleFunc("/pkgresults/", h)
+	mux.HandleFunc("/pkgresults/", h)
 
-	err = registerCategories(ctx, &ddb, &pages.Dirs{
+	err = registerCategories(ctx, mux, &ddb, &pages.Dirs{
 		DB:         &ddb,
 		PkgResults: h,
 	})
@@ -156,7 +149,7 @@ func main() {
 		log.Infof(context.Background(), "Not exporting Prometheus metrics")
 	case "main":
 		log.Infof(context.Background(), "Exporting Prometheus metrics on /metrics")
-		handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+		mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	default:
 		a := *metricsAddr
 		if _, metricsPort, ok := strings.Cut(a, ":"); ok {
@@ -164,8 +157,8 @@ func main() {
 		}
 		log.Infof(context.Background(), "Exporting Prometheus metrics on http://%v/metrics", a)
 
-		mux := http.NewServeMux()
-		mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+		metricMux := http.NewServeMux()
+		metricMux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 		landingPage, err := web.NewLandingPage(web.LandingConfig{
 			Name: "BulkTracker",
 			Links: []web.LandingLinks{
@@ -183,13 +176,17 @@ func main() {
 			log.Errorf(context.Background(), "Setting up metrics landing page: %v", err)
 			os.Exit(1)
 		}
-		mux.Handle("/", landingPage)
+		metricMux.Handle("/", landingPage)
 		go func() {
-			log.Errorf(context.Background(), "%v", http.ListenAndServe(*metricsAddr, mux))
+			log.Errorf(context.Background(), "%v", http.ListenAndServe(*metricsAddr, metricMux))
 		}()
 	}
 
 	log.Infof(ctx, "Listening on port %d", *port)
+	if *basePath != "/" {
+		http.Handle("/", http.RedirectHandler(*basePath, http.StatusSeeOther))
+	}
+	http.Handle(*basePath, http.StripPrefix(strings.TrimRight(*basePath, "/"), mux))
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Errorf(ctx, "%s", err)
