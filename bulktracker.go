@@ -100,6 +100,11 @@ func main() {
 	var ddb ddao.DB
 	ddb.Queries = *ddao.New(db.DB)
 
+	// Do not serve this under basePath.
+	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
+		DB: &ddb,
+	})
+
 	mux.Handle("/", &pages.StartPage{
 		DB:       &ddb,
 		BasePath: templates.BasePath,
@@ -112,9 +117,6 @@ func main() {
 	mux.Handle("/images/", http.FileServer(http.FS(staticContent)))
 	mux.Handle("/mock/", http.FileServer(http.FS(staticContent)))
 	mux.Handle("/static/", http.FileServer(http.FS(staticContent)))
-	mux.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
-		DB: &ddb,
-	})
 	mux.Handle("/json/", &json.API{
 		DB: &ddb,
 	})
@@ -155,7 +157,8 @@ func main() {
 		log.Infof(context.Background(), "Not exporting Prometheus metrics")
 	case "main":
 		log.Infof(context.Background(), "Exporting Prometheus metrics on /metrics")
-		mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+		// Do not serve this under basePath.
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	default:
 		a := *metricsAddr
 		if _, metricsPort, ok := strings.Cut(a, ":"); ok {
