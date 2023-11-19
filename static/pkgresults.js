@@ -16,7 +16,10 @@ var classes = {
 function PkgResultsTable(event) {
   var pkgname = null;
   var pkgname_re = /^[A-Za-z0-9+\-_]+\/[A-Za-z0-9+\-_]+$/;
-  var fragment = window.location.pathname.slice(1);
+  var fragment = window.location.pathname;
+  if (fragment.startsWith(bt.basePath)) {
+    fragment = fragment.substring(bt.basePath.length);
+  }
   if (fragment.startsWith("pkgresults/")) {
     fragment = fragment.split("pkgresults/")[1];
   }
@@ -34,7 +37,7 @@ function PkgResultsTable(event) {
     destroy: true,
     paging: false,
     ajax: {
-      url: `/json/${event.data}/${pkgname}`,
+      url: `${bt.basePath}json/${event.data}/${pkgname}`,
       dataSrc: ""
     },
     columns: [
