@@ -78,7 +78,14 @@ func TableBegin(w io.Writer, columns ...string) {
 }
 
 func TableBuilds(w io.Writer, b *ddao.Build) {
-	t.ExecuteTemplate(w, "table_builds.html", b)
+	s := struct {
+		*ddao.Build
+		bp
+	}{
+		Build: b,
+		bp:    bp{},
+	}
+	t.ExecuteTemplate(w, "table_builds.html", s)
 }
 
 func TablePkgs(w io.Writer, rows []ddao.GetResultsInCategoryRow) {

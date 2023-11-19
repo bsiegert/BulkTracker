@@ -33,21 +33,21 @@ bt.buildDetails.columns = [
 
 bt.buildDetails.createdRow = function (row, data) {
   $('td', row).filter((i) => i < 2)
-    .wrapInner(`<a href="/build/${data.ResultID}"></a>`);
+    .wrapInner(`<a href="${bt.basePath}build/${data.ResultID}"></a>`);
 };
 
 bt.buildDetails.init = function () {
   var buildNo = window.location.pathname.slice(-2).replaceAll("/", "");
   $('.table').dataTable({
     ajax: {
-      url: `/json/pkgsbreakingmostothers/${buildNo}`,
+      url: `${bt.basePath}json/pkgsbreakingmostothers/${buildNo}`,
       dataSrc: ""
     },
     columns: bt.buildDetails.columns,
     // createdRow: bt.buildDetails.createdRow,
     order: [[3, 'desc']],
     createdRow: function (row, data, dataIndex) {
-      $('td:eq(1)', row).wrapInner('<a href="/pkg/' + data.ResultID + '"></a>');
+      $('td:eq(1)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
       $('td:eq(2)', row).addClass(classes[data.BuildStatus]);
     }
   });

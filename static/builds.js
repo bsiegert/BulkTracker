@@ -21,13 +21,13 @@ bt.builds.columns = [
 
 bt.builds.createdRow = function (row, data) {
   $('td', row).filter(function (i) { return i < 3 })
-    .wrapInner(`<a href="/build/${data.BuildID}"></a>`);
+    .wrapInner(`<a href="${bt.basePath}build/${data.BuildID}"></a>`);
 };
 
 bt.builds.init = function () {
   $('.table').dataTable({
     ajax: {
-      url: "/json/allbuilds/",
+      url: `${bt.BasePath}json/allbuilds/`,
       dataSrc: ""
     },
     columns: bt.builds.columns,

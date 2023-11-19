@@ -1,12 +1,12 @@
       <tr>
 	<td>
-	  <a href="/build/{{.BuildID}}">{{.Date}}</a>
+	  <a href="{{.BasePath}}build/{{.BuildID}}">{{.Date}}</a>
 	</td>
 	<td>
-	  <a href="/build/{{.BuildID}}">{{.Branch}}</a>
+	  <a href="{{.BasePath}}build/{{.BuildID}}">{{.Branch}}</a>
 	</td>
 	<td>
-	  <a href="/build/{{.BuildID}}">{{.Platform}}</a>
+	  <a href="{{.BasePath}}build/{{.BuildID}}">{{.Platform}}</a>
 	</td>
 	<td>
 	  <span class="text-danger">{{.NumFailed}} failed</span> /
