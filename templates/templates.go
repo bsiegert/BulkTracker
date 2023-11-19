@@ -33,7 +33,8 @@ import (
 //go:embed *.html
 var emb embed.FS
 
-// BasePath is the path at which the UI is served.
+// BasePath is the path at which the UI is served. It is set from a flag in
+// main.
 var BasePath = "/"
 
 // bp is a shim type that avoids allocations in common templates.
@@ -50,6 +51,10 @@ func PageHeader(w io.Writer) {
 
 func PageFooter(w io.Writer) {
 	t.ExecuteTemplate(w, "footer.html", nil)
+}
+
+func PkgResults(w io.Writer) {
+	t.ExecuteTemplate(w, "pkgresults.html", bp{})
 }
 
 func StartPageLead(w io.Writer) {

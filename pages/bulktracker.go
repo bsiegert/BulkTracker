@@ -276,3 +276,12 @@ func (d *Dirs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	templates.CategoryList(w, dirs, d.BasePath+category)
 }
+
+// PkgResults is the package results page.
+type PkgResults struct{}
+
+func (PkgResults) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	templates.PageHeader(w)
+	templates.PkgResults(w)
+	templates.PageFooter(w)
+}

@@ -131,16 +131,11 @@ func main() {
 	}
 	mux.HandleFunc("/favicon.ico", h)
 
-	h, err = fileHandler("static/pkgresults.html")
-	if err != nil {
-		log.Errorf(ctx, "failed to create /pkgresults handler: %s", err)
-		os.Exit(1)
-	}
-	mux.HandleFunc("/pkgresults/", h)
+	mux.Handle("/pkgresults/", pages.PkgResults{})
 
 	err = registerCategories(ctx, mux, &ddb, &pages.Dirs{
 		DB:         &ddb,
-		PkgResults: h,
+		PkgResults: pages.PkgResults{},
 		BasePath:   templates.BasePath,
 	})
 	if err != nil {
