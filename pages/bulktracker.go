@@ -27,6 +27,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -161,7 +162,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	templates.Heading(w, "Results by Category")
-	templates.CategoryList(w, categories, r.URL.Path)
+	templates.CategoryList(w, categories, path.Join(templates.BasePath, r.URL.Path))
 
 	templates.Heading(w, "Packages breaking most other packages")
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
@@ -274,7 +275,7 @@ func (d *Dirs) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Errorf(ctx, "Dirs: GetPkgsInCategory: %v", err)
 	}
 
-	templates.CategoryList(w, dirs, d.BasePath+category)
+	templates.CategoryList(w, dirs, path.Join(d.BasePath, category))
 }
 
 // PkgResults is the package results page.

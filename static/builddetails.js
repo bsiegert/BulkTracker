@@ -44,7 +44,6 @@ bt.buildDetails.init = function () {
       dataSrc: ""
     },
     columns: bt.buildDetails.columns,
-    // createdRow: bt.buildDetails.createdRow,
     order: [[3, 'desc']],
     createdRow: function (row, data, dataIndex) {
       $('td:eq(1)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
