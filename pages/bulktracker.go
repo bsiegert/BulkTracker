@@ -59,7 +59,7 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	categories, _ := s.DB.GetCategories(ctx)
 	if len(categories) > 0 {
-		templates.CategoryList(w, categories, s.BasePath)
+		templates.CategoryList(w, categories, strings.TrimRight(s.BasePath, "/"))
 	}
 
 	templates.StartPageLead2(w)
