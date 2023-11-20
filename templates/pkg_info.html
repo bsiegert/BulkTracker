@@ -1,6 +1,12 @@
     <dl class="dl-horizontal" style="font-size: 120%">
       <dt>Package location</dt>
-      <dd><a href="http://pkgsrc.se/{{.Category}}{{.Dir}}">{{.Category}}{{.Dir}}</a></dd>
+      <dd>
+        {{if eq .Category "joyent/"}}
+        {{.Category}}{{.Dir}}
+        {{else}}
+        <a href="http://pkgsrc.se/{{.Category}}{{.Dir}}">{{.Category}}{{.Dir}}</a></dd>
+        {{end}}
+      </dd>
       <dt>Package name</dt>
       <dd>{{.PkgName}}</dd>
       <dt>Build Status</dt>
