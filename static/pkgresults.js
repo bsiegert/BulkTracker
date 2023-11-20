@@ -59,10 +59,11 @@ function PkgResultsTable(event) {
       { data: "Platform" },
       { data: "Compiler" }
     ],
+    order: [0, "desc"],
     createdRow: function (row, data, dataIndex) {
-      $('td:eq(0)', row).wrapInner('<a href="/pkg/' + data.ResultID + '"></a>');
+      $('td:eq(0)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
       $('td:eq(1)', row).addClass(classes[data.BuildStatus]);
-      $('td:eq(2)', row).wrapInner('<a href="/build/' + data.BuildID + '"></a>');
+      $('td:eq(2)', row).wrapInner(`<a href="${bt.basePath}build/${data.BuildID}"></a>`);
     }
   });
 }
