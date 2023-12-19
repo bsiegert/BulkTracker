@@ -27,7 +27,7 @@ bt.builds.createdRow = function (row, data) {
 bt.builds.init = function () {
   $('.table').dataTable({
     ajax: {
-      url: `${bt.BasePath}json/allbuilds/`,
+      url: `${bt.basePath}json/allbuilds/`,
       dataSrc: ""
     },
     columns: bt.builds.columns,
