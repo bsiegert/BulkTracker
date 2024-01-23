@@ -21,20 +21,34 @@
 package main
 
 import (
-	"github.com/bsiegert/BulkTracker/log"
+	"io"
+	"net/http"
+	"strings"
+
 	"github.com/bsiegert/BulkTracker/templates"
 
 	"google.golang.org/appengine"
-
-	"io"
-	"net/http"
 )
 
-func main() {
-	log.InitLogger()
+const newAddress = "https://releng.netbsd.org/bulktracker/"
 
+func main() {
 	http.HandleFunc("/", StartPage)
+	http.Handle("/pkgresults/", &redirector{"/pkgresults/"})
 	appengine.Main()
+}
+
+type redirector struct {
+	pathPrefix string
+}
+
+func (r *redirector) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if !strings.HasPrefix(req.URL.Path, r.pathPrefix) {
+		http.NotFound(w, req)
+		return
+	}
+	path := strings.TrimPrefix(req.URL.Path, r.pathPrefix)
+	http.Redirect(w, req, newAddress+path, http.StatusMovedPermanently)
 }
 
 func StartPage(w http.ResponseWriter, r *http.Request) {
