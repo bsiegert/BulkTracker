@@ -1,35 +1,24 @@
-  <div class="jumbotron">
     <p>BulkTracker is a web app to follow bulk build status in pkgsrc,
       the <a href="http://www.NetBSD.org/">NetBSD</a> package collection.
     </p>
-    <div class="alert alert-danger" role="alert">
-      <h4 class="alert-heading">Important announcement</h4>
-      <p>This BulkTracker instance will be shut down on January 23, 2024.<p>
-      <hr />
-      <p>
-      	Unfortunately, recent API deprecations on Google App Engine leave
-      	no other choice. Please update your bookmarks to the replacement instance at
-	<a class="alert-link" href="https://releng.netbsd.org/bulktracker/">https://releng.netbsd.org/bulktracker/</a>.
-      </p>
-    </div>
+    
+
+  <h2 class="alert-heading">Important announcement</h4>
+
+  <div class="alert alert-danger" role="alert">
+    <p>This BulkTracker instance is now shut down.<p>
+    <hr />
+    <p>
+      Unfortunately, recent API deprecations on Google App Engine would have
+      required an almost full rewrite of this app. Instead, this time and
+      effort were spent on rewriting it to run stand-alone, on a NetBSD
+      Foundation server.
+    </p>
   </div>
 
-  <script type="text/javascript" src="/static/select-pkgresult.js"></script>
+  <p class="lead"><b>
+    Please update your bookmarks to the replacement instance at
+    <a href="https://releng.netbsd.org/bulktracker/">https://releng.netbsd.org/bulktracker/</a>.
+  </b></p>
 
-  <h2>Search for package results</h2>
-
-  <form id="pkgresults" class="form-inline col-lg-6">
-    <div class="form-group">
-      <div class="input-group">
-	<select id="results-pkg" type="text" class="form-control" placeholder="category/package"></select>
-	<span class="input-group-btn">
-	  <button id="results-submit" class="btn btn-warning" type="submit">Show results</button>
-	</span>
-      </div>
-    </div>
-  </form>
-
-  </div><div class="row">
-
-  <h2>Latest Builds per Platform&nbsp; <a href="/builds" class="btn btn-primary">Show all</a></h2>
 
