@@ -70,6 +70,23 @@ func (d *DB) BeginTransaction(ctx context.Context, opts *sql.TxOptions) (*sql.Tx
 	return database.BeginTx(ctx, opts)
 }
 
+// BeginReadOnlyTransaction starts a new transaction iff not currently within a transaction.
+func (d *DB) BeginReadOnlyTransaction(ctx context.Context) (*DB, func(), error) {
+	database, ok := d.db.(*sql.DB)
+	if !ok {
+		return nil, nil, errors.New("already within a transaction")
+	}
+	tx, err := database.BeginTx(ctx, &sql.TxOptions{
+		ReadOnly: true,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return &DB{
+		Queries: *d.WithTx(tx),
+	}, func() { tx.Rollback() }, nil
+}
+
 // PutResults writes the results for the given build ID to the database.
 func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64) error {
 	tx, err := d.BeginTransaction(ctx, nil)

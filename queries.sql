@@ -61,6 +61,18 @@ SELECT
 FROM results r, builds b, pkgs p
 WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.result_id == ?;
 
+-- name: GetSingleResultByPkgName :one
+SELECT
+	r.result_id,
+	r.pkg_name,
+	r.build_status,
+	r.failed_deps,
+	r.breaks,
+	p.category,
+	p.dir
+FROM results r, pkgs p
+WHERE r.build_id == ? AND r.pkg_id == p.pkg_id AND r.pkg_name == ?;
+
 -- name: GetPkgsInCategory :many
 SELECT DISTINCT dir
 FROM pkgs

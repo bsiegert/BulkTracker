@@ -1,6 +1,4 @@
 version: 2
-project:
-    id: "github/com/bsiegert/BulkTracker"
 sql:
     - engine: sqlite
       schema: schema.sql
