@@ -21,6 +21,7 @@
 package templates
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"html/template"
@@ -28,6 +29,7 @@ import (
 
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
+	"github.com/bsiegert/BulkTracker/log"
 )
 
 //go:embed *.html
@@ -73,8 +75,29 @@ func TableEnd(w io.Writer) {
 	t.ExecuteTemplate(w, "table_end.html", nil)
 }
 
+type tableBeginParams struct {
+	ID      string
+	Columns []string
+}
+
 func TableBegin(w io.Writer, columns ...string) {
-	t.ExecuteTemplate(w, "table_begin.html", columns)
+	// TODO: replace usage with TableBeginID.
+	err := t.ExecuteTemplate(w, "table_begin.html", tableBeginParams{
+		Columns: columns,
+	})
+	if err != nil {
+		log.Errorf(context.TODO(), "templates.TableBegin: %v", err)
+	}
+}
+
+func TableBeginID(w io.Writer, id string, columns ...string) {
+	err := t.ExecuteTemplate(w, "table_begin.html", tableBeginParams{
+		ID:      id,
+		Columns: columns,
+	})
+	if err != nil {
+		log.Errorf(context.TODO(), "templates.TableBeginID: %v", err)
+	}
 }
 
 func TableBuilds(w io.Writer, b *ddao.Build) {
@@ -85,7 +108,10 @@ func TableBuilds(w io.Writer, b *ddao.Build) {
 		Build: b,
 		bp:    bp{},
 	}
-	t.ExecuteTemplate(w, "table_builds.html", s)
+	err := t.ExecuteTemplate(w, "table_builds.html", s)
+	if err != nil {
+		log.Errorf(context.TODO(), "templates.TableBeginClass: %v", err)
+	}
 }
 
 func TablePkgs(w io.Writer, rows []ddao.GetResultsInCategoryRow) {

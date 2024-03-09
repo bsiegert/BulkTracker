@@ -1,7 +1,11 @@
+  {{if .ID}}
+  <table class="table" id="{{.ID}}">
+  {{else}}
   <table class="table">
+  {{end}}
     <thead>
       <tr>
-	{{range .}}
+	{{range .Columns}}
 	<th>{{.}}</th>
 	{{end}}
       </tr>
