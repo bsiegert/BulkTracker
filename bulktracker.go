@@ -80,7 +80,7 @@ func registerCategories(ctx context.Context, mux *http.ServeMux, ddb *ddao.DB, h
 		return err
 	}
 	for _, c := range categories {
-		log.Infof(ctx, "Handling %v", c)
+		// log.Infof(ctx, "Handling %v", c)
 		mux.Handle("/"+c, handler)
 	}
 	return nil
