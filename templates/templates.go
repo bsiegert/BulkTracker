@@ -123,7 +123,7 @@ func TableBuilds(w io.Writer, b *ddao.Build) {
 	}
 }
 
-func TablePkgs(w io.Writer, rows []ddao.GetResultsInCategoryRow) {
+func TablePkgs[T any](w io.Writer, rows []T) {
 	t.ExecuteTemplate(w, "table_pkgs.html", rows)
 }
 
