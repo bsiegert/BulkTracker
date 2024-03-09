@@ -202,7 +202,14 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := p.DB.GetSingleResult(ctx, resultID)
+	db, cancel, err := p.DB.BeginReadOnlyTransaction(ctx)
+	if err != nil {
+		log.Errorf(ctx, "starting r/o transaction: %v", err)
+		return
+	}
+	defer cancel()
+
+	res, err := db.GetSingleResult(ctx, resultID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			log.Errorf(ctx, "GetSingleResult: %v", err)
@@ -230,22 +237,26 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	failedDeps := strings.Split(res.FailedDeps, ",")
 	fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", len(failedDeps))
-	// // TODO(bsiegert) Unfortunately, we save a list of package names, not a
-	// // list of corresponding datastore keys. So we need to fetch them one by
-	// // one.
-	// templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
-	// dp := &bulk.Pkg{}
-	// for _, dep := range p.FailedDeps {
-	// 	it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("PkgName =", dep).Limit(1).Run(ctx)
-	// 	key, err := it.Next(dp)
-	// 	if err != nil {
-	// 		continue
-	// 	}
-	// 	dp.Key = key.Encode()
-	// 	templates.TablePkgs(w, dp)
-	// }
-	// io.WriteString(w, templates.TableEnd)
+	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 
+	sqlBuildID := sql.NullInt64{
+		Valid: true,
+		Int64: res.BuildID,
+	}
+	rows := make([]ddao.GetSingleResultByPkgNameRow, 0, len(failedDeps))
+	for _, dep := range failedDeps {
+		row, err := db.GetSingleResultByPkgName(ctx, ddao.GetSingleResultByPkgNameParams{
+			PkgName: dep,
+			BuildID: sqlBuildID,
+		})
+		if err != nil {
+			// Swallow and ignore error.
+			continue
+		}
+		rows = append(rows, row)
+	}
+	templates.TablePkgs(w, rows)
+	templates.TableEnd(w)
 }
 
 // Dirs is a handler for a subpage showing all the package directories for a given category.
