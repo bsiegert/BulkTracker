@@ -36,11 +36,11 @@ bt.buildDetails.createdRow = function (row, data) {
     .wrapInner(`<a href="${bt.basePath}build/${data.ResultID}"></a>`);
 };
 
-bt.buildDetails.init = function () {
-  var buildNo = window.location.pathname.slice(-2).replaceAll("/", "");
-  $('.table').dataTable({
+bt.buildDetails.init = function (selector, apiName, num) {
+  $(selector).dataTable({
+    paging: false,
     ajax: {
-      url: `${bt.basePath}json/pkgsbreakingmostothers/${buildNo}`,
+      url: `${bt.basePath}json/${apiName}/${num}`,
       dataSrc: ""
     },
     columns: bt.buildDetails.columns,
@@ -52,4 +52,3 @@ bt.buildDetails.init = function () {
   });
 };
 
-$(document).ready(bt.buildDetails.init);

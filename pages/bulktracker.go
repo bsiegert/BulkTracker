@@ -167,7 +167,9 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.Heading(w, "Packages breaking most other packages")
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 	templates.TableEnd(w)
+
 	templates.LoadScript(w, "builddetails.js")
+	templates.BuildDetailsInit(w, ".table", "pkgsbreakingmostothers", buildID)
 }
 
 type PkgDetails struct {
@@ -217,7 +219,9 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<h2>This package breaks %d others</h2>", res.Breaks)
 		templates.TableBeginID(w, id, "Location", "Package Name", "Status", "Breaks")
 		templates.TableEnd(w)
-		templates.DataTable(w, id, "")
+
+		templates.LoadScript(w, "builddetails.js")
+		templates.BuildDetailsInit(w, "#breaking", "pkgsbrokenby", resultID)
 	}
 
 	// Failed to build because of dependencies.

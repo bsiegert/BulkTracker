@@ -174,3 +174,17 @@ func DataTable(w io.Writer, id *id, settings string) {
 func LoadScript(w io.Writer, filename string) {
 	fmt.Fprintf(w, `<script src="%sstatic/%s"></script>`, BasePath, filename)
 }
+
+type buildDetailsInitParams struct {
+	Selector string
+	APIName  string
+	Number   int64
+}
+
+func BuildDetailsInit(w io.Writer, selector string, apiName string, number int64) {
+	t.ExecuteTemplate(w, "builddetails_init.html", buildDetailsInitParams{
+		Selector: selector,
+		APIName:  apiName,
+		Number:   number,
+	})
+}
