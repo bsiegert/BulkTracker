@@ -73,7 +73,7 @@ func (s *StartPage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		templates.DatastoreError(w, err)
 	}
 	writeBuildListAll(ctx, w, builds)
-	templates.DataTable(w, `"order": [0, "desc"]`)
+	templates.DataTable(w, nil, `"order": [0, "desc"]`)
 }
 
 func ShowBuilds(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +149,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		templates.Heading(w, category)
 		writePackageList(ctx, w, results)
-		templates.DataTable(w, `"order": [0, "asc"]`)
+		templates.DataTable(w, nil, `"order": [0, "asc"]`)
 		return
 	}
 
@@ -209,13 +209,15 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.PkgInfo(w, res)
-	templates.DataTable(w, "")
+	// templates.DataTable(w, "")
 
 	// Failed, breaking other packages.
 	if res.Breaks > 0 {
+		id := templates.ID("breaking")
 		fmt.Fprintf(w, "<h2>This package breaks %d others</h2>", res.Breaks)
-		//it := datastore.NewQuery("pkg").Ancestor(buildKey).Filter("FailedDeps =", p.PkgName).Order("Category").Order("Dir").Limit(1000).Run(ctx)
-		//writePackageList(ctx, w, it)
+		templates.TableBeginID(w, id, "Location", "Package Name", "Status", "Breaks")
+		templates.TableEnd(w)
+		templates.DataTable(w, id, "")
 	}
 
 	// Failed to build because of dependencies.

@@ -1,8 +1,13 @@
   <script type="text/javascript">
     $(document).ready(function() {
-	$('.table').dataTable({{if .}}{
+    {{if .ID}}
+    $('#{{.ID}}')
+    {{else}}
+    $('.table')
+    {{end -}}
+    .dataTable({
     paging: false,
-	  {{.}}
-	}{{end}});
+    {{if .Settings}}{{.Settings}}{{end}}
+  });
     } );
   </script>

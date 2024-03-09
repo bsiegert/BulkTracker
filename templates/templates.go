@@ -44,6 +44,15 @@ type bp struct{}
 
 func (bp) BasePath() string { return BasePath }
 
+// ID returns an HTML element ID.
+func ID(s string) *id {
+	return &id{s}
+}
+
+type id struct {
+	ID string
+}
+
 // t is the top-level template object.
 var t = template.Must(template.ParseFS(emb, "*.html"))
 
@@ -90,9 +99,9 @@ func TableBegin(w io.Writer, columns ...string) {
 	}
 }
 
-func TableBeginID(w io.Writer, id string, columns ...string) {
+func TableBeginID(w io.Writer, id *id, columns ...string) {
 	err := t.ExecuteTemplate(w, "table_begin.html", tableBeginParams{
-		ID:      id,
+		ID:      id.ID,
 		Columns: columns,
 	})
 	if err != nil {
@@ -145,13 +154,21 @@ func Heading(w io.Writer, text string) {
 	t.ExecuteTemplate(w, "heading.html", text)
 }
 
-func DataTable(w io.Writer, settings string) {
-	var js *template.JS
+type dataTableParams struct {
+	ID       string
+	Settings *template.JS
+}
+
+func DataTable(w io.Writer, id *id, settings string) {
+	params := dataTableParams{}
+	if id != nil {
+		params.ID = id.ID
+	}
 	if settings != "" {
 		s := template.JS(settings)
-		js = &s
+		params.Settings = &s
 	}
-	t.ExecuteTemplate(w, "data_table.html", js)
+	t.ExecuteTemplate(w, "data_table.html", params)
 }
 
 func LoadScript(w io.Writer, filename string) {
