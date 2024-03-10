@@ -124,7 +124,13 @@ func TableBuilds(w io.Writer, b *ddao.Build) {
 }
 
 func TablePkgs[T any](w io.Writer, rows []T) {
-	t.ExecuteTemplate(w, "table_pkgs.html", rows)
+	s := struct {
+		Rows []T
+		bp
+	}{
+		Rows: rows,
+	}
+	t.ExecuteTemplate(w, "table_pkgs.html", s)
 }
 
 func BulkBuildInfo(w io.Writer, b *bulk.Build) {

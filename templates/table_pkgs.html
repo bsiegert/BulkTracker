@@ -1,10 +1,11 @@
-{{range .}}
+{{$bp := .BasePath}}
+{{range .Rows}}
       <tr>
 	<td>
-	  <a href="/pkg/{{.ResultID}}">{{.Category}}{{.Dir}}</a>
+	  <a href="{{$bp}}pkg/{{.ResultID}}">{{.Category}}{{.Dir}}</a>
 	</td>
 	<td>
-	  <a href="/pkg/{{.ResultID}}">{{.PkgName}}</a>
+	  <a href="{{$bp}}pkg/{{.ResultID}}">{{.PkgName}}</a>
 	</td>
 	{{if eq .BuildStatus 0}}
 	<td class="success text-success">ok</td>
