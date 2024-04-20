@@ -222,15 +222,18 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 	return r, nil
 }
 
-// httpGet tries http.Get and falls back to using an App Engine urlfetch
-// transport if it fails.
+// httpGet calls http.Get with support for FTP transport.
 func httpGet(ctx context.Context, url string) (*http.Response, error) {
 	transport := &http.Transport{}
 	transport.RegisterProtocol("ftp", &ftp.FTPRoundTripper{})
 	client := http.Client{
 		Transport: transport,
 	}
-	return client.Get(url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return client.Do(req)
 }
 
 // FetchReport fetches the machine-readable build report, hands it off to the
