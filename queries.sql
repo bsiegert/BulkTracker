@@ -113,7 +113,8 @@ SELECT
 	r.breaks
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-WHERE r.failed_deps LIKE ?;
+WHERE r.build_id = ? AND
+	r.failed_deps LIKE ?;
 
 -- name: PutBuild :one
 

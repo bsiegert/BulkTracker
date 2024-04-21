@@ -32,6 +32,14 @@ import (
 	"github.com/bsiegert/BulkTracker/log"
 )
 
+// NullInt64 initializes a sql.NullInt64.
+func NullInt64(i int64) sql.NullInt64 {
+	return sql.NullInt64{
+		Valid: true,
+		Int64: i,
+	}
+}
+
 // Date returns the date part of the build timestamp.
 func (b *Build) Date() string {
 	return b.BuildTs.Format("2006-01-02")
@@ -96,10 +104,7 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 	defer tx.Rollback()
 
 	q := d.WithTx(tx)
-	err = q.DeleteAllForBuild(ctx, sql.NullInt64{
-		Int64: buildID,
-		Valid: true,
-	})
+	err = q.DeleteAllForBuild(ctx, NullInt64(buildID))
 	if err != nil {
 		return err
 	}
@@ -123,14 +128,8 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 		}
 
 		err = q.PutResult(ctx, PutResultParams{
-			BuildID: sql.NullInt64{
-				Int64: buildID,
-				Valid: true,
-			},
-			PkgID: sql.NullInt64{
-				Int64: pkgID,
-				Valid: true,
-			},
+			BuildID:     NullInt64(buildID),
+			PkgID:       NullInt64(pkgID),
 			PkgName:     result.PkgName,
 			BuildStatus: result.BuildStatus,
 			Breaks:      result.Breaks,
@@ -175,10 +174,7 @@ func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]GetA
 	if err != nil {
 		return nil, err
 	}
-	return q.GetAllPkgResults(ctx, sql.NullInt64{
-		Int64: pkgID,
-		Valid: true,
-	})
+	return q.GetAllPkgResults(ctx, NullInt64(pkgID))
 }
 
 // GetPkgsBrokenBy returns all packages that were broken by the given
@@ -196,5 +192,8 @@ func (d *DB) GetPkgsBrokenBy(ctx context.Context, resultID int64) ([]getPkgsBrok
 	if err != nil {
 		return nil, err
 	}
-	return q.getPkgsBrokenBy(ctx, fmt.Sprintf("%%%s%%", res.PkgName))
+	return q.getPkgsBrokenBy(ctx, getPkgsBrokenByParams{
+		BuildID:    NullInt64(res.BuildID),
+		FailedDeps: fmt.Sprintf("%%%s%%", res.PkgName),
+	})
 }

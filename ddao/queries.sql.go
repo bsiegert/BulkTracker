@@ -609,8 +609,14 @@ SELECT
 	r.breaks
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-WHERE r.failed_deps LIKE ?
+WHERE r.build_id = ? AND
+	r.failed_deps LIKE ?
 `
+
+type getPkgsBrokenByParams struct {
+	BuildID    sql.NullInt64
+	FailedDeps string
+}
 
 type getPkgsBrokenByRow struct {
 	ResultID    int64
@@ -621,8 +627,8 @@ type getPkgsBrokenByRow struct {
 	Breaks      int64
 }
 
-func (q *Queries) getPkgsBrokenBy(ctx context.Context, failedDeps string) ([]getPkgsBrokenByRow, error) {
-	rows, err := q.db.QueryContext(ctx, getPkgsBrokenBy, failedDeps)
+func (q *Queries) getPkgsBrokenBy(ctx context.Context, arg getPkgsBrokenByParams) ([]getPkgsBrokenByRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPkgsBrokenBy, arg.BuildID, arg.FailedDeps)
 	if err != nil {
 		return nil, err
 	}
