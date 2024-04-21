@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2023
+ * Copyright (c) 2014-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -35,7 +35,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/mail"
@@ -147,7 +146,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 	log.Infof(ctx, "new mail from %s", from)
 	if strings.Contains(from.Address, "majordomo") {
-		body, _ := ioutil.ReadAll(msg.Body)
+		body, _ := io.ReadAll(msg.Body)
 		log.Infof(ctx, "%s", body)
 		return
 	}
@@ -176,7 +175,6 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	if headAliases[build.Branch] {
 		build.Branch = "HEAD"
 	}
-	log.Infof(ctx, "%#v, %s", build, err)
 
 	id, err := i.DB.PutBuild(ctx, ddao.PutBuildParams{
 		Platform:             build.Platform,
