@@ -54,3 +54,5 @@ CREATE TABLE IF NOT EXISTS results (
     failed_deps text NOT NULL,
     breaks INTEGER NOT NULL
 );
+
+CREATE INDEX results_i_build_pkg ON results (build_id, pkg_id);
