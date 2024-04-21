@@ -25,7 +25,6 @@ package bulk
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"errors"
 	"io"
 	"path"
@@ -34,7 +33,6 @@ import (
 	"time"
 
 	"github.com/bsiegert/BulkTracker/ddao"
-	"github.com/bsiegert/BulkTracker/log"
 )
 
 // Build holds aggregate information about a single bulk build.
@@ -101,7 +99,6 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 		}
 		parts := strings.SplitN(s.Text(), ":", 2)
 		val := strings.TrimSpace(parts[1])
-		log.Infof(context.Background(), "%s", strings.TrimSpace(parts[0]))
 		switch strings.TrimSpace(parts[0]) {
 		case "Compiler":
 			b.Compiler = val
