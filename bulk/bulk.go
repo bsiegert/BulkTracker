@@ -179,8 +179,7 @@ func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 			p.Category, p.Dir = path.Split(string(val))
 		case bytes.Equal(key, []byte("BUILD_STATUS")):
 			p.BuildStatus = statuses[string(val)]
-			switch p.BuildStatus {
-			case Failed, Prefailed:
+			if p.BuildStatus != OK {
 				failedPkgs[p.PkgName] = n - 1
 			}
 		case bytes.Equal(key, []byte("DEPENDS")):
@@ -198,6 +197,8 @@ func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 		for _, dep := range failedDeps {
 			if fp, ok := failedPkgs[dep]; ok {
 				f = append(f, dep)
+				// TODO: if pkgs[fp] is indirect-failed, add to the counter of
+				// _its_ failed dependencies.
 				pkgs[fp].Breaks++
 			}
 		}

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2023
+ * Copyright (c) 2014-2018, 2023-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -21,11 +21,11 @@
 package bulk
 
 import (
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/bsiegert/BulkTracker/ddao"
+	"github.com/google/go-cmp/cmp"
 )
 
 const pkgFoo = `
@@ -40,44 +40,82 @@ BUILD_STATUS=failed
 DEPENDS=
 `
 
-var pkgsFromReportTests = []struct {
-	report string
-	want   []ddao.PkgResult
-}{
-	{
-		pkgFoo,
-		[]ddao.PkgResult{{
-			Result: ddao.Result{
-				PkgName:     "foo-1.0",
-				BuildStatus: IndirectFailed,
-			},
-		}},
-	},
-	{
-		pkgFoo + pkgBar,
-		[]ddao.PkgResult{
-			{
+const pkgDoubleIndirect = `
+PKGNAME=double-3.0
+BUILD_STATUS=indirect-failed
+DEPENDS=foo-1.0
+`
+
+func TestPkgsFromReport(t *testing.T) {
+	var tests = []struct {
+		name   string
+		report string
+		want   []ddao.PkgResult
+	}{
+		{
+			"single package",
+			pkgFoo,
+			[]ddao.PkgResult{{
 				Result: ddao.Result{
 					PkgName:     "foo-1.0",
 					BuildStatus: IndirectFailed,
-					FailedDeps:  "bar-2.0",
 				},
-			}, {
-				Result: ddao.Result{
-					PkgName:     "bar-2.0",
-					BuildStatus: Failed,
-					Breaks:      1,
+			}},
+		},
+		{
+			"indirect failed",
+			pkgFoo + pkgBar,
+			[]ddao.PkgResult{
+				{
+					Result: ddao.Result{
+						PkgName:     "foo-1.0",
+						BuildStatus: IndirectFailed,
+						FailedDeps:  "bar-2.0",
+					},
+				}, {
+					Result: ddao.Result{
+						PkgName:     "bar-2.0",
+						BuildStatus: Failed,
+						Breaks:      1,
+					},
 				},
 			},
 		},
-	},
-}
+		{
+			"depending on indirect failed",
+			pkgDoubleIndirect + pkgFoo + pkgBar,
+			[]ddao.PkgResult{
+				{
+					Result: ddao.Result{
+						PkgName:     "double-3.0",
+						BuildStatus: IndirectFailed,
+						FailedDeps:  "foo-1.0",
+					},
+				}, {
+					Result: ddao.Result{
+						PkgName:     "foo-1.0",
+						BuildStatus: IndirectFailed,
+						FailedDeps:  "bar-2.0",
+						Breaks:      1,
+					},
+				}, {
+					Result: ddao.Result{
+						PkgName:     "bar-2.0",
+						BuildStatus: Failed,
+						// TODO: arguably, this should be 2, since it breaks the two other packages.
+						Breaks: 1,
+					},
+				},
+			},
+		},
+	}
 
-func TestPkgsFromReport(t *testing.T) {
-	for _, test := range pkgsFromReportTests {
-		got, _ := PkgsFromReport(strings.NewReader(test.report))
-		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("PkgsFromReport(%q): got %#v, want %#v", test.report, got, test.want)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, _ := PkgsFromReport(strings.NewReader(test.report))
+			if diff := cmp.Diff(got, test.want); diff != "" {
+				t.Errorf("PkgsFromReport(): unexpected diff (+got -want)\n%s", diff)
+			}
+		})
 	}
 }
