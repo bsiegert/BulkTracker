@@ -235,7 +235,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if res.FailedDeps == "" {
 		return
 	}
-	failedDeps := strings.Split(res.FailedDeps, ",")
+	failedDeps := strings.Split(res.FailedDeps, " ")
 	fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", len(failedDeps))
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
 
