@@ -2,5 +2,6 @@ BulkTracker
 expireold/expireold
 standalone/standalone
 testing/btinject/btinject
+tmp
 .zedstate
 *.db*
