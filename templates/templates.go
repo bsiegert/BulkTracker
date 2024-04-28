@@ -138,7 +138,16 @@ func BulkBuildInfo(w io.Writer, b *bulk.Build) {
 }
 
 func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
-	t.ExecuteTemplate(w, "pkg_info.html", res)
+	s := struct {
+		Res *ddao.GetSingleResultRow
+		bp
+	}{
+		Res: &res,
+	}
+	err := t.ExecuteTemplate(w, "pkg_info.html", s)
+	if err != nil {
+		log.Errorf(context.TODO(), "templates.PkgInfo: %v", err)
+	}
 }
 
 func NoDetails(w io.Writer, path string) {

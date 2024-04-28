@@ -1,47 +1,56 @@
     <dl class="dl-horizontal" style="font-size: 120%">
+      <dt>&nbsp;</dt>
+      <dd>
+        <div class="btn-group" style="padding-bottom: 1em;">
+          <a href="{{.BasePath}}build/{{.Res.BuildID}}" class="btn btn-primary">&larrhk;</a>
+          <a href="{{.BasePath}}build/{{.Res.BuildID}}/{{.Res.Category}}" class="btn btn-primary">{{.Res.Category}}</a>
+          <a href="{{.BasePath}}{{.Res.Category}}{{.Res.Dir}}" class="btn btn-default">Other builds of this package</a>
+          {{if ne .Res.Category "joyent/"}}
+          <a href="//pkgsrc.se/{{.Res.Category}}{{.Res.Dir}}" class="btn btn-default">pkgsrc.se</a>
+          {{end}}
+        </div>
+      </dd>
       <dt>Package location</dt>
       <dd>
-        {{if eq .Category "joyent/"}}
-        {{.Category}}{{.Dir}}
-        {{else}}
-        <a href="//pkgsrc.se/{{.Category}}{{.Dir}}">{{.Category}}{{.Dir}}</a></dd>
-        {{end}}
+        {{.Res.Category}}{{.Res.Dir}}
       </dd>
       <dt>Package name</dt>
-      <dd>{{.PkgName}}</dd>
+      <dd>{{.Res.PkgName}}</dd>
       <dt>Build Status</dt>
-      {{if eq .BuildStatus 0}}
+      {{if eq .Res.BuildStatus 0}}
       <dd><span class="label label-success">ok</span></dd>
-      {{else if eq .BuildStatus 1}}
+      {{else if eq .Res.BuildStatus 1}}
       <dd><span class="label label-info">prefailed</span></dd>
-      {{else if eq .BuildStatus 2}}
+      {{else if eq .Res.BuildStatus 2}}
       <dd><span class="label label-danger">failed</span></dd>
-      {{else if eq .BuildStatus 3}}
+      {{else if eq .Res.BuildStatus 3}}
       <dd><span class="label label-warning">indirect-failed</span></dd>
-      {{else if eq .BuildStatus 4}}
+      {{else if eq .Res.BuildStatus 4}}
       <dd><span class="label label-info">indirect-prefailed</span></dd>
       {{end}}
-      {{if eq .BuildStatus 2}}
+      {{if eq .Res.BuildStatus 2}}
       <dt>Build Logs</dt>
       <dd>
         <div class="btn-group btn-group-sm">
-	  <a href="{{.BaseURL}}/{{.PkgName}}/work.log" class="btn btn-default">work</a>
-	  <a href="{{.BaseURL}}/{{.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
-	  <a href="{{.BaseURL}}/{{.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
-	  <a href="{{.BaseURL}}/{{.PkgName}}/depends.log" class="btn btn-default">depends</a>
-	  <a href="{{.BaseURL}}/{{.PkgName}}/configure.log" class="btn btn-default">configure</a>
-	  <a href="{{.BaseURL}}/{{.PkgName}}/build.log" class="btn btn-default">build</a>
-	  <a href="{{.BaseURL}}/{{.PkgName}}/install.log" class="btn btn-default">install</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/work.log" class="btn btn-default">work</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/depends.log" class="btn btn-default">depends</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/configure.log" class="btn btn-default">configure</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/build.log" class="btn btn-default">build</a>
+	  <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/install.log" class="btn btn-default">install</a>
 	</div>
       </dd>
       {{end}}
       <dt>Platform</dt>
-      <dd>{{.Platform}}</dd>
+      <dd>{{.Res.Platform}}</dd>
       <dt>Compiler</dt>
-      <dd>{{.Compiler}}</dd>
+      <dd>{{.Res.Compiler}}</dd>
+      <dt>Branch</dt>
+      <dd>{{.Res.Branch}}</dd>
       <dt>Built on</dt>
-      <dd>{{.BuildTs}}</dd>
+      <dd>{{.Res.BuildTs}}</dd>
       <dt>Built by</dt>
-      <dd>{{.BuildUser}}</dd>
+      <dd>{{.Res.BuildUser}}</dd>
     </dl>
   </div><div class="row">
