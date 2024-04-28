@@ -1,4 +1,4 @@
-      <div class="col-md-8">
+      <div class="col-md-9">
         <dl class="dl-horizontal" style="font-size: 120%">
 	  {{if .Branch}}<dt>Branch</dt>
 	  <dd>{{.Branch}}</dd>{{end}}
@@ -10,9 +10,15 @@
 	  <dd>{{.BuildTs}}</dd>
 	  <dt>User</dt>
 	  <dd>{{.BuildUser}}</dd>
+	  {{if .ReportUrl}}
+	  <dt>Report URL</dt>
+	  <dd>
+		<a href="{{.ReportUrl}}">{{.ReportUrl}}</a>
+	  </dd>
+	  {{end}}
 	</dl>
       </div>
-      <div class="col-md-4"><div id="bulk-pie"></div></div>
+      <div class="col-md-3"><div id="bulk-pie"></div></div>
     </div>
     <div class="row">
       <script type="text/javascript">
