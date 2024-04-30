@@ -2,14 +2,13 @@
 
 BulkTracker is a web application to track the status of bulk builds in NetBSD 
 [pkgsrc](http://www.pkgsrc.org) on various platforms. It is written in Go and
-runs on Google App Engine. The production instance is running at
+uses SQLite3 as its database. The production instance is running at
 
-https://bulktracker.appspot.com/
+https://releng.netbsd.org/bulktracker/
 
-It uses the App Engine datastore, task queues and the URL Fetch service.
 The application is subscribed to the pkgsrc-bulk mailing list and receives
 build reports via email. It parses the email and tries to fetch the machine-readable
 report from the given URL. The report is split into records and saved in the
-datastore. The web UI allows examining aggregate and per-package results.
+database. The web UI allows examining aggregate and per-package results.
 
 This is an open project. Drop me a line if you are interested in participating!
