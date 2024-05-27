@@ -130,7 +130,14 @@ INSERT OR IGNORE INTO pkgs
 (category, dir)
 VALUES (?, ?);
 
--- name: PutResult :exec
+-- name: PutResult :one
 INSERT INTO results
-(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps)
-VALUES (?, ?, ?, ?, ?, ?);
+(build_id, pkg_id, pkg_name, build_status, breaks)
+VALUES (?, ?, ?, ?, ?)
+RETURNING result_id;
+
+-- name: PutFailedDep :exec
+INSERT INTO failed_deps
+(result_id, failed_dep_result_id)
+VALUES (?, ?);
+

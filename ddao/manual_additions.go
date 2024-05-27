@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2023
+ * Copyright (c) 2023-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -61,6 +61,8 @@ func (r GetSingleResultRow) BaseURL() string {
 type PkgResult struct {
 	Pkg
 	Result
+	// Failed is like Result.FailedDeps but with pointers.
+	Failed []*PkgResult
 }
 
 // DB is a wrapper aound a SQL database that provides ready-made functions for
@@ -127,18 +129,29 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 			return err
 		}
 
-		err = q.PutResult(ctx, PutResultParams{
+		results[i].ResultID, err = q.PutResult(ctx, PutResultParams{
 			BuildID:     NullInt64(buildID),
 			PkgID:       NullInt64(pkgID),
 			PkgName:     result.PkgName,
 			BuildStatus: result.BuildStatus,
 			Breaks:      result.Breaks,
-			FailedDeps:  result.FailedDeps,
 		})
 		if err != nil {
 			return err
 		}
 	}
+	log.Debugf(ctx, "Inserting failed dependency edges")
+	for _, result := range results {
+		for _, fd := range result.Failed {
+			err := q.PutFailedDep(ctx, PutFailedDepParams{
+				 ResultID: result.ResultID,
+				 FailedDepResultID: fd.ResultID,
+			 })
+			 if err != nil {
+				 return err
+			 }
+		 }
+	 }
 
 	log.Infof(ctx, "Successfully added results for build %v", buildID)
 	return tx.Commit()

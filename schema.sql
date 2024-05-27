@@ -55,4 +55,15 @@ CREATE TABLE IF NOT EXISTS results (
     breaks INTEGER NOT NULL
 );
 
-CREATE INDEX results_i_build_pkg ON results (build_id, pkg_id);
+CREATE INDEX IF NOT EXISTS results_i_build_pkg
+	ON results (build_id, pkg_id);
+
+CREATE TABLE IF NOT EXISTS failed_deps (
+    result_id INTEGER NOT NULL REFERENCES results,
+    failed_dep_result_id INTEGER NOT NULL REFERENCES results
+);
+
+CREATE INDEX IF NOT EXISTS failed_deps_i_result
+	ON failed_deps (result_id);
+CREATE INDEX IF NOT EXISTS failed_deps_i_failed_dep
+	ON failed_deps (failed_dep_result_id);

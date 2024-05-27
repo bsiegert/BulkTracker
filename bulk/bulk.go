@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2022-2023
+ * Copyright (c) 2014-2018, 2022-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -194,6 +194,7 @@ func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 		for _, dep := range failedDeps {
 			if fp, ok := failedPkgs[dep]; ok {
 				f = append(f, dep)
+				pkgs[i].Failed = append(pkgs[i].Failed, &pkgs[fp])
 				// TODO: if pkgs[fp] is indirect-failed, add to the counter of
 				// _its_ failed dependencies.
 				pkgs[fp].Breaks++
