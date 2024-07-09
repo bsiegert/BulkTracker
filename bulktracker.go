@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2023
+ * Copyright (c) 2014-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -23,6 +23,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"flag"
 	"fmt"
@@ -37,7 +38,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/exporter-toolkit/web"
 
-	"github.com/bsiegert/BulkTracker/dao"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/ingest"
 	"github.com/bsiegert/BulkTracker/json"
@@ -92,13 +92,13 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	db, err := dao.New(ctx, "sqlite3", *dbPath)
+	db, err := sql.Open("sqlite3", *dbPath+"?_fk=true")
 	if err != nil {
 		log.Errorf(ctx, "failed to open database: %s", err)
 		os.Exit(1)
 	}
 	var ddb ddao.DB
-	ddb.Queries = *ddao.New(db.DB)
+	ddb.Queries = *ddao.New(db)
 
 	// Do not serve this under basePath.
 	http.Handle("/_ah/mail/", &ingest.IncomingMailHandler{
