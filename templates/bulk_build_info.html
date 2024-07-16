@@ -16,6 +16,12 @@
 		<a href="{{.ReportUrl}}">{{.ReportUrl}}</a>
 	  </dd>
 	  {{end}}
+	  {{if .LastError.Valid}}
+	  <dt>Last error</dt>
+	  <dd style = "color: red">
+		{{.LastError.String}}
+	  </dd>
+	  {{end}}
 	</dl>
       </div>
       <div class="col-md-3">

@@ -31,8 +31,13 @@ CREATE TABLE IF NOT EXISTS builds (
     num_prefailed INTEGER NOT NULL,
     num_failed INTEGER NOT NULL,
     num_indirect_failed INTEGER NOT NULL,
-    num_indirect_prefailed INTEGER NOT NULL    
+    num_indirect_prefailed INTEGER NOT NULL,
+
+    last_error text
 );
+
+-- Schema update:
+-- ALTER TABLE builds ADD COLUMN last_error text;
 
 CREATE TABLE IF NOT EXISTS pkgs (
     pkg_id INTEGER PRIMARY KEY ASC,

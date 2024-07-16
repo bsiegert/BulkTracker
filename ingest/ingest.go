@@ -23,6 +23,8 @@
 package ingest
 
 import (
+	"database/sql"
+
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
@@ -247,6 +249,13 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		status.LastErr = err
 		status.Current = Failed
 		status.Put(ctx)
+		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
+			BuildID: buildID,
+			LastError: sql.NullString{
+				Valid:  true,
+				String: fmt.Sprintf("failed to fetch: %s", err),
+			},
+		})
 		return
 	}
 	defer resp.Body.Close()
@@ -256,6 +265,13 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		status.LastErr = err
 		status.Current = Failed
 		status.Put(ctx)
+		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
+			BuildID: buildID,
+			LastError: sql.NullString{
+				Valid:  true,
+				String: fmt.Sprintf("failed to uncompress: %s", err),
+			},
+		})
 		return
 	}
 	pkgs, err := bulk.PkgsFromReport(r)
@@ -264,6 +280,13 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		status.LastErr = err
 		status.Current = Failed
 		status.Put(ctx)
+		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
+			BuildID: buildID,
+			LastError: sql.NullString{
+				Valid:  true,
+				String: fmt.Sprintf("failed to parse: %s", err),
+			},
+		})
 		return
 	}
 

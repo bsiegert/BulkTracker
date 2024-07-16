@@ -134,3 +134,11 @@ VALUES (?, ?);
 INSERT INTO results
 (build_id, pkg_id, pkg_name, build_status, breaks, failed_deps)
 VALUES (?, ?, ?, ?, ?, ?);
+
+-- name: SetBuildLastError :exec
+
+-- SetBuildLastError sets the last_error column on a given build.
+UPDATE builds
+SET last_error = ?
+WHERE build_id = ?;
+
