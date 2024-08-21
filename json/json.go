@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019, 2022
+ * Copyright (c) 2014-2019, 2022, 2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -109,6 +109,8 @@ func (a *API) dispatch(ctx context.Context, fn string, params []string, form url
 		return a.PkgsBreakingMostOthers(ctx, params, form)
 	case "pkgsbrokenby":
 		return a.PkgsBrokenBy(ctx, params, form)
+	case "sentinelstatus":
+		return a.SentinelStatus(ctx, params, form)
 	case "dir":
 		return a.Dir(ctx, params, form)
 	case "autocomplete":
@@ -283,4 +285,20 @@ func (a *API) PkgsBrokenBy(ctx context.Context, params []string, _ url.Values) (
 	}
 
 	return a.DB.GetPkgsBrokenBy(ctx, resultID)
+}
+
+func (a *API) SentinelStatus(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
+	if len(params) == 0 {
+		return nil, nil
+	}
+	buildID := sql.NullInt64{
+		Valid: true,
+	}
+	var err error
+	buildID.Int64, err = strconv.ParseInt(params[0], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing build ID %q", params[0])
+	}
+
+	return a.DB.GetSentinelStatus(ctx, buildID)
 }
