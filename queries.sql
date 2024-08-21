@@ -73,6 +73,11 @@ SELECT
 FROM results r, pkgs p
 WHERE r.build_id == ? AND r.pkg_id == p.pkg_id AND r.pkg_name == ?;
 
+-- name: GetSingleResultIDByPkgName :one
+SELECT result_id
+FROM results
+WHERE build_id == ? and pkg_name == ?;
+
 -- name: GetPkgsInCategory :many
 SELECT DISTINCT dir
 FROM pkgs
@@ -102,6 +107,18 @@ JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE r.build_id == ? AND r.build_status > 0
 ORDER BY r.breaks DESC
 LIMIT 100;
+
+-- name: GetSentinelStatus :many
+
+-- Get the status and failed dependencies of the sentinel packages
+-- (bulk-test-*).
+SELECT *
+FROM results
+WHERE build_id == ? AND pkg_id IN (
+	SELECT pkg_id
+	FROM pkgs
+	WHERE dir LIKE 'bulk-test-%'
+);
 
 -- name: getPkgsBrokenBy :many
 SELECT
@@ -141,4 +158,3 @@ VALUES (?, ?, ?, ?, ?, ?);
 UPDATE builds
 SET last_error = ?
 WHERE build_id = ?;
-

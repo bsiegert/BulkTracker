@@ -341,6 +341,50 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 	return items, nil
 }
 
+const getSentinelStatus = `-- name: GetSentinelStatus :many
+
+SELECT result_id, build_id, pkg_id, pkg_name, build_status, failed_deps, breaks
+FROM results
+WHERE build_id == ? AND pkg_id IN (
+	SELECT pkg_id
+	FROM pkgs
+	WHERE dir LIKE 'bulk-test-%'
+)
+`
+
+// Get the status and failed dependencies of the sentinel packages
+// (bulk-test-*).
+func (q *Queries) GetSentinelStatus(ctx context.Context, buildID sql.NullInt64) ([]Result, error) {
+	rows, err := q.db.QueryContext(ctx, getSentinelStatus, buildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Result
+	for rows.Next() {
+		var i Result
+		if err := rows.Scan(
+			&i.ResultID,
+			&i.BuildID,
+			&i.PkgID,
+			&i.PkgName,
+			&i.BuildStatus,
+			&i.FailedDeps,
+			&i.Breaks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSingleResult = `-- name: GetSingleResult :one
 SELECT
 	r.result_id,
@@ -441,6 +485,24 @@ func (q *Queries) GetSingleResultByPkgName(ctx context.Context, arg GetSingleRes
 		&i.Dir,
 	)
 	return i, err
+}
+
+const getSingleResultIDByPkgName = `-- name: GetSingleResultIDByPkgName :one
+SELECT result_id
+FROM results
+WHERE build_id == ? and pkg_name == ?
+`
+
+type GetSingleResultIDByPkgNameParams struct {
+	BuildID sql.NullInt64
+	PkgName string
+}
+
+func (q *Queries) GetSingleResultIDByPkgName(ctx context.Context, arg GetSingleResultIDByPkgNameParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getSingleResultIDByPkgName, arg.BuildID, arg.PkgName)
+	var result_id int64
+	err := row.Scan(&result_id)
+	return result_id, err
 }
 
 const putBuild = `-- name: PutBuild :one
