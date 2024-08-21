@@ -67,7 +67,16 @@ bt.buildDetails.initSentinels = function (selector, apiName, num) {
           return statuses[data];
         }
       },
-      {data: "FailedDeps"},
+      {
+        data: "FailedDeps[ ]",
+        render: function (data, type, row, meta) {
+          s = "";
+          row.FailedDeps.forEach(element => {
+            s += `<a href="${bt.basePath}pkg/${element.ResultID}">${element.PkgName}</a> `
+          });
+          return s;
+        }
+      },
     ],
     createdRow: function (row, data, dataIndex) {
       $('td:eq(0)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);

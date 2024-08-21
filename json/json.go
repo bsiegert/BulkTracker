@@ -287,6 +287,18 @@ func (a *API) PkgsBrokenBy(ctx context.Context, params []string, _ url.Values) (
 	return a.DB.GetPkgsBrokenBy(ctx, resultID)
 }
 
+type SentinelItem struct {
+	ResultID    int64
+	PkgName     string
+	BuildStatus int64
+	FailedDeps  []FailedDep
+}
+
+type FailedDep struct {
+	PkgName  string
+	ResultID int64
+}
+
 func (a *API) SentinelStatus(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) == 0 {
 		return nil, nil
@@ -300,5 +312,25 @@ func (a *API) SentinelStatus(ctx context.Context, params []string, _ url.Values)
 		return nil, fmt.Errorf("error parsing build ID %q", params[0])
 	}
 
-	return a.DB.GetSentinelStatus(ctx, buildID)
+	results, err := a.DB.GetSentinelStatus(ctx, buildID)
+	if err != nil {
+		return []SentinelItem{}, err
+	}
+	items := make([]SentinelItem, len(results))
+	for i, res := range results {
+		items[i].ResultID = res.ResultID
+		items[i].PkgName = res.PkgName
+		items[i].BuildStatus = res.BuildStatus
+		for _, dep := range strings.Split(res.FailedDeps, " ") {
+			id, _ := a.DB.GetSingleResultIDByPkgName(ctx, ddao.GetSingleResultIDByPkgNameParams{
+				BuildID: buildID,
+				PkgName: dep,
+			})
+			items[i].FailedDeps = append(items[i].FailedDeps, FailedDep{
+				PkgName:  dep,
+				ResultID: id,
+			})
+		}
+	}
+	return items, nil
 }
