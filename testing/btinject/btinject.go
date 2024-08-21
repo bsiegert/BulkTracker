@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018
+ * Copyright (c) 2014-2018, 2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -27,7 +27,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -74,7 +74,7 @@ func readReport() ([]byte, error) {
 	if !filepath.IsAbs(fname) {
 		fname = filepath.Join(*dataDir, fname)
 	}
-	return ioutil.ReadFile(fname)
+	return os.ReadFile(fname)
 }
 
 func postReport(body []byte) error {
@@ -86,7 +86,7 @@ func postReport(body []byte) error {
 	if resp.StatusCode == 200 {
 		return nil
 	}
-	rbody, err := ioutil.ReadAll(resp.Body)
+	rbody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
