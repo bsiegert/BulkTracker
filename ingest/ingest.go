@@ -43,78 +43,6 @@ import (
 	"strings"
 )
 
-// Constants for the current status.
-const (
-	Fetching = iota
-	Failed
-	Writing
-	// Done: when the Status no longer exists in the datastore.
-)
-
-type Status struct {
-	URL     string
-	Current int // Current status; one of the constants above.
-	// If Current == Writing, statistics for how many package records
-	// have been written.
-	PkgsWritten, PkgsTotal int
-	// If Current == Failed, the last error encountered.
-	LastErr error
-
-	// key      *datastore.Key `json:"-"`
-	// cacheKey string `json:"-"`
-}
-
-// NewStatus allocates a new Status for report ingestion. As a side effect,
-// it also deletes old records, if any.
-func NewStatus(ctx context.Context, buildID int64) *Status {
-	// s := &Status{
-	// 	key:      datastore.NewIncompleteKey(ctx, "status", build),
-	// 	cacheKey: "/json/status/" + build.String(),
-	// }
-
-	// // TODO delete from memcache.
-	// keys, err := datastore.NewQuery("status").Ancestor(build).KeysOnly().GetAll(ctx, nil)
-	// if err != nil {
-	// 	log.Warningf(ctx, "failed to query for old statuses: %s", err)
-	// 	return s
-	// }
-	// if len(keys) > 0 {
-	// 	log.Infof(ctx, "Deleting %d records", len(keys))
-	// 	dsbatch.DeleteMulti(ctx, keys)
-	// }
-	// return s
-	return &Status{}
-}
-
-// Put writes s into the datastore and memcache.
-func (s *Status) Put(ctx context.Context) {
-	// datastore.Put(ctx, s.key, s)
-
-	// var buf bytes.Buffer
-	// json.NewEncoder(&buf).Encode(s)
-	// err := memcache.Set(ctx, &memcache.Item{
-	// 	Key:        s.cacheKey,
-	// 	Value:      buf.Bytes(),
-	// 	Expiration: 2 * time.Minute,
-	// })
-	// if err != nil {
-	// 	log.Warningf(ctx, "failed to write %q to cache: %s", s.cacheKey, err)
-	// }
-}
-
-// UpdateProgress sets the # of packages written and calls Put.
-func (s *Status) UpdateProgress(ctx context.Context, written int) {
-	s.PkgsWritten = written
-	s.Put(ctx)
-}
-
-// Done marks the ingestion as done by removing the Status entry.
-func (s *Status) Done(ctx context.Context) {
-	// log.Infof(ctx, "%v", s.key)
-	// datastore.Delete(ctx, s.key)
-	// TODO delete from memcache.
-}
-
 // All these names mean HEAD.
 var headAliases = map[string]bool{
 	"current":          true,
@@ -164,6 +92,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	build, err := bulk.BuildFromReport(fromName, body)
 
 	if build == nil {
+		log.Errorf(ctx, "BuildFromReport failed: %v", err)
 		return
 	}
 
@@ -239,16 +168,9 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 // FetchReport fetches the machine-readable build report, hands it off to the
 // parser and writes the result into the datastore.
 func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, url string) {
-	status := NewStatus(ctx, buildID)
-	status.URL = url
-	status.Current = Fetching
-	status.Put(ctx)
 	resp, err := httpGet(ctx, url)
 	if err != nil {
 		log.Warningf(ctx, "failed to fetch report at %q: %s", url, err)
-		status.LastErr = err
-		status.Current = Failed
-		status.Put(ctx)
 		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
 			BuildID: buildID,
 			LastError: sql.NullString{
@@ -262,9 +184,6 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 	r, err := decompressingReader(resp.Body, url)
 	if err != nil {
 		log.Errorf(ctx, "failed to uncompress report at %q: %s", url, err)
-		status.LastErr = err
-		status.Current = Failed
-		status.Put(ctx)
 		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
 			BuildID: buildID,
 			LastError: sql.NullString{
@@ -277,9 +196,6 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 	pkgs, err := bulk.PkgsFromReport(r)
 	if err != nil {
 		log.Errorf(ctx, "failed to parse report at %q: %s", url, err)
-		status.LastErr = err
-		status.Current = Failed
-		status.Put(ctx)
 		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
 			BuildID: buildID,
 			LastError: sql.NullString{
@@ -290,16 +206,9 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		return
 	}
 
-	status.Current = Writing
-	status.PkgsTotal = len(pkgs)
-	// sort.Sort(bulk.PkgsByName(pkgs))
 	if err = i.DB.PutResults(ctx, pkgs, buildID); err != nil {
-		status.Current = Failed
-		status.LastErr = err
-		status.Put(ctx)
 		log.Warningf(ctx, "%s", err)
 	}
-	status.Done(ctx)
 }
 
 // ParseMultipartMail parses an email and returns a reader for the first
