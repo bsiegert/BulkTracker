@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2021-2023
+ * Copyright (c) 2014-2018, 2021-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -198,6 +198,14 @@ type buildDetailsInitParams struct {
 
 func BuildDetailsInit(w io.Writer, selector string, apiName string, number int64) {
 	t.ExecuteTemplate(w, "builddetails_init.html", buildDetailsInitParams{
+		Selector: selector,
+		APIName:  apiName,
+		Number:   number,
+	})
+}
+
+func SentinelsInit(w io.Writer, selector string, apiName string, number int64) {
+	t.ExecuteTemplate(w, "sentinels_init.html", buildDetailsInitParams{
 		Selector: selector,
 		APIName:  apiName,
 		Number:   number,

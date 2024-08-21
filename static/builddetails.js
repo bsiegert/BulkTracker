@@ -52,3 +52,27 @@ bt.buildDetails.init = function (selector, apiName, num) {
   });
 };
 
+bt.buildDetails.initSentinels = function (selector, apiName, num) {
+  $(selector).dataTable({
+    paging: false,
+    ajax: {
+      url: `${bt.basePath}json/${apiName}/${num}`,
+      dataSrc: ""
+    },
+    columns: [
+      {data: "PkgName"},
+      {
+        data: "BuildStatus",
+        render: function (data, type, row, meta) {
+          return statuses[data];
+        }
+      },
+      {data: "FailedDeps"},
+    ],
+    createdRow: function (row, data, dataIndex) {
+      $('td:eq(0)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
+      $('td:eq(1)', row).addClass(classes[data.BuildStatus]);
+    }
+  });
+
+}

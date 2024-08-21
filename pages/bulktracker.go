@@ -164,12 +164,17 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.Heading(w, "Results by Category")
 	templates.CategoryList(w, categories, path.Join(templates.BasePath, r.URL.Path))
 
+	templates.Heading(w, "Sentinel package status (bulk-test-*)")
+	templates.TableBeginID(w, templates.ID("sentinel"), "Package Name", "Status", "Failed dependencies")
+	templates.TableEnd(w)
+
 	templates.Heading(w, "Packages breaking most other packages")
-	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
+	templates.TableBeginID(w, templates.ID("breaking"), "Location", "Package Name", "Status", "Breaks")
 	templates.TableEnd(w)
 
 	templates.LoadScript(w, "builddetails.js")
-	templates.BuildDetailsInit(w, ".table", "pkgsbreakingmostothers", buildID)
+	templates.SentinelsInit(w, "#sentinel", "sentinelstatus", buildID)
+	templates.BuildDetailsInit(w, "#breaking", "pkgsbreakingmostothers", buildID)
 }
 
 type PkgDetails struct {
