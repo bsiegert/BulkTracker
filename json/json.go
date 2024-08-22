@@ -85,6 +85,11 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := a.dispatch(ctx, paths[0], paths[1:], r.Form)
+	if err == sql.ErrNoRows {
+		// If there were no results, return an empty array instead of null.
+		io.WriteString(w, "[]")
+		return
+	}
 	if err != nil {
 		if result != nil {
 			json.NewEncoder(w).Encode(result)
