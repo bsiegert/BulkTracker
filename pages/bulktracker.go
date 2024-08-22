@@ -223,7 +223,11 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.PkgInfo(w, res)
-	// templates.DataTable(w, "")
+
+	// Failed to build because of dependencies.
+	if res.FailedDeps != "" {
+		p.failedDepsTable(ctx, res, w, db)
+	}
 
 	// Failed, breaking other packages.
 	if res.Breaks > 0 {
@@ -235,11 +239,9 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		templates.LoadScript(w, "builddetails.js")
 		templates.BuildDetailsInit(w, "#breaking", "pkgsbrokenby", resultID)
 	}
+}
 
-	// Failed to build because of dependencies.
-	if res.FailedDeps == "" {
-		return
-	}
+func (*PkgDetails) failedDepsTable(ctx context.Context, res ddao.GetSingleResultRow, w http.ResponseWriter, db *ddao.DB) {
 	failedDeps := strings.Split(res.FailedDeps, " ")
 	fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", len(failedDeps))
 	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
