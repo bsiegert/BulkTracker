@@ -95,6 +95,26 @@ func (d *DB) BeginReadOnlyTransaction(ctx context.Context) (*DB, func(), error) 
 	}, func() { tx.Rollback() }, nil
 }
 
+// DeleteBuild deletes an entire build entry, the metadata and the detailed results.
+func (d *DB) DeleteBuild(ctx context.Context, buildID int64) error {
+	tx, err := d.BeginTransaction(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	q := d.WithTx(tx)
+	err = q.DeleteAllForBuild(ctx, NullInt64(buildID))
+	if err != nil {
+		return err
+	}
+	err = q.deleteBuild(ctx, buildID)
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
 // PutResults writes the results for the given build ID to the database.
 func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64) error {
 	tx, err := d.BeginTransaction(ctx, nil)

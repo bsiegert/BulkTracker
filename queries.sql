@@ -2,6 +2,10 @@
 DELETE from results
 WHERE build_id = ?;
 
+-- name: deleteBuild :exec
+DELETE from builds
+WHERE build_id = ?;
+
 -- name: GetBuild :one
 SELECT * FROM builds
 WHERE build_id = ?;

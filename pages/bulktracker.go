@@ -132,7 +132,11 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		templates.ReindexOK(w)
 		return
 	case "delete":
-		// delete.DeleteBuildDetails.Call(ctx, key)
+		err = b.DB.DeleteBuild(ctx, buildID)
+		if err != nil {
+			log.Errorf(ctx, "DeleteBuild: %v", err)
+		}
+		return
 	}
 
 	if len(paths) > 1 {

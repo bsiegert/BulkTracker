@@ -609,6 +609,16 @@ func (q *Queries) SetBuildLastError(ctx context.Context, arg SetBuildLastErrorPa
 	return err
 }
 
+const deleteBuild = `-- name: deleteBuild :exec
+DELETE from builds
+WHERE build_id = ?
+`
+
+func (q *Queries) deleteBuild(ctx context.Context, buildID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteBuild, buildID)
+	return err
+}
+
 const getAllPkgsMatching = `-- name: getAllPkgsMatching :many
 SELECT pkgpath
 FROM pkgpaths
