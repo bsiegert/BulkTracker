@@ -61,3 +61,4 @@ CREATE TABLE IF NOT EXISTS results (
 );
 
 CREATE INDEX results_i_build_pkg ON results (build_id, pkg_id);
+CREATE INDEX pkg_id ON results (pkg_id);
