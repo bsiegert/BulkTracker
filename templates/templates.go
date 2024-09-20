@@ -27,7 +27,6 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 )
@@ -133,7 +132,7 @@ func TablePkgs[T any](w io.Writer, rows []T) {
 	t.ExecuteTemplate(w, "table_pkgs.html", s)
 }
 
-func BulkBuildInfo(w io.Writer, b *bulk.Build) {
+func BulkBuildInfo(w io.Writer, b *ddao.Build) {
 	t.ExecuteTemplate(w, "bulk_build_info.html", b)
 }
 

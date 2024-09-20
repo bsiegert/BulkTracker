@@ -35,9 +35,6 @@ import (
 	"github.com/bsiegert/BulkTracker/ddao"
 )
 
-// Build holds aggregate information about a single bulk build.
-type Build = ddao.Build
-
 // Status of a package build.
 const (
 	// The package was successfully built.
