@@ -124,29 +124,6 @@ func BuildFromReport(from string, r io.Reader) (*Build, error) {
 	return b, s.Err()
 }
 
-// Pkg holds a single build result for a package.
-type Pkg struct {
-	// Key is the string representation of the datastore key of this record.
-	Key string `datastore:"-"`
-	// PkgID is the numeric ID of this result.
-	PkgID int
-	// BuildID is the numeric ID of the build that this belongs to.
-	BuildID int
-
-	// The first and last part of the package location. For example,
-	// if the location is "devel/libtool", Category would be "devel/"
-	// and Dir "libtool".
-	Category, Dir string
-	PkgName       string
-	BuildStatus   int8
-	// Dependencies are not important, only the failed ones for
-	// indirect-failed packages, and the _number_ of breaking packages for
-	// failed ones.
-	FailedDeps []string
-	// Number of packages broken by this one.
-	Breaks int
-}
-
 func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 	var pkgs []ddao.PkgResult
 	// Failed packages. The key is the name, the value an index into pkgs.
@@ -202,19 +179,4 @@ func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 		pkgs[i].FailedDeps = strings.Join(f, " ")
 	}
 	return pkgs, s.Err()
-}
-
-// PkgsByName allows sorting a list of Pkgs by their package names.
-type PkgsByName []Pkg
-
-func (p PkgsByName) Len() int {
-	return len(p)
-}
-
-func (p PkgsByName) Less(i, j int) bool {
-	return p[i].PkgName < p[j].PkgName
-}
-
-func (p PkgsByName) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
 }
