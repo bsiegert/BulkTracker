@@ -221,9 +221,3 @@ func (p PkgsByName) Less(i, j int) bool {
 func (p PkgsByName) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
-
-// PkgResult is a pair of build and package.
-type PkgResult struct {
-	Build *Build
-	Pkg   *Pkg
-}

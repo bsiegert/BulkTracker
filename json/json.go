@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/bsiegert/BulkTracker/stateful"
@@ -216,7 +215,7 @@ func (a *API) PkgResults(ctx context.Context, params []string, _ url.Values) (in
 
 func (a *API) AllPkgResults(ctx context.Context, params []string, _ url.Values) (interface{}, error) {
 	if len(params) < 2 {
-		return []bulk.PkgResult{}, nil
+		return []ddao.GetAllPkgRsultsRow{}, nil
 	}
 	category, dir := params[0]+"/", params[1]
 
