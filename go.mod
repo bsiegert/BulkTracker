@@ -3,7 +3,6 @@ module github.com/bsiegert/BulkTracker
 go 1.18
 
 require (
-	cloud.google.com/go/datastore v1.11.0
 	github.com/TV4/logrus-stackdriver-formatter v0.1.0
 	github.com/google/go-cmp v0.5.9
 	github.com/mattn/go-sqlite3 v1.14.17
