@@ -62,8 +62,8 @@ var ErrParse = errors.New("bulk: parse error")
 
 // BuildFromReport parses the start of a bulk report email to fill in the
 // fields.
-func BuildFromReport(from string, r io.Reader) (*Build, error) {
-	b := &Build{BuildUser: from}
+func BuildFromReport(from string, r io.Reader) (*ddao.Build, error) {
+	b := &ddao.Build{BuildUser: from}
 	s := bufio.NewScanner(r)
 	for {
 		if !s.Scan() {
