@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2022-2023
+ * Copyright (c) 2014-2018, 2022-2024
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -28,6 +28,7 @@ import (
 	"errors"
 	"io"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -124,10 +125,8 @@ func BuildFromReport(from string, r io.Reader) (*ddao.Build, error) {
 	return b, s.Err()
 }
 
-func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
+func ResultsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 	var pkgs []ddao.PkgResult
-	// Failed packages. The key is the name, the value an index into pkgs.
-	var failedPkgs = make(map[string]int)
 	var p *ddao.PkgResult
 	n := 0
 
@@ -150,33 +149,63 @@ func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 			p.Category, p.Dir = path.Split(string(val))
 		case bytes.Equal(key, []byte("BUILD_STATUS")):
 			p.BuildStatus = statuses[string(val)]
-			if p.BuildStatus != OK {
-				failedPkgs[p.PkgName] = n - 1
-			}
 		case bytes.Equal(key, []byte("DEPENDS")):
 			p.FailedDeps = string(val)
 		}
 	}
-	// Do another run over all indirect-failed packages, only keep
-	// dependencies that actually failed.
+
+	return pkgs, s.Err()
+}
+
+// FixUpDependencies does another run over all indirect-failed packages and only keeps
+// dependencies that actually failed.
+func FixUpDependencies(pkgs []ddao.PkgResult) {
+	// indices maps package name to its index in pkgs.
+	indices := make(map[string]int)
+	for i := range pkgs {
+		indices[pkgs[i].PkgName] = i
+	}
+
 	for i := range pkgs {
 		if pkgs[i].BuildStatus != IndirectFailed && pkgs[i].BuildStatus != IndirectPrefailed {
 			pkgs[i].FailedDeps = ""
+			continue
+
 		}
 		failedDeps := strings.Fields(pkgs[i].FailedDeps)
-		f := make([]string, 0, len(failedDeps))
-		for _, dep := range failedDeps {
-			if fp, ok := failedPkgs[dep]; ok {
-				f = append(f, dep)
-				// TODO: if pkgs[fp] is indirect-failed, add to the counter of
-				// _its_ failed dependencies.
-				pkgs[fp].Breaks++
+
+		// For all indirect-failed dependencies, add *their*
+		// dependencies too. Try avoiding duplicates.
+		//
+		// This form of iteration that tolerates stuff being added
+		// mid-iteration.
+		for j := 0; j < len(failedDeps); j++ {
+			d, ok := indices[failedDeps[j]]
+			if !ok {
+				// TODO: consider removing the entry instead.
+				continue
+			}
+			switch pkgs[d].BuildStatus {
+			case IndirectFailed, IndirectPrefailed:
+				for _, indirectDep := range strings.Fields(pkgs[d].FailedDeps) {
+					if !slices.Contains(failedDeps, indirectDep) {
+						failedDeps = append(failedDeps, indirectDep)
+					}
+				}
 			}
 		}
-		if len(f) == 0 {
-			f = nil
+
+		// Step 2: prune failed dependencies, keep only Failed and Prefailed.
+		newDeps := make([]string, 0, len(failedDeps))
+		for _, dep := range failedDeps {
+			if d, ok := indices[dep]; ok {
+				switch pkgs[d].BuildStatus {
+				case Failed, Prefailed:
+					newDeps = append(newDeps, dep)
+					pkgs[d].Breaks++
+				}
+			}
 		}
-		pkgs[i].FailedDeps = strings.Join(f, " ")
+		pkgs[i].FailedDeps = strings.Join(newDeps, " ")
 	}
-	return pkgs, s.Err()
 }
