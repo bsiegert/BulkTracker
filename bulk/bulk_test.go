@@ -116,16 +116,15 @@ func TestFixUpDependencies(t *testing.T) {
 				{
 					PkgName:     "a",
 					BuildStatus: IndirectFailed,
-					FailedDeps:  "b",
+					FailedDeps:  "c",
 				}, {
 					PkgName:     "b",
 					BuildStatus: IndirectFailed,
 					FailedDeps:  "c",
-					Breaks:      1,
 				}, {
 					PkgName:     "c",
 					BuildStatus: Failed,
-					Breaks:      1, // 2?
+					Breaks:      2,
 				},
 			},
 		}, {
@@ -149,12 +148,11 @@ func TestFixUpDependencies(t *testing.T) {
 				{
 					PkgName:     "a",
 					BuildStatus: IndirectFailed,
-					FailedDeps:  "b c",
+					FailedDeps:  "c",
 				}, {
 					PkgName:     "b",
 					BuildStatus: IndirectFailed,
 					FailedDeps:  "c",
-					Breaks:      1,
 				}, {
 					PkgName:     "c",
 					BuildStatus: Failed,

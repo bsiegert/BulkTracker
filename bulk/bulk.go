@@ -28,6 +28,7 @@ import (
 	"errors"
 	"io"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -172,18 +173,39 @@ func FixUpDependencies(pkgs []ddao.PkgResult) {
 
 		}
 		failedDeps := strings.Fields(pkgs[i].FailedDeps)
-		f := make([]string, 0, len(failedDeps))
-		for _, dep := range failedDeps {
-			if d, ok := indices[dep]; ok && pkgs[d].BuildStatus != OK {
-				f = append(f, dep)
-				// TODO: if pkgs[fp] is indirect-failed, add to the counter of
-				// _its_ failed dependencies.
-				pkgs[d].Breaks++
+
+		// For all indirect-failed dependencies, add *their*
+		// dependencies too. Try avoiding duplicates.
+		//
+		// This form of iteration that tolerates stuff being added
+		// mid-iteration.
+		for j := 0; j < len(failedDeps); j++ {
+			d, ok := indices[failedDeps[j]]
+			if !ok {
+				// TODO: consider removing the entry instead.
+				continue
+			}
+			switch pkgs[d].BuildStatus {
+			case IndirectFailed, IndirectPrefailed:
+				for _, indirectDep := range strings.Fields(pkgs[d].FailedDeps) {
+					if !slices.Contains(failedDeps, indirectDep) {
+						failedDeps = append(failedDeps, indirectDep)
+					}
+				}
 			}
 		}
-		if len(f) == 0 {
-			f = nil
+
+		// Step 2: prune failed dependencies, keep only Failed and Prefailed.
+		newDeps := make([]string, 0, len(failedDeps))
+		for _, dep := range failedDeps {
+			if d, ok := indices[dep]; ok {
+				switch pkgs[d].BuildStatus {
+				case Failed, Prefailed:
+					newDeps = append(newDeps, dep)
+					pkgs[d].Breaks++
+				}
+			}
 		}
-		pkgs[i].FailedDeps = strings.Join(f, " ")
+		pkgs[i].FailedDeps = strings.Join(newDeps, " ")
 	}
 }

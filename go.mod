@@ -1,6 +1,6 @@
 module github.com/bsiegert/BulkTracker
 
-go 1.18
+go 1.22
 
 require (
 	github.com/TV4/logrus-stackdriver-formatter v0.1.0
