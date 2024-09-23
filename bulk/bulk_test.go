@@ -46,65 +46,119 @@ BUILD_STATUS=indirect-failed
 DEPENDS=foo-1.0
 `
 
-func TestResultsFromReport(t *testing.T) {
+func toPkgResult(r []ddao.Result) []ddao.PkgResult {
+	ret := make([]ddao.PkgResult, len(r))
+	for i := range r {
+		ret[i].Result = r[i]
+	}
+	return ret
+}
+
+func TestFixUpDependencies(t *testing.T) {
 	var tests = []struct {
-		name   string
-		report string
-		want   []ddao.PkgResult
+		name string
+		in   []ddao.Result
+		want []ddao.Result
 	}{
 		{
-			"single package",
-			pkgFoo,
-			[]ddao.PkgResult{{
-				Result: ddao.Result{
-					PkgName:     "foo-1.0",
-					BuildStatus: IndirectFailed,
-				},
+			name: "no change",
+			in: []ddao.Result{{
+				PkgName:     "a",
+				BuildStatus: Failed,
 			}},
-		},
-		{
-			"indirect failed",
-			pkgFoo + pkgBar,
-			[]ddao.PkgResult{
+			want: []ddao.Result{{
+				PkgName:     "a",
+				BuildStatus: Failed,
+			},
+			},
+		}, {
+			name: "indirect failed",
+			in: []ddao.Result{
 				{
-					Result: ddao.Result{
-						PkgName:     "foo-1.0",
-						BuildStatus: IndirectFailed,
-						FailedDeps:  "bar-2.0",
-					},
+					PkgName:     "a",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "b",
 				}, {
-					Result: ddao.Result{
-						PkgName:     "bar-2.0",
-						BuildStatus: Failed,
-						Breaks:      1,
-					},
+					PkgName:     "b",
+					BuildStatus: Failed,
+					FailedDeps:  "some other stuff",
 				},
 			},
-		},
-		{
-			"depending on indirect failed",
-			pkgDoubleIndirect + pkgFoo + pkgBar,
-			[]ddao.PkgResult{
+			want: []ddao.Result{
 				{
-					Result: ddao.Result{
-						PkgName:     "double-3.0",
-						BuildStatus: IndirectFailed,
-						FailedDeps:  "foo-1.0",
-					},
+					PkgName:     "a",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "b",
 				}, {
-					Result: ddao.Result{
-						PkgName:     "foo-1.0",
-						BuildStatus: IndirectFailed,
-						FailedDeps:  "bar-2.0",
-						Breaks:      1,
-					},
+					PkgName:     "b",
+					BuildStatus: Failed,
+					Breaks:      1,
+				},
+			},
+		}, {
+			name: "depending on indirect failed",
+			in: []ddao.Result{
+				{
+					PkgName:     "a",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "b",
 				}, {
-					Result: ddao.Result{
-						PkgName:     "bar-2.0",
-						BuildStatus: Failed,
-						// TODO: arguably, this should be 2, since it breaks the two other packages.
-						Breaks: 1,
-					},
+					PkgName:     "b",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "c",
+				}, {
+					PkgName:     "c",
+					BuildStatus: Failed,
+					FailedDeps:  "some other stuff",
+				},
+			},
+			want: []ddao.Result{
+				{
+					PkgName:     "a",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "b",
+				}, {
+					PkgName:     "b",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "c",
+					Breaks:      1,
+				}, {
+					PkgName:     "c",
+					BuildStatus: Failed,
+					Breaks:      1, // 2?
+				},
+			},
+		}, {
+			name: "double counting",
+			in: []ddao.Result{
+				{
+					PkgName:     "a",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "b c",
+				}, {
+					PkgName:     "b",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "c",
+				}, {
+					PkgName:     "c",
+					BuildStatus: Failed,
+					FailedDeps:  "some other stuff",
+				},
+			},
+			want: []ddao.Result{
+				{
+					PkgName:     "a",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "b c",
+				}, {
+					PkgName:     "b",
+					BuildStatus: IndirectFailed,
+					FailedDeps:  "c",
+					Breaks:      1,
+				}, {
+					PkgName:     "c",
+					BuildStatus: Failed,
+					Breaks:      2,
 				},
 			},
 		},
@@ -112,11 +166,41 @@ func TestResultsFromReport(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, _ := ResultsFromReport(strings.NewReader(test.report))
+			want := toPkgResult(test.want)
+			got := toPkgResult(test.in)
 			FixUpDependencies(got)
-			if diff := cmp.Diff(got, test.want); diff != "" {
-				t.Errorf("PkgsFromReport(): unexpected diff (+got -want)\n%s", diff)
+			if diff := cmp.Diff(got, want); diff != "" {
+				t.Errorf("FixUpDependencies(): unexpected diff (+got -want)\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestResultsFromReport(t *testing.T) {
+	report := pkgDoubleIndirect + pkgFoo + pkgBar
+	want := []ddao.PkgResult{
+		{
+			Result: ddao.Result{
+				PkgName:     "double-3.0",
+				BuildStatus: IndirectFailed,
+				FailedDeps:  "foo-1.0",
+			},
+		}, {
+			Result: ddao.Result{
+				PkgName:     "foo-1.0",
+				BuildStatus: IndirectFailed,
+				FailedDeps:  "bar-2.0",
+			},
+		}, {
+			Result: ddao.Result{
+				PkgName:     "bar-2.0",
+				BuildStatus: Failed,
+			},
+		},
+	}
+
+	got, _ := ResultsFromReport(strings.NewReader(report))
+	if diff := cmp.Diff(got, want); diff != "" {
+		t.Errorf("ResultsFromReport(): unexpected diff (+got -want)\n%s", diff)
 	}
 }
