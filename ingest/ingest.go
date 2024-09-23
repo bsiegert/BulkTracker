@@ -193,7 +193,7 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		})
 		return
 	}
-	pkgs, err := bulk.PkgsFromReport(r)
+	results, err := bulk.ResultsFromReport(r)
 	if err != nil {
 		log.Errorf(ctx, "failed to parse report at %q: %s", url, err)
 		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
@@ -205,8 +205,9 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		})
 		return
 	}
+	bulk.FixUpDependencies(results)
 
-	if err = i.DB.PutResults(ctx, pkgs, buildID); err != nil {
+	if err = i.DB.PutResults(ctx, results, buildID); err != nil {
 		log.Warningf(ctx, "%s", err)
 	}
 }

@@ -46,7 +46,7 @@ BUILD_STATUS=indirect-failed
 DEPENDS=foo-1.0
 `
 
-func TestPkgsFromReport(t *testing.T) {
+func TestResultsFromReport(t *testing.T) {
 	var tests = []struct {
 		name   string
 		report string
@@ -112,7 +112,8 @@ func TestPkgsFromReport(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, _ := PkgsFromReport(strings.NewReader(test.report))
+			got, _ := ResultsFromReport(strings.NewReader(test.report))
+			FixUpDependencies(got)
 			if diff := cmp.Diff(got, test.want); diff != "" {
 				t.Errorf("PkgsFromReport(): unexpected diff (+got -want)\n%s", diff)
 			}

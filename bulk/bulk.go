@@ -124,7 +124,7 @@ func BuildFromReport(from string, r io.Reader) (*ddao.Build, error) {
 	return b, s.Err()
 }
 
-func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
+func ResultsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 	var pkgs []ddao.PkgResult
 	var p *ddao.PkgResult
 	n := 0
@@ -153,14 +153,12 @@ func PkgsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 		}
 	}
 
-	fixUpDependencies(pkgs)
-
 	return pkgs, s.Err()
 }
 
-// fixUpDependencies does another run over all indirect-failed packages and only keeps
+// FixUpDependencies does another run over all indirect-failed packages and only keeps
 // dependencies that actually failed.
-func fixUpDependencies(pkgs []ddao.PkgResult) {
+func FixUpDependencies(pkgs []ddao.PkgResult) {
 	// indices maps package name to its index in pkgs.
 	indices := make(map[string]int)
 	for i := range pkgs {
