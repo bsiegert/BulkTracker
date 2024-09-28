@@ -38,6 +38,9 @@ var emb embed.FS
 // main.
 var BasePath = "/"
 
+// Varsion is the current version string for this app. It is set from the main package.
+var Version string
+
 // bp is a shim type that avoids allocations in common templates.
 type bp struct{}
 
@@ -60,7 +63,7 @@ func PageHeader(w io.Writer) {
 }
 
 func PageFooter(w io.Writer) {
-	t.ExecuteTemplate(w, "footer.html", nil)
+	t.ExecuteTemplate(w, "footer.html", &Version)
 }
 
 func PkgResults(w io.Writer) {

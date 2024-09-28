@@ -52,8 +52,13 @@ var (
 	dbPath      = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
 )
 
+//go:embed VERSION
+var version string
+
 func init() {
 	flag.StringVar(&templates.BasePath, "base_path", "/", "The path under which to serve the UI, e.g. '/bulktracker/'.")
+
+	templates.Version = version
 }
 
 //go:embed images mock static robots.txt
