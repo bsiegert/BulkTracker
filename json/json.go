@@ -84,7 +84,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := a.dispatch(ctx, paths[0], paths[1:], r.Form)
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows || result == nil {
 		// If there were no results, return an empty array instead of null.
 		io.WriteString(w, "[]")
 		return
@@ -150,7 +150,7 @@ func (a *API) CacheGet(ctx context.Context, cacheKey string, w http.ResponseWrit
 
 	item, ok := a.cache[cacheKey]
 	if !ok {
-		log.Infof(ctx, "cache miss for %q", cacheKey)
+		log.Debugf(ctx, "cache miss for %q", cacheKey)
 		return false
 	}
 	if time.Since(item.timestamp) > CacheExpiration {
