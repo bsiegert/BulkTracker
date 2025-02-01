@@ -591,6 +591,21 @@ func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
 	return err
 }
 
+const resultCount = `-- name: ResultCount :one
+
+SELECT count(*)
+FROM results r
+WHERE r.build_id = ?
+`
+
+// ResultCount returns the number of result records for a given build.
+func (q *Queries) ResultCount(ctx context.Context, buildID sql.NullInt64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, resultCount, buildID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const setBuildLastError = `-- name: SetBuildLastError :exec
 
 UPDATE builds

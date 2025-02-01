@@ -139,6 +139,15 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	count, err := b.DB.ResultCount(ctx, sql.NullInt64{Int64: buildID, Valid: true})
+	if err != nil {
+		log.Warningf(ctx, "ResultCount(%v): %v", buildID, err)
+	}
+	if count == 0 {
+		templates.NoDetails(w, r.URL.Path)
+		return
+	}
+
 	if len(paths) > 1 {
 		category := paths[1] + "/"
 		results, err := b.DB.GetResultsInCategory(ctx, ddao.GetResultsInCategoryParams{

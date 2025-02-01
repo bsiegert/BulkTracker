@@ -46,6 +46,14 @@ FROM results r, builds b
 WHERE r.build_id == b.build_id AND r.pkg_id == ?
 ORDER BY b.build_ts DESC;
 
+
+-- name: ResultCount :one
+
+-- ResultCount returns the number of result records for a given build.
+SELECT count(*)
+FROM results r
+WHERE r.build_id = ?;
+
 -- name: GetSingleResult :one
 SELECT
 	r.result_id,
