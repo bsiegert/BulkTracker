@@ -12,3 +12,21 @@ report from the given URL. The report is split into records and saved in the
 database. The web UI allows examining aggregate and per-package results.
 
 This is an open project. Drop me a line if you are interested in participating!
+
+## Getting started with development
+
+To go from zero to a running and working test instance, do the following steps
+inside the source directory:
+
+```shell
+# Create the database
+sqlite3 BulkTracker.db < schema.sql
+# Build the app
+go build -v .
+# Start instance
+./BulkTracker
+
+# In a second terminal, run the helper tool to insert a build record
+cd testing/btinject
+go run btinject.go
+```
