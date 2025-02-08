@@ -41,7 +41,7 @@ ORDER BY pkgpath;
 
 
 -- name: GetAllPkgResults :many
-SELECT r.result_id, r.pkg_name, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+SELECT r.result_id, r.pkg_name, r.pkg_maintainer, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
 FROM results r, builds b
 WHERE r.build_id == b.build_id AND r.pkg_id == ?
 ORDER BY b.build_ts DESC;
@@ -58,6 +58,7 @@ WHERE r.build_id = ?;
 SELECT
 	r.result_id,
 	r.pkg_name,
+	r.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
@@ -77,6 +78,7 @@ WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.result_id == ?;
 SELECT
 	r.result_id,
 	r.pkg_name,
+	r.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
@@ -111,6 +113,7 @@ SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
+	r.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks
@@ -137,6 +140,7 @@ SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
+	r.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks
@@ -161,8 +165,8 @@ VALUES (?, ?);
 
 -- name: PutResult :exec
 INSERT INTO results
-(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps)
-VALUES (?, ?, ?, ?, ?, ?);
+(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps, pkg_maintainer)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 -- name: SetBuildLastError :exec
 

@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS results (
     pkg_name text NOT NULL,
     build_status INTEGER NOT NULL,
     failed_deps text NOT NULL,
-    breaks INTEGER NOT NULL
+    breaks INTEGER NOT NULL,
+    pkg_maintainer text NOT NULL
 );
 
 CREATE INDEX results_i_build_pkg ON results (build_id, pkg_id);

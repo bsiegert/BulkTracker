@@ -7,6 +7,9 @@
 	<td>
 	  <a href="{{$bp}}pkg/{{.ResultID}}">{{.PkgName}}</a>
 	</td>
+	<td>
+		{{.PkgMaintainer}}
+	</td>
 	{{if eq .BuildStatus 0}}
 	<td class="success text-success">ok</td>
 	{{else if eq .BuildStatus 1}}

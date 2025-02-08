@@ -145,6 +145,8 @@ func ResultsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 			p = &pkgs[n]
 			n++
 			p.PkgName = string(val)
+		case bytes.Equal(key, []byte("MAINTAINER")):
+			p.PkgMaintainer = string(val)
 		case bytes.Equal(key, []byte("PKG_LOCATION")):
 			p.Category, p.Dir = path.Split(string(val))
 		case bytes.Equal(key, []byte("BUILD_STATUS")):

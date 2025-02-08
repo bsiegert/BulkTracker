@@ -22,6 +22,7 @@ var classes = {
 bt.buildDetails.columns = [
   {data: "PkgPath"},
   {data: "PkgName"},
+  {data: "PkgMaintainer"},
   {
     data: "BuildStatus",
     render: function (data, type, row, meta) {
@@ -44,10 +45,10 @@ bt.buildDetails.init = function (selector, apiName, num) {
       dataSrc: ""
     },
     columns: bt.buildDetails.columns,
-    order: [[3, 'desc']],
+    order: [[4, 'desc']],
     createdRow: function (row, data, dataIndex) {
       $('td:eq(1)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
-      $('td:eq(2)', row).addClass(classes[data.BuildStatus]);
+      $('td:eq(3)', row).addClass(classes[data.BuildStatus]);
     }
   });
 };
@@ -61,6 +62,7 @@ bt.buildDetails.initSentinels = function (selector, apiName, num) {
     },
     columns: [
       {data: "PkgName"},
+      {data: "PkgMaintainer"},
       {
         data: "BuildStatus",
         render: function (data, type, row, meta) {
@@ -80,7 +82,7 @@ bt.buildDetails.initSentinels = function (selector, apiName, num) {
     ],
     createdRow: function (row, data, dataIndex) {
       $('td:eq(0)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
-      $('td:eq(1)', row).addClass(classes[data.BuildStatus]);
+      $('td:eq(2)', row).addClass(classes[data.BuildStatus]);
     }
   });
 

@@ -148,12 +148,13 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 		}
 
 		err = q.PutResult(ctx, PutResultParams{
-			BuildID:     NullInt64(buildID),
-			PkgID:       NullInt64(pkgID),
-			PkgName:     result.PkgName,
-			BuildStatus: result.BuildStatus,
-			Breaks:      result.Breaks,
-			FailedDeps:  result.FailedDeps,
+			BuildID:       NullInt64(buildID),
+			PkgID:         NullInt64(pkgID),
+			PkgName:       result.PkgName,
+			PkgMaintainer: result.PkgMaintainer,
+			BuildStatus:   result.BuildStatus,
+			Breaks:        result.Breaks,
+			FailedDeps:    result.FailedDeps,
 		})
 		if err != nil {
 			return err

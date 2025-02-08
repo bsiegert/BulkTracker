@@ -96,7 +96,7 @@ func writeBuildListAll(ctx context.Context, w http.ResponseWriter, builds []ddao
 
 // writePackageList writes a table of package results from the list of rows to w.
 func writePackageList(ctx context.Context, w http.ResponseWriter, rows []ddao.GetResultsInCategoryRow) {
-	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
+	templates.TableBegin(w, "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
 	templates.TablePkgs(w, rows)
 	templates.TableEnd(w)
 }
@@ -182,7 +182,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.TableEnd(w)
 
 	templates.Heading(w, "Packages breaking most other packages")
-	templates.TableBeginID(w, templates.ID("breaking"), "Location", "Package Name", "Status", "Breaks")
+	templates.TableBeginID(w, templates.ID("breaking"), "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
 	templates.TableEnd(w)
 
 	templates.LoadScript(w, "builddetails.js")
@@ -246,7 +246,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if res.Breaks > 0 {
 		id := templates.ID("breaking")
 		fmt.Fprintf(w, "<h2>This package breaks %d others</h2>", res.Breaks)
-		templates.TableBeginID(w, id, "Location", "Package Name", "Status", "Breaks")
+		templates.TableBeginID(w, id, "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
 		templates.TableEnd(w)
 
 		templates.LoadScript(w, "builddetails.js")
@@ -257,7 +257,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (*PkgDetails) failedDepsTable(ctx context.Context, res ddao.GetSingleResultRow, w http.ResponseWriter, db *ddao.DB) {
 	failedDeps := strings.Split(res.FailedDeps, " ")
 	fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", len(failedDeps))
-	templates.TableBegin(w, "Location", "Package Name", "Status", "Breaks")
+	templates.TableBegin(w, "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
 
 	sqlBuildID := sql.NullInt64{
 		Valid: true,
