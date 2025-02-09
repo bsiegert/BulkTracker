@@ -58,8 +58,14 @@ CREATE TABLE IF NOT EXISTS results (
     build_status INTEGER NOT NULL,
     failed_deps text NOT NULL,
     breaks INTEGER NOT NULL,
-    pkg_maintainer text NOT NULL
+    maintainer_id INTEGER REFERENCES maintainers(maintainer_id)
+);
+
+CREATE TABLE IF NOT EXISTS maintainers (
+    maintainer_id INTEGER PRIMARY KEY ASC,
+    pkg_maintainer TEXT NOT NULL UNIQUE
 );
 
 CREATE INDEX results_i_build_pkg ON results (build_id, pkg_id);
 CREATE INDEX pkg_id ON results (pkg_id);
+CREATE INDEX maintainer_id ON results (maintainer_id);

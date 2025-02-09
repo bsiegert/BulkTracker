@@ -60,6 +60,7 @@ func (r GetSingleResultRow) BaseURL() string {
 // A PkgResult is a build result for a package.
 type PkgResult struct {
 	Pkg
+	Maintainer
 	Result
 }
 
@@ -146,15 +147,23 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 		if err != nil {
 			return err
 		}
+		err = q.PutMaintainer(ctx, result.PkgMaintainer)
+		if err != nil {
+			return err
+		}
+		maintainerID, err := q.GetMaintainerID(ctx, result.PkgMaintainer)
+		if err != nil {
+			return err
+		}
 
 		err = q.PutResult(ctx, PutResultParams{
-			BuildID:       NullInt64(buildID),
-			PkgID:         NullInt64(pkgID),
-			PkgName:       result.PkgName,
-			PkgMaintainer: result.PkgMaintainer,
-			BuildStatus:   result.BuildStatus,
-			Breaks:        result.Breaks,
-			FailedDeps:    result.FailedDeps,
+			BuildID:      NullInt64(buildID),
+			PkgID:        NullInt64(pkgID),
+			PkgName:      result.PkgName,
+			BuildStatus:  result.BuildStatus,
+			Breaks:       result.Breaks,
+			FailedDeps:   result.FailedDeps,
+			MaintainerID: NullInt64(maintainerID),
 		})
 		if err != nil {
 			return err

@@ -25,6 +25,11 @@ type Build struct {
 	LastError            sql.NullString
 }
 
+type Maintainer struct {
+	MaintainerID  int64
+	PkgMaintainer string
+}
+
 type Pkg struct {
 	PkgID    int64
 	Category string
@@ -36,12 +41,12 @@ type Pkgpath struct {
 }
 
 type Result struct {
-	ResultID      int64
-	BuildID       sql.NullInt64
-	PkgID         sql.NullInt64
-	PkgName       string
-	BuildStatus   int64
-	FailedDeps    string
-	Breaks        int64
-	PkgMaintainer string
+	ResultID     int64
+	BuildID      sql.NullInt64
+	PkgID        sql.NullInt64
+	PkgName      string
+	BuildStatus  int64
+	FailedDeps   string
+	Breaks       int64
+	MaintainerID sql.NullInt64
 }

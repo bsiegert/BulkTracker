@@ -22,9 +22,9 @@ func (q *Queries) DeleteAllForBuild(ctx context.Context, buildID sql.NullInt64) 
 }
 
 const getAllPkgResults = `-- name: GetAllPkgResults :many
-SELECT r.result_id, r.pkg_name, r.pkg_maintainer, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
-FROM results r, builds b
-WHERE r.build_id == b.build_id AND r.pkg_id == ?
+SELECT r.result_id, r.pkg_name, m.pkg_maintainer, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+FROM results r, builds b, maintainers m
+WHERE r.build_id == b.build_id AND r.maintainer_id == m.maintainer_id AND r.pkg_id == ?
 ORDER BY b.build_ts DESC
 `
 
@@ -183,6 +183,18 @@ func (q *Queries) GetLatestBuildsPerPlatform(ctx context.Context) ([]Build, erro
 	return items, nil
 }
 
+const getMaintainerID = `-- name: GetMaintainerID :one
+SELECT maintainer_id FROM maintainers
+WHERE pkg_maintainer == ?
+`
+
+func (q *Queries) GetMaintainerID(ctx context.Context, pkgMaintainer string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getMaintainerID, pkgMaintainer)
+	var maintainer_id int64
+	err := row.Scan(&maintainer_id)
+	return maintainer_id, err
+}
+
 const getPkgID = `-- name: GetPkgID :one
 SELECT pkg_id FROM pkgs
 WHERE category == ? and dir == ?
@@ -205,12 +217,12 @@ SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
-	r.pkg_maintainer,
+	m.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks
-FROM results r
-JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+FROM results r, maintainers m
+JOIN pkgs p ON (r.pkg_id == p.pkg_id) AND r.maintainer_id == m.maintainer_id
 WHERE r.build_id == ? AND r.build_status > 0
 ORDER BY r.breaks DESC
 LIMIT 100
@@ -288,7 +300,7 @@ func (q *Queries) GetPkgsInCategory(ctx context.Context, category string) ([]str
 }
 
 const getResultsInCategory = `-- name: GetResultsInCategory :many
-SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, r.pkg_maintainer, p.pkg_id, p.category, p.dir
+SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, r.maintainer_id, p.pkg_id, p.category, p.dir
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE p.category == ? AND r.build_id == ?
@@ -300,17 +312,17 @@ type GetResultsInCategoryParams struct {
 }
 
 type GetResultsInCategoryRow struct {
-	ResultID      int64
-	BuildID       sql.NullInt64
-	PkgID         sql.NullInt64
-	PkgName       string
-	BuildStatus   int64
-	FailedDeps    string
-	Breaks        int64
-	PkgMaintainer string
-	PkgID_2       int64
-	Category      string
-	Dir           string
+	ResultID     int64
+	BuildID      sql.NullInt64
+	PkgID        sql.NullInt64
+	PkgName      string
+	BuildStatus  int64
+	FailedDeps   string
+	Breaks       int64
+	MaintainerID sql.NullInt64
+	PkgID_2      int64
+	Category     string
+	Dir          string
 }
 
 func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCategoryParams) ([]GetResultsInCategoryRow, error) {
@@ -330,7 +342,7 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
-			&i.PkgMaintainer,
+			&i.MaintainerID,
 			&i.PkgID_2,
 			&i.Category,
 			&i.Dir,
@@ -350,7 +362,7 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 
 const getSentinelStatus = `-- name: GetSentinelStatus :many
 
-SELECT result_id, build_id, pkg_id, pkg_name, build_status, failed_deps, breaks, pkg_maintainer
+SELECT result_id, build_id, pkg_id, pkg_name, build_status, failed_deps, breaks, maintainer_id
 FROM results
 WHERE build_id == ? AND pkg_id IN (
 	SELECT pkg_id
@@ -378,7 +390,7 @@ func (q *Queries) GetSentinelStatus(ctx context.Context, buildID sql.NullInt64) 
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
-			&i.PkgMaintainer,
+			&i.MaintainerID,
 		); err != nil {
 			return nil, err
 		}
@@ -397,7 +409,7 @@ const getSingleResult = `-- name: GetSingleResult :one
 SELECT
 	r.result_id,
 	r.pkg_name,
-	r.pkg_maintainer,
+	m.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
@@ -410,8 +422,8 @@ SELECT
 	b.compiler,
 	b.build_user,
 	b.report_url
-FROM results r, builds b, pkgs p
-WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.result_id == ?
+FROM results r, builds b, maintainers m, pkgs p
+WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.maintainer_id == m.maintainer_id AND r.result_id == ?
 `
 
 type GetSingleResultRow struct {
@@ -459,14 +471,14 @@ const getSingleResultByPkgName = `-- name: GetSingleResultByPkgName :one
 SELECT
 	r.result_id,
 	r.pkg_name,
-	r.pkg_maintainer,
+	m.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
 	p.category,
 	p.dir
-FROM results r, pkgs p
-WHERE r.build_id == ? AND r.pkg_id == p.pkg_id AND r.pkg_name == ?
+FROM results r, pkgs p, maintainers m
+WHERE r.build_id == ? AND r.pkg_id == p.pkg_id AND r.maintainer_id == m.maintainer_id AND r.pkg_name == ?
 `
 
 type GetSingleResultByPkgNameParams struct {
@@ -562,6 +574,17 @@ func (q *Queries) PutBuild(ctx context.Context, arg PutBuildParams) (int64, erro
 	return build_id, err
 }
 
+const putMaintainer = `-- name: PutMaintainer :exec
+INSERT OR IGNORE INTO maintainers
+(pkg_maintainer)
+VALUES (?)
+`
+
+func (q *Queries) PutMaintainer(ctx context.Context, pkgMaintainer string) error {
+	_, err := q.db.ExecContext(ctx, putMaintainer, pkgMaintainer)
+	return err
+}
+
 const putPkg = `-- name: PutPkg :exec
 INSERT OR IGNORE INTO pkgs
 (category, dir)
@@ -580,18 +603,18 @@ func (q *Queries) PutPkg(ctx context.Context, arg PutPkgParams) error {
 
 const putResult = `-- name: PutResult :exec
 INSERT INTO results
-(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps, pkg_maintainer)
+(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps, maintainer_id)
 VALUES (?, ?, ?, ?, ?, ?, ?)
 `
 
 type PutResultParams struct {
-	BuildID       sql.NullInt64
-	PkgID         sql.NullInt64
-	PkgName       string
-	BuildStatus   int64
-	Breaks        int64
-	FailedDeps    string
-	PkgMaintainer string
+	BuildID      sql.NullInt64
+	PkgID        sql.NullInt64
+	PkgName      string
+	BuildStatus  int64
+	Breaks       int64
+	FailedDeps   string
+	MaintainerID sql.NullInt64
 }
 
 func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
@@ -602,7 +625,7 @@ func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
 		arg.BuildStatus,
 		arg.Breaks,
 		arg.FailedDeps,
-		arg.PkgMaintainer,
+		arg.MaintainerID,
 	)
 	return err
 }
@@ -728,12 +751,13 @@ SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
-	r.pkg_maintainer,
+	m.pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks
-FROM results r
-JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+
+FROM results r, maintainers m
+JOIN pkgs p ON (r.pkg_id == p.pkg_id) AND r.maintainer_id == m.maintainer_id
 WHERE r.build_id = ? AND
 	r.failed_deps LIKE ?
 `
