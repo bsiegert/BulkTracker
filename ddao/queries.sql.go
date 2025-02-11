@@ -300,9 +300,10 @@ func (q *Queries) GetPkgsInCategory(ctx context.Context, category string) ([]str
 }
 
 const getResultsInCategory = `-- name: GetResultsInCategory :many
-SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, r.maintainer_id, p.pkg_id, p.category, p.dir
+SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, r.maintainer_id, p.pkg_id, p.category, p.dir, m.pkg_maintainer
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 WHERE p.category == ? AND r.build_id == ?
 `
 
@@ -312,17 +313,18 @@ type GetResultsInCategoryParams struct {
 }
 
 type GetResultsInCategoryRow struct {
-	ResultID     int64
-	BuildID      sql.NullInt64
-	PkgID        sql.NullInt64
-	PkgName      string
-	BuildStatus  int64
-	FailedDeps   string
-	Breaks       int64
-	MaintainerID sql.NullInt64
-	PkgID_2      int64
-	Category     string
-	Dir          string
+	ResultID      int64
+	BuildID       sql.NullInt64
+	PkgID         sql.NullInt64
+	PkgName       string
+	BuildStatus   int64
+	FailedDeps    string
+	Breaks        int64
+	MaintainerID  sql.NullInt64
+	PkgID_2       int64
+	Category      string
+	Dir           string
+	PkgMaintainer string
 }
 
 func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCategoryParams) ([]GetResultsInCategoryRow, error) {
@@ -346,6 +348,7 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 			&i.PkgID_2,
 			&i.Category,
 			&i.Dir,
+			&i.PkgMaintainer,
 		); err != nil {
 			return nil, err
 		}

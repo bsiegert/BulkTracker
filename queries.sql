@@ -103,9 +103,10 @@ SELECT pkg_id FROM pkgs
 WHERE category == ? and dir == ?;
 
 -- name: GetResultsInCategory :many
-SELECT r.*, p.*
+SELECT r.*, p.*, m.pkg_maintainer
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 WHERE p.category == ? AND r.build_id == ?;
 
 -- name: GetPkgsBreakingMostOthers :many
