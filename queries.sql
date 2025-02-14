@@ -41,9 +41,11 @@ ORDER BY pkgpath;
 
 
 -- name: GetAllPkgResults :many
-SELECT r.result_id, r.pkg_name, m.pkg_maintainer, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
-FROM results r, builds b, maintainers m
-WHERE r.build_id == b.build_id AND r.maintainer_id == m.maintainer_id AND r.pkg_id == ?
+SELECT r.result_id, r.pkg_name, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+FROM results r
+JOIN builds b ON (r.build_id == b.build_id)
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+WHERE r.pkg_id == ?
 ORDER BY b.build_ts DESC;
 
 
@@ -58,7 +60,7 @@ WHERE r.build_id = ?;
 SELECT
 	r.result_id,
 	r.pkg_name,
-	m.pkg_maintainer,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
@@ -71,21 +73,26 @@ SELECT
 	b.compiler,
 	b.build_user,
 	b.report_url
-FROM results r, builds b, maintainers m, pkgs p
-WHERE r.build_id == b.build_id AND r.pkg_id == p.pkg_id AND r.maintainer_id == m.maintainer_id AND r.result_id == ?;
+FROM results r
+JOIN builds b ON (r.build_id == b.build_id)
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+WHERE r.result_id == ?;
 
 -- name: GetSingleResultByPkgName :one
 SELECT
 	r.result_id,
 	r.pkg_name,
-	m.pkg_maintainer,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
 	p.category,
 	p.dir
-FROM results r, pkgs p, maintainers m
-WHERE r.build_id == ? AND r.pkg_id == p.pkg_id AND r.maintainer_id == m.maintainer_id AND r.pkg_name == ?;
+FROM results r
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+WHERE r.build_id == ? AND r.pkg_name == ?;
 
 -- name: GetSingleResultIDByPkgName :one
 SELECT result_id
@@ -103,10 +110,10 @@ SELECT pkg_id FROM pkgs
 WHERE category == ? and dir == ?;
 
 -- name: GetResultsInCategory :many
-SELECT r.*, p.*, m.pkg_maintainer
+SELECT r.*, p.*, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 WHERE p.category == ? AND r.build_id == ?;
 
 -- name: GetPkgsBreakingMostOthers :many
@@ -114,12 +121,13 @@ SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
-	m.pkg_maintainer,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks
-FROM results r, maintainers m
-JOIN pkgs p ON (r.pkg_id == p.pkg_id) AND r.maintainer_id == m.maintainer_id
+FROM results r
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE r.build_id == ? AND r.build_status > 0
 ORDER BY r.breaks DESC
 LIMIT 100;
@@ -141,13 +149,14 @@ SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
-	m.pkg_maintainer,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
 	r.breaks
 
-FROM results r, maintainers m
-JOIN pkgs p ON (r.pkg_id == p.pkg_id) AND r.maintainer_id == m.maintainer_id
+FROM results r
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 WHERE r.build_id = ? AND
 	r.failed_deps LIKE ?;
 
