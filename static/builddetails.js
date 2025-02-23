@@ -81,7 +81,7 @@ bt.buildDetails.initSentinels = function (selector, apiName, num) {
     ],
     createdRow: function (row, data, dataIndex) {
       $('td:eq(0)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
-      $('td:eq(2)', row).addClass(classes[data.BuildStatus]);
+      $('td:eq(1)', row).addClass(classes[data.BuildStatus]);
     }
   });
 
