@@ -62,7 +62,6 @@ bt.buildDetails.initSentinels = function (selector, apiName, num) {
     },
     columns: [
       {data: "PkgName"},
-      {data: "PkgMaintainer"},
       {
         data: "BuildStatus",
         render: function (data, type, row, meta) {
