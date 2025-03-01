@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2019, 2022, 2024
+ * Copyright (c) 2014-2019, 2022, 2024-2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -93,7 +93,7 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if result != nil {
 			json.NewEncoder(w).Encode(result)
 		}
-		log.Errorf(ctx, err.Error())
+		log.Errorf(ctx, "%s", err.Error())
 		return
 	}
 	a.CacheAndWrite(ctx, result, cacheKey, w)
