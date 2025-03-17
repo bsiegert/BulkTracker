@@ -23,6 +23,10 @@ bt.buildDetails.createdRow = function (row, data) {
 bt.buildDetails.init = function (selector, apiName, num) {
   $(selector).dataTable({
     paging: false,
+    fixedHeader: true,
+    layout: {
+      topStart: 'searchBuilder'
+    },
     ajax: {
       url: `${bt.basePath}json/${apiName}/${num}`,
       dataSrc: ""
@@ -39,6 +43,7 @@ bt.buildDetails.init = function (selector, apiName, num) {
 bt.buildDetails.initSentinels = function (selector, apiName, num) {
   $(selector).dataTable({
     paging: false,
+    fixedHeader: true,
     ajax: {
       url: `${bt.basePath}json/${apiName}/${num}`,
       dataSrc: ""
