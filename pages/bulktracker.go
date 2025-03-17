@@ -185,6 +185,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.TableBeginID(w, templates.ID("breaking"), "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
 	templates.TableEnd(w)
 
+	templates.LoadScript(w, "bt-common.js")
 	templates.LoadScript(w, "builddetails.js")
 	templates.SentinelsInit(w, "#sentinel", "sentinelstatus", buildID)
 	templates.BuildDetailsInit(w, "#breaking", "pkgsbreakingmostothers", buildID)
@@ -249,6 +250,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		templates.TableBeginID(w, id, "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
 		templates.TableEnd(w)
 
+		templates.LoadScript(w, "bt-common.js")
 		templates.LoadScript(w, "builddetails.js")
 		templates.BuildDetailsInit(w, "#breaking", "pkgsbrokenby", resultID)
 	}
