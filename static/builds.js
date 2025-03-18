@@ -26,6 +26,10 @@ bt.builds.createdRow = function (row, data) {
 
 bt.builds.init = function () {
   $('.table').dataTable({
+    fixedHeader: true,
+    layout: {
+      topStart: 'searchBuilder'
+    },
     ajax: {
       url: `${bt.basePath}json/allbuilds/`,
       dataSrc: ""
