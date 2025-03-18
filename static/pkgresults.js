@@ -21,6 +21,10 @@ function PkgResultsTable(event) {
   $('.table').dataTable({
     destroy: true,
     paging: false,
+    fixedHeader: true,
+    layout: {
+      topStart: 'searchBuilder'
+    },
     ajax: {
       url: `${bt.basePath}json/${event.data}/${pkgname}`,
       dataSrc: ""
