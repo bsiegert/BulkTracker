@@ -46,6 +46,11 @@ func (b *Build) Date() string {
 }
 
 func (r GetSingleResultRow) BaseURL() string {
+	// releng.NetBSD.org can do HTTPS, shadow cannot. These URLs are mapped to each other.
+	return strings.Replace(r.baseURL(), "http://shadow.netbsd.org/pub/pkgsrc/packages/reports/", "https://releng.netbsd.org/pkgreports/shadow/", 1)
+}
+
+func (r GetSingleResultRow) baseURL() string {
 	if n := strings.Index(r.ReportUrl, "meta/"); n != -1 {
 		return r.ReportUrl[:n]
 	}

@@ -14,6 +14,9 @@ func TestBaseURL(t *testing.T) {
 			"https://example.com/meta/report.xz",
 			"https://example.com/",
 		}, {
+			"http://shadow.netbsd.org/pub/pkgsrc/packages/reports/HEAD/NetBSD-9.0-i386/20250320.0214/meta/report.xz",
+			"https://releng.netbsd.org/pkgreports/shadow/HEAD/NetBSD-9.0-i386/20250320.0214/",
+		}, {
 			"http://localhost:9876/report.xz",
 			"http://localhost:9876/",
 		},
