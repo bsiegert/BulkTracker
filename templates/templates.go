@@ -163,7 +163,7 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 	wg.Add(len(stages))
 
 	// Create a context with a 10-second timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	// Fetch URLs in parallel
@@ -294,7 +294,10 @@ func SentinelsInit(w io.Writer, selector string, apiName string, number int64) {
 	})
 }
 
-// URLRequestResult represents the result of a URL request
+// URLRequestResult represents the result of a URL request where the
+// ID is the stage name, URL is the request URL, StatusCode is the HTTP
+// status code, Data is the response body, and Error is any error that
+// occurred during the request (if any).
 type URLRequestResult struct {
 	ID         string
 	URL        string
