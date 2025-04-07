@@ -162,7 +162,7 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 	var wg sync.WaitGroup
 	wg.Add(len(stages))
 
-	// Create a context with a 10-second timeout
+	// Create a context with a 2-second timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
