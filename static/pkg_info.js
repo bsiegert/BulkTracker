@@ -6,7 +6,7 @@ $(document).ready(function() {
     $("a[name=build-stages]").each(function() {
       var text = $(this).text();
       var id = text + ".log";
-      var statusCode = urlData[id].statusCode;
+      var statusCode = urlData[id].StatusCode;
       if (statusCode == 404) {
         $(this).addClass("disabled");
       }
@@ -16,10 +16,10 @@ $(document).ready(function() {
       e.preventDefault();
       var text = $(this).text();
       var id = text + ".log";
-      var statusCode = urlData[id].statusCode;
-      var url = new String(urlData[id].url);
+      var statusCode = urlData[id].StatusCode;
+      var url = new String(urlData[id].URL);
       var displayURL = url.length > 90 ? url.substring(0, 40) + " ... " + url.substring(url.length-40, url.length): url;
-      var displayData = urlData[id].data === "" ? "No data available" : urlData[id].data;
+      var displayData = urlData[id].Data === "" ? "No data available" : urlData[id].Data;
 
       // Add shortcut unicode character to the displayURL
       displayURL = displayURL + " &#x21D7;"; // Unicode character for link
@@ -35,9 +35,9 @@ $(document).ready(function() {
         activeLogName = text;
       }
 
-      $("#logFrame").text(urlData[id].error || displayData);
+      $("#logFrame").text(urlData[id].Error || displayData);
       $("#logContainer").show();
-      $("#original-logfile").attr("href", urlData[id].url);
+      $("#original-logfile").attr("href", urlData[id].URL);
       $("#original-logfile").html(displayURL);
     });
     

@@ -33,22 +33,8 @@
       {{if eq .Res.BuildStatus 2}}
         <dt>Build Logs</dt>
         <script>
-          // Create JavaScript object with URLData
-          var urlData = {
-            {{range .URLData}}
-            {{.ID}}:
-            {
-              id: {{.ID}},
-              url: {{.URL}},
-              statusCode: {{.StatusCode}},
-              {{if .Error}}
-              error: {{.Error}},
-              {{else}}
-              data: {{.Data}},
-              {{end}}
-            },
-            {{end}}
-          };
+          // URLData is used by pkg_info.js to load the logs
+          var urlData = {{.URLDataJSON}};
         </script>
         <dd>
           <div class="btn-group btn-group-sm">
