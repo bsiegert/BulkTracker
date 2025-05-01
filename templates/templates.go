@@ -23,9 +23,13 @@ package templates
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
+	"net/http"
+	"sync"
+	"time"
 
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
@@ -139,16 +143,117 @@ func BulkBuildInfo(w io.Writer, b *ddao.Build) {
 	t.ExecuteTemplate(w, "bulk_build_info.html", b)
 }
 
+// marshalToJSON marshals the given data to a JSON string that can be used in JavaScript.
+// Returns a template.JS value to prevent HTML escaping of the JSON.
+func marshalToJSON(data interface{}) (template.JS, error) {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return template.JS(jsonBytes), nil
+}
+
 func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
+	// Define what to fetch - these represent the stages of the build process
+	// and are used to fetch the corresponding log files.
+	stages := []string{
+		"work.log",
+		"pre-clean.log",
+		"checksum.log",
+		"depends.log",
+		"configure.log",
+		"build.log",
+		"install.log",
+	}
+
+	// Create results slice
+	results := make([]URLRequestResult, len(stages))
+
+	// Create a WaitGroup to wait for all goroutines
+	var wg sync.WaitGroup
+	wg.Add(len(stages))
+
+	// Create a context with a 2-second timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// Fetch URLs in parallel
+	for i, s := range stages {
+		// Construct the URL for the current stage
+		url := fmt.Sprintf("%s%s/%s", res.BaseURL(), res.PkgName, s)
+
+		// Start a goroutine for each URL to fetch stage data
+		go func(index int, stage string, reqURL string) {
+			defer wg.Done()
+
+			// Initialize result with ID and URL
+			results[index] = URLRequestResult{
+				ID:  stage,
+				URL: reqURL,
+			}
+
+			// Create a new request with the context
+			req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+			if err != nil {
+				results[index].StatusCode = http.StatusInternalServerError
+				results[index].Error = err.Error()
+				return
+			}
+
+			// Make the request
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				results[index].StatusCode = http.StatusInternalServerError
+				results[index].Error = err.Error()
+				return
+			}
+			defer resp.Body.Close()
+
+			// Read the response body
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				results[index].StatusCode = resp.StatusCode
+				results[index].Error = err.Error()
+				return
+			}
+
+			// Store the result
+			results[index].StatusCode = resp.StatusCode
+			results[index].Data = string(body)
+		}(i, s, url) // i is index, s is stage, url is the constructed URL
+	}
+
+	// Wait for all requests to complete
+	wg.Wait()
+
+	// Create a map of URL results for JSON marshalling
+	urlDataMap := make(map[string]URLRequestResult)
+	for _, result := range results {
+		urlDataMap[result.ID] = result
+	}
+
+	// Marshal URL data to JSON
+	jsonData, err := marshalToJSON(urlDataMap)
+	if err != nil {
+		log.Errorf(ctx, "templates.PkgInfo: Error marshalling URL data: %v", err)
+	}
+
+	// Create the structure to pass to the template
 	s := struct {
-		Res *ddao.GetSingleResultRow
+		Res         *ddao.GetSingleResultRow
+		URLData     []URLRequestResult
+		URLDataJSON template.JS
 		bp
 	}{
-		Res: &res,
+		Res:         &res,
+		URLData:     results,
+		URLDataJSON: jsonData,
 	}
-	err := t.ExecuteTemplate(w, "pkg_info.html", s)
+
+	// Execute the template
+	err = t.ExecuteTemplate(w, "pkg_info.html", s)
 	if err != nil {
-		log.Errorf(context.TODO(), "templates.PkgInfo: %v", err)
+		log.Errorf(ctx, "templates.PkgInfo: %v", err)
 	}
 }
 
@@ -212,4 +317,16 @@ func SentinelsInit(w io.Writer, selector string, apiName string, number int64) {
 		APIName:  apiName,
 		Number:   number,
 	})
+}
+
+// URLRequestResult represents the result of a URL request where the
+// ID is the stage name, URL is the request URL, StatusCode is the HTTP
+// status code, Data is the response body, and Error is any error that
+// occurred during the request (if any).
+type URLRequestResult struct {
+	ID         string
+	URL        string
+	StatusCode int
+	Data       string
+	Error      string
 }
