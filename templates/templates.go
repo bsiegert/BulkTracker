@@ -173,8 +173,8 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 	var wg sync.WaitGroup
 	wg.Add(len(stages))
 
-	// Create a context with a 2-second timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	// Create a context with a 3-second timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	// Fetch URLs in parallel
@@ -196,7 +196,11 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 			req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
 			if err != nil {
 				results[index].StatusCode = http.StatusInternalServerError
-				results[index].Error = err.Error()
+				if err == context.DeadlineExceeded {
+					results[index].Error = "Request timed out. The server is taking too long to respond. Use the link above to access original log file."
+				} else {
+					results[index].Error = err.Error()
+				}
 				return
 			}
 
@@ -204,7 +208,11 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				results[index].StatusCode = http.StatusInternalServerError
-				results[index].Error = err.Error()
+				if err == context.DeadlineExceeded || err.Error() == "context deadline exceeded" {
+					results[index].Error = "Request timed out. The server is taking too long to respond. Use the link above to access original log file."
+				} else {
+					results[index].Error = err.Error()
+				}
 				return
 			}
 			defer resp.Body.Close()
