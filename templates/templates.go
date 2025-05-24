@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2021-2024
+ * Copyright (c) 2014-2018, 2021-2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -24,6 +24,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -153,6 +154,16 @@ func marshalToJSON(data interface{}) (template.JS, error) {
 	return template.JS(jsonBytes), nil
 }
 
+// errorString returns the string representation of the error --
+// except if it is a "deadline exceeded", in which case it returns a nicer
+// message.
+func errorString(err error) string {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return "Request timed out. The server is taking too long to respond. Use the link above to access original log file."
+	}
+	return err.Error()
+}
+
 func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 	// Define what to fetch - these represent the stages of the build process
 	// and are used to fetch the corresponding log files.
@@ -196,11 +207,7 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 			req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
 			if err != nil {
 				results[index].StatusCode = http.StatusInternalServerError
-				if err == context.DeadlineExceeded {
-					results[index].Error = "Request timed out. The server is taking too long to respond. Use the link above to access original log file."
-				} else {
-					results[index].Error = err.Error()
-				}
+				results[index].Error = errorString(err)
 				return
 			}
 
@@ -208,11 +215,7 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				results[index].StatusCode = http.StatusInternalServerError
-				if err == context.DeadlineExceeded || err.Error() == "context deadline exceeded" {
-					results[index].Error = "Request timed out. The server is taking too long to respond. Use the link above to access original log file."
-				} else {
-					results[index].Error = err.Error()
-				}
+				results[index].Error = errorString(err)
 				return
 			}
 			defer resp.Body.Close()
@@ -221,7 +224,7 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				results[index].StatusCode = resp.StatusCode
-				results[index].Error = err.Error()
+				results[index].Error = errorString(err)
 				return
 			}
 
