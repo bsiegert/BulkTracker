@@ -373,12 +373,12 @@ FROM results
 WHERE build_id == ? AND pkg_id IN (
 	SELECT pkg_id
 	FROM pkgs
-	WHERE dir LIKE 'bulk-test-%'
+	WHERE category == 'meta-pkgs/' AND dir LIKE 'bulk-%'
 )
 `
 
 // Get the status and failed dependencies of the sentinel packages
-// (bulk-test-*).
+// (bulk-*).
 func (q *Queries) GetSentinelStatus(ctx context.Context, buildID sql.NullInt64) ([]Result, error) {
 	rows, err := q.db.QueryContext(ctx, getSentinelStatus, buildID)
 	if err != nil {

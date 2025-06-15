@@ -177,7 +177,7 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.Heading(w, "Results by Category")
 	templates.CategoryList(w, categories, path.Join(templates.BasePath, r.URL.Path))
 
-	templates.Heading(w, "Sentinel package status (bulk-test-*)")
+	templates.Heading(w, "Sentinel package status (bulk-*)")
 	templates.TableBeginID(w, templates.ID("sentinel"), "Package Name", "Status", "Failed dependencies")
 	templates.TableEnd(w)
 

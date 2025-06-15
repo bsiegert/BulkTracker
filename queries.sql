@@ -135,13 +135,13 @@ LIMIT 100;
 -- name: GetSentinelStatus :many
 
 -- Get the status and failed dependencies of the sentinel packages
--- (bulk-test-*).
+-- (bulk-*).
 SELECT *
 FROM results
 WHERE build_id == ? AND pkg_id IN (
 	SELECT pkg_id
 	FROM pkgs
-	WHERE dir LIKE 'bulk-test-%'
+	WHERE category == 'meta-pkgs/' AND dir LIKE 'bulk-%'
 );
 
 -- name: getPkgsBrokenBy :many
