@@ -11,6 +11,10 @@ $(document).ready(function() {
     ajax: {
       url: bt.basePath+'json/autocomplete/',
       dataType: 'json'
+    },
+    insertTag: function(data, tag) {
+      // Insert the user-typed tag at the end instead of the beginning
+      data.push(tag);
     }
   });
 });
