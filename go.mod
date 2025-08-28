@@ -9,7 +9,7 @@ require (
 	github.com/prometheus/exporter-toolkit v0.14.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
-	github.com/ulikunitz/xz v0.5.12
+	github.com/ulikunitz/xz v0.5.14
 )
 
 require (
