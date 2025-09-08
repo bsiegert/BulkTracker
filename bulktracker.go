@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2024
+ * Copyright (c) 2014-2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -36,7 +36,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/exporter-toolkit/web"
 
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/ingest"
@@ -168,24 +167,7 @@ func main() {
 
 		metricMux := http.NewServeMux()
 		metricMux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-		landingPage, err := web.NewLandingPage(web.LandingConfig{
-			Name: "BulkTracker",
-			Links: []web.LandingLinks{
-				{
-					Address: fmt.Sprintf("http://localhost:%v/", *port),
-					Text:    "Web UI",
-				},
-				{
-					Address: "/metrics",
-					Text:    "Metrics",
-				},
-			},
-		})
-		if err != nil {
-			log.Errorf(context.Background(), "Setting up metrics landing page: %v", err)
-			os.Exit(1)
-		}
-		metricMux.Handle("/", landingPage)
+		metricMux.HandleFunc("/", pages.MetricsLanding)
 		go func() {
 			log.Errorf(context.Background(), "%v", http.ListenAndServe(*metricsAddr, metricMux))
 		}()

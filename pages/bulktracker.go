@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2023
+ * Copyright (c) 2014-2023, 2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -324,4 +324,13 @@ func (PkgResults) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.PageHeader(w)
 	templates.PkgResults(w)
 	templates.PageFooter(w)
+}
+
+// MetricsLanding is a simple landing page for the metrics port.
+func MetricsLanding(w http.ResponseWriter, r *http.Request) {
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
+
+	templates.Heading(w, "Prometheus Metrics")
+	fmt.Fprintf(w, "<ul><li><a href=\"/metrics\">Metrics</a></li></ul>")
 }
