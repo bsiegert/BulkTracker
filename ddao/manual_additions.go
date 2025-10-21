@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2023
+ * Copyright (c) 2023, 2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -37,6 +37,14 @@ func NullInt64(i int64) sql.NullInt64 {
 	return sql.NullInt64{
 		Valid: true,
 		Int64: i,
+	}
+}
+
+// NullString initializes a sql.NullString.
+func NullString(s string) sql.NullString {
+	return sql.NullString{
+		String: s,
+		Valid:  true,
 	}
 }
 

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2023-2024
+ * Copyright (c) 2014-2018, 2023-2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -21,30 +21,13 @@
 package bulk
 
 import (
+	"database/sql"
 	"strings"
 	"testing"
 
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/google/go-cmp/cmp"
 )
-
-const pkgFoo = `
-PKGNAME=foo-1.0
-BUILD_STATUS=indirect-failed
-DEPENDS=bar-2.0
-`
-
-const pkgBar = `
-PKGNAME=bar-2.0
-BUILD_STATUS=failed
-DEPENDS=
-`
-
-const pkgDoubleIndirect = `
-PKGNAME=double-3.0
-BUILD_STATUS=indirect-failed
-DEPENDS=foo-1.0
-`
 
 func toPkgResult(r []ddao.Result) []ddao.PkgResult {
 	ret := make([]ddao.PkgResult, len(r))
@@ -174,31 +157,107 @@ func TestFixUpDependencies(t *testing.T) {
 	}
 }
 
+const pkgFoo = `
+PKGNAME=foo-1.0
+BUILD_STATUS=indirect-failed
+DEPENDS=bar-2.0
+`
+
+const pkgBar = `
+PKGNAME=bar-2.0
+BUILD_STATUS=failed
+DEPENDS=
+`
+
+const pkgDoubleIndirect = `
+PKGNAME=double-3.0
+BUILD_STATUS=indirect-failed
+DEPENDS=foo-1.0
+`
+
+const pkgFailed = `
+PKGNAME=failed-4.0
+BUILD_STATUS=prefailed
+PKG_FAIL_REASON="failed-4.0 is marked as broken:" "Expects X11R6"
+PKG_SKIP_REASON=
+`
+
+const pkgSkipped = `
+PKGNAME=skipped-5.0
+BUILD_STATUS=prefailed
+PKG_FAIL_REASON="skipped-5.0 is not available for NetBSD-11.0-x86_64"
+PKG_SKIP_REASON=
+`
+
+
 func TestResultsFromReport(t *testing.T) {
-	report := pkgDoubleIndirect + pkgFoo + pkgBar
-	want := []ddao.PkgResult{
+	tests := []struct{
+		name string
+		report string
+		want []ddao.PkgResult
+	}{
 		{
-			Result: ddao.Result{
-				PkgName:     "double-3.0",
-				BuildStatus: IndirectFailed,
-				FailedDeps:  "foo-1.0",
+			name: "double-indirect",
+			report: pkgDoubleIndirect + pkgFoo + pkgBar,
+			want: []ddao.PkgResult{
+				{
+					Result: ddao.Result{
+						PkgName:     "double-3.0",
+						BuildStatus: IndirectFailed,
+						FailedDeps:  "foo-1.0",
+					},
+				}, {
+					Result: ddao.Result{
+						PkgName:     "foo-1.0",
+						BuildStatus: IndirectFailed,
+						FailedDeps:  "bar-2.0",
+					},
+				}, {
+					Result: ddao.Result{
+						PkgName:     "bar-2.0",
+						BuildStatus: Failed,
+					},
+				},
 			},
 		}, {
-			Result: ddao.Result{
-				PkgName:     "foo-1.0",
-				BuildStatus: IndirectFailed,
-				FailedDeps:  "bar-2.0",
+			name: "fail reason",
+			report: pkgFailed,
+			want: []ddao.PkgResult{
+				{
+					Result: ddao.Result {
+						PkgName: "failed-4.0",
+						BuildStatus: Prefailed,
+						FailureMsg: sql.NullString{
+							String: "failed-4.0 is marked as broken: Expects X11R6",
+							Valid: true,
+						},
+					},
+				},
 			},
 		}, {
-			Result: ddao.Result{
-				PkgName:     "bar-2.0",
-				BuildStatus: Failed,
+			name: "skip reason",
+			report: pkgSkipped,
+			want: []ddao.PkgResult{
+				{
+					Result: ddao.Result {
+						PkgName: "skipped-5.0",
+						BuildStatus: Prefailed,
+						FailureMsg: sql.NullString{
+							String: "skipped-5.0 is not available for NetBSD-11.0-x86_64",
+							Valid: true,
+						},
+					},
+				},
 			},
 		},
 	}
 
-	got, _ := ResultsFromReport(strings.NewReader(report))
-	if diff := cmp.Diff(got, want); diff != "" {
-		t.Errorf("ResultsFromReport(): unexpected diff (+got -want)\n%s", diff)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, _ := ResultsFromReport(strings.NewReader(tc.report))
+			if diff := cmp.Diff(got, tc.want); diff != "" {
+				t.Errorf("ResultsFromReport(): unexpected diff (+got -want)\n%s", diff)
+			}
+		})
 	}
 }

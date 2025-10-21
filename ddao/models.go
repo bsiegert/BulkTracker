@@ -49,4 +49,5 @@ type Result struct {
 	FailedDeps   string
 	Breaks       int64
 	MaintainerID sql.NullInt64
+	FailureMsg   sql.NullString
 }

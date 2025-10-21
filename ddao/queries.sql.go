@@ -22,7 +22,7 @@ func (q *Queries) DeleteAllForBuild(ctx context.Context, buildID sql.NullInt64) 
 }
 
 const getAllPkgResults = `-- name: GetAllPkgResults :many
-SELECT r.result_id, r.pkg_name, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer, r.build_status, r.breaks, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+SELECT r.result_id, r.pkg_name, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer, r.build_status, r.breaks, r.failure_msg, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
 FROM results r
 JOIN builds b ON (r.build_id == b.build_id)
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
@@ -36,6 +36,7 @@ type GetAllPkgResultsRow struct {
 	PkgMaintainer string
 	BuildStatus   int64
 	Breaks        int64
+	FailureMsg    sql.NullString
 	BuildID       int64
 	Platform      string
 	BuildTs       time.Time
@@ -59,6 +60,7 @@ func (q *Queries) GetAllPkgResults(ctx context.Context, pkgID sql.NullInt64) ([]
 			&i.PkgMaintainer,
 			&i.BuildStatus,
 			&i.Breaks,
+			&i.FailureMsg,
 			&i.BuildID,
 			&i.Platform,
 			&i.BuildTs,
@@ -222,7 +224,8 @@ SELECT
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
-	r.breaks
+	r.breaks,
+	r.failure_msg
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
@@ -239,6 +242,7 @@ type GetPkgsBreakingMostOthersRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
+	FailureMsg    sql.NullString
 }
 
 func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.NullInt64) ([]GetPkgsBreakingMostOthersRow, error) {
@@ -258,6 +262,7 @@ func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.Nul
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
+			&i.FailureMsg,
 		); err != nil {
 			return nil, err
 		}
@@ -303,7 +308,7 @@ func (q *Queries) GetPkgsInCategory(ctx context.Context, category string) ([]str
 }
 
 const getResultsInCategory = `-- name: GetResultsInCategory :many
-SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, r.maintainer_id, p.pkg_id, p.category, p.dir, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer
+SELECT r.result_id, r.build_id, r.pkg_id, r.pkg_name, r.build_status, r.failed_deps, r.breaks, r.maintainer_id, r.failure_msg, p.pkg_id, p.category, p.dir, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer
 FROM results r
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
@@ -324,6 +329,7 @@ type GetResultsInCategoryRow struct {
 	FailedDeps    string
 	Breaks        int64
 	MaintainerID  sql.NullInt64
+	FailureMsg    sql.NullString
 	PkgID_2       int64
 	Category      string
 	Dir           string
@@ -348,6 +354,7 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 			&i.FailedDeps,
 			&i.Breaks,
 			&i.MaintainerID,
+			&i.FailureMsg,
 			&i.PkgID_2,
 			&i.Category,
 			&i.Dir,
@@ -368,7 +375,7 @@ func (q *Queries) GetResultsInCategory(ctx context.Context, arg GetResultsInCate
 
 const getSentinelStatus = `-- name: GetSentinelStatus :many
 
-SELECT result_id, build_id, pkg_id, pkg_name, build_status, failed_deps, breaks, maintainer_id
+SELECT result_id, build_id, pkg_id, pkg_name, build_status, failed_deps, breaks, maintainer_id, failure_msg
 FROM results
 WHERE build_id == ? AND pkg_id IN (
 	SELECT pkg_id
@@ -397,6 +404,7 @@ func (q *Queries) GetSentinelStatus(ctx context.Context, buildID sql.NullInt64) 
 			&i.FailedDeps,
 			&i.Breaks,
 			&i.MaintainerID,
+			&i.FailureMsg,
 		); err != nil {
 			return nil, err
 		}
@@ -419,6 +427,7 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
+	r.failure_msg,
 	p.category,
 	p.dir,
 	b.build_id,
@@ -442,6 +451,7 @@ type GetSingleResultRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
+	FailureMsg    sql.NullString
 	Category      string
 	Dir           string
 	BuildID       int64
@@ -463,6 +473,7 @@ func (q *Queries) GetSingleResult(ctx context.Context, resultID int64) (GetSingl
 		&i.BuildStatus,
 		&i.FailedDeps,
 		&i.Breaks,
+		&i.FailureMsg,
 		&i.Category,
 		&i.Dir,
 		&i.BuildID,
@@ -484,6 +495,7 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
+	r.failure_msg,
 	p.category,
 	p.dir
 FROM results r
@@ -504,6 +516,7 @@ type GetSingleResultByPkgNameRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
+	FailureMsg    sql.NullString
 	Category      string
 	Dir           string
 }
@@ -518,6 +531,7 @@ func (q *Queries) GetSingleResultByPkgName(ctx context.Context, arg GetSingleRes
 		&i.BuildStatus,
 		&i.FailedDeps,
 		&i.Breaks,
+		&i.FailureMsg,
 		&i.Category,
 		&i.Dir,
 	)
@@ -614,8 +628,8 @@ func (q *Queries) PutPkg(ctx context.Context, arg PutPkgParams) error {
 
 const putResult = `-- name: PutResult :exec
 INSERT INTO results
-(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps, maintainer_id)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+(build_id, pkg_id, pkg_name, build_status, breaks, failed_deps, maintainer_id, failure_msg)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type PutResultParams struct {
@@ -626,6 +640,7 @@ type PutResultParams struct {
 	Breaks       int64
 	FailedDeps   string
 	MaintainerID sql.NullInt64
+	FailureMsg   sql.NullString
 }
 
 func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
@@ -637,6 +652,7 @@ func (q *Queries) PutResult(ctx context.Context, arg PutResultParams) error {
 		arg.Breaks,
 		arg.FailedDeps,
 		arg.MaintainerID,
+		arg.FailureMsg,
 	)
 	return err
 }
@@ -765,7 +781,8 @@ SELECT
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
-	r.breaks
+	r.breaks,
+	r.failure_msg
 
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
@@ -787,6 +804,7 @@ type getPkgsBrokenByRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
+	FailureMsg    sql.NullString
 }
 
 func (q *Queries) getPkgsBrokenBy(ctx context.Context, arg getPkgsBrokenByParams) ([]getPkgsBrokenByRow, error) {
@@ -806,6 +824,7 @@ func (q *Queries) getPkgsBrokenBy(ctx context.Context, arg getPkgsBrokenByParams
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
+			&i.FailureMsg,
 		); err != nil {
 			return nil, err
 		}

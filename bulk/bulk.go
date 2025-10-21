@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2022-2024
+ * Copyright (c) 2014-2018, 2022-2025
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -151,12 +151,25 @@ func ResultsFromReport(r io.Reader) ([]ddao.PkgResult, error) {
 			p.Category, p.Dir = path.Split(string(val))
 		case bytes.Equal(key, []byte("BUILD_STATUS")):
 			p.BuildStatus = statuses[string(val)]
+		case bytes.Equal(key, []byte("PKG_FAIL_REASON")):
+			fallthrough
+		case bytes.Equal(key, []byte("PKG_SKIP_REASON")):
+			if reason := stripReasonQuotes(val); reason != "" {
+				p.FailureMsg = ddao.NullString(reason)
+			}
 		case bytes.Equal(key, []byte("DEPENDS")):
 			p.FailedDeps = string(val)
 		}
 	}
 
 	return pkgs, s.Err()
+}
+
+// stripReasonQuotes strips quotes and surrounding whitespace from a string.
+// It is useful for PKG_FAIL_REASON and PKG_SKIP_REASON.
+func stripReasonQuotes(reason []byte) string {
+	r := strings.TrimSpace(string(reason))
+	return strings.ReplaceAll(r, "\"", "")
 }
 
 // FixUpDependencies does another run over all indirect-failed packages and only keeps
