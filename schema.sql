@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS results (
     build_status INTEGER NOT NULL,
     failed_deps text NOT NULL,
     breaks INTEGER NOT NULL,
-    maintainer_id INTEGER REFERENCES maintainers(maintainer_id) ON DELETE SET NULL
+    maintainer_id INTEGER REFERENCES maintainers(maintainer_id) ON DELETE SET NULL,
+    failure_msg text
 );
 
 CREATE TABLE IF NOT EXISTS maintainers (
