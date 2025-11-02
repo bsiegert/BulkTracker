@@ -30,6 +30,12 @@
       {{else if eq .Res.BuildStatus 4}}
         <dd><span class="label label-info">indirect-prefailed</span></dd>
       {{end}}
+      {{if .Res.FailureMsg.Valid}}
+	<dt>Failure Message</dt>
+	<dd style="color: red">
+	  {{.Res.FailureMsg.String}}
+	</dd>
+      {{end}}
       {{if eq .Res.BuildStatus 2}}
         <dt>Build Logs</dt>
         <script>
