@@ -177,6 +177,7 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 			Breaks:       result.Breaks,
 			FailedDeps:   result.FailedDeps,
 			MaintainerID: NullInt64(maintainerID),
+			FailureMsg:   result.FailureMsg,
 		})
 		if err != nil {
 			return err
