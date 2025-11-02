@@ -41,7 +41,18 @@ ORDER BY pkgpath;
 
 
 -- name: GetAllPkgResults :many
-SELECT r.result_id, r.pkg_name, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer, r.build_status, r.breaks, r.failure_msg, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+SELECT
+	r.result_id,
+	r.pkg_name,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
+	r.build_status,
+	r.breaks,
+	b.build_id,
+	b.platform,
+	b.build_ts,
+	b.branch,
+	b.compiler,
+	b.build_user
 FROM results r
 JOIN builds b ON (r.build_id == b.build_id)
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
@@ -88,7 +99,6 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
-	r.failure_msg,
 	p.category,
 	p.dir
 FROM results r
@@ -127,7 +137,6 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
-	r.failure_msg
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
@@ -156,7 +165,6 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
-	r.failure_msg
 
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
