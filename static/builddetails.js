@@ -35,6 +35,7 @@ bt.buildDetails.init = function (selector, apiName, num) {
     order: [[4, 'desc']],
     createdRow: function (row, data, dataIndex) {
       $('td:eq(1)', row).wrapInner(`<a href="${bt.basePath}pkg/${data.ResultID}"></a>`);
+      $('td:eq(2)', row).wrapInner(`<a href="${bt.basePath}maintainer/${data.PkgMaintainer}"></a>`);
       $('td:eq(3)', row).addClass(classes[data.BuildStatus]);
     }
   });
