@@ -341,3 +341,20 @@ type URLRequestResult struct {
 	Data       string
 	Error      string
 }
+
+type maintainerInfoParams struct {
+	bp
+	Address string
+	BuildID int64
+	Pkgs []string
+}
+
+// MaintainerInfo prints the maintainer info page. Address is the maintainer's
+// email address
+func MaintainerInfo(w io.Writer, address string, buildID int64, pkgs []string) {
+	t.ExecuteTemplate(w, "maintainer_info.html", maintainerInfoParams{
+		Address: address,
+		BuildID: buildID,
+		Pkgs: pkgs,
+	})
+}

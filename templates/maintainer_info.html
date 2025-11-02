@@ -1,0 +1,17 @@
+<dl class="dl-horizontal" style="font-size: 120%">
+  <dt>Maintainer address</dt>
+  <dd>{{.Address}}
+  <dt># maintained<dt>
+  <dd>
+    {{len .Pkgs}}
+    (as of <a href="{{.BasePath}}build/{{.BuildID}}">this build</a>)
+  </dd>
+<dl>
+
+<h2>Packages for this maintainer</h2>
+
+<ul class="list-inline">
+  {{$bp := .BasePath}}{{range $p := .Pkgs}}
+    <li style="width: 30em"><a href="{{$bp}}{{.}}">{{.}}</a></li>
+  {{end}}
+</ul>
