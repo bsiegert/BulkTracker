@@ -189,15 +189,14 @@ PKG_FAIL_REASON="skipped-5.0 is not available for NetBSD-11.0-x86_64"
 PKG_SKIP_REASON=
 `
 
-
 func TestResultsFromReport(t *testing.T) {
-	tests := []struct{
-		name string
+	tests := []struct {
+		name   string
 		report string
-		want []ddao.PkgResult
+		want   []ddao.PkgResult
 	}{
 		{
-			name: "double-indirect",
+			name:   "double-indirect",
 			report: pkgDoubleIndirect + pkgFoo + pkgBar,
 			want: []ddao.PkgResult{
 				{
@@ -220,31 +219,31 @@ func TestResultsFromReport(t *testing.T) {
 				},
 			},
 		}, {
-			name: "fail reason",
+			name:   "fail reason",
 			report: pkgFailed,
 			want: []ddao.PkgResult{
 				{
-					Result: ddao.Result {
-						PkgName: "failed-4.0",
+					Result: ddao.Result{
+						PkgName:     "failed-4.0",
 						BuildStatus: Prefailed,
 						FailureMsg: sql.NullString{
 							String: "failed-4.0 is marked as broken: Expects X11R6",
-							Valid: true,
+							Valid:  true,
 						},
 					},
 				},
 			},
 		}, {
-			name: "skip reason",
+			name:   "skip reason",
 			report: pkgSkipped,
 			want: []ddao.PkgResult{
 				{
-					Result: ddao.Result {
-						PkgName: "skipped-5.0",
+					Result: ddao.Result{
+						PkgName:     "skipped-5.0",
 						BuildStatus: Prefailed,
 						FailureMsg: sql.NullString{
 							String: "skipped-5.0 is not available for NetBSD-11.0-x86_64",
-							Valid: true,
+							Valid:  true,
 						},
 					},
 				},
