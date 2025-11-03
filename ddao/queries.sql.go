@@ -22,7 +22,18 @@ func (q *Queries) DeleteAllForBuild(ctx context.Context, buildID sql.NullInt64) 
 }
 
 const getAllPkgResults = `-- name: GetAllPkgResults :many
-SELECT r.result_id, r.pkg_name, COALESCE(m.pkg_maintainer, '') AS pkg_maintainer, r.build_status, r.breaks, r.failure_msg, b.build_id, b.platform, b.build_ts, b.branch, b.compiler, b.build_user
+SELECT
+	r.result_id,
+	r.pkg_name,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
+	r.build_status,
+	r.breaks,
+	b.build_id,
+	b.platform,
+	b.build_ts,
+	b.branch,
+	b.compiler,
+	b.build_user
 FROM results r
 JOIN builds b ON (r.build_id == b.build_id)
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
@@ -36,7 +47,6 @@ type GetAllPkgResultsRow struct {
 	PkgMaintainer string
 	BuildStatus   int64
 	Breaks        int64
-	FailureMsg    sql.NullString
 	BuildID       int64
 	Platform      string
 	BuildTs       time.Time
@@ -60,7 +70,6 @@ func (q *Queries) GetAllPkgResults(ctx context.Context, pkgID sql.NullInt64) ([]
 			&i.PkgMaintainer,
 			&i.BuildStatus,
 			&i.Breaks,
-			&i.FailureMsg,
 			&i.BuildID,
 			&i.Platform,
 			&i.BuildTs,
@@ -187,6 +196,47 @@ func (q *Queries) GetLatestBuildsPerPlatform(ctx context.Context) ([]Build, erro
 	return items, nil
 }
 
+const getLatestBuildsWithCounts = `-- name: GetLatestBuildsWithCounts :many
+
+SELECT
+	build_id,
+	COUNT(result_id)
+FROM results
+GROUP BY build_id
+ORDER BY build_id DESC
+LIMIT 10
+`
+
+type GetLatestBuildsWithCountsRow struct {
+	BuildID sql.NullInt64
+	Count   int64
+}
+
+// GetLatestBuildsWithCounts returns the 10 latest builds and the number of
+// results. It is used to find a recent full build.
+func (q *Queries) GetLatestBuildsWithCounts(ctx context.Context) ([]GetLatestBuildsWithCountsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getLatestBuildsWithCounts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLatestBuildsWithCountsRow
+	for rows.Next() {
+		var i GetLatestBuildsWithCountsRow
+		if err := rows.Scan(&i.BuildID, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMaintainerID = `-- name: GetMaintainerID :one
 SELECT maintainer_id FROM maintainers
 WHERE pkg_maintainer == ?
@@ -216,6 +266,43 @@ func (q *Queries) GetPkgID(ctx context.Context, arg GetPkgIDParams) (int64, erro
 	return pkg_id, err
 }
 
+const getPkgNamesForMaintainer = `-- name: GetPkgNamesForMaintainer :many
+SELECT DISTINCT
+	CAST(p.category || p.dir AS TEXT) AS pkgpath
+FROM pkgs p
+JOIN results r on (r.pkg_id == p.pkg_id)
+WHERE r.maintainer_id = ? and r.build_id = ?
+ORDER BY pkgpath
+`
+
+type GetPkgNamesForMaintainerParams struct {
+	MaintainerID sql.NullInt64
+	BuildID      sql.NullInt64
+}
+
+func (q *Queries) GetPkgNamesForMaintainer(ctx context.Context, arg GetPkgNamesForMaintainerParams) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getPkgNamesForMaintainer, arg.MaintainerID, arg.BuildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var pkgpath string
+		if err := rows.Scan(&pkgpath); err != nil {
+			return nil, err
+		}
+		items = append(items, pkgpath)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPkgsBreakingMostOthers = `-- name: GetPkgsBreakingMostOthers :many
 SELECT
 	r.result_id,
@@ -224,8 +311,7 @@ SELECT
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
-	r.breaks,
-	r.failure_msg
+	r.breaks
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
@@ -242,7 +328,6 @@ type GetPkgsBreakingMostOthersRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
-	FailureMsg    sql.NullString
 }
 
 func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.NullInt64) ([]GetPkgsBreakingMostOthersRow, error) {
@@ -262,7 +347,6 @@ func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.Nul
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
-			&i.FailureMsg,
 		); err != nil {
 			return nil, err
 		}
@@ -495,7 +579,6 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
-	r.failure_msg,
 	p.category,
 	p.dir
 FROM results r
@@ -516,7 +599,6 @@ type GetSingleResultByPkgNameRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
-	FailureMsg    sql.NullString
 	Category      string
 	Dir           string
 }
@@ -531,7 +613,6 @@ func (q *Queries) GetSingleResultByPkgName(ctx context.Context, arg GetSingleRes
 		&i.BuildStatus,
 		&i.FailedDeps,
 		&i.Breaks,
-		&i.FailureMsg,
 		&i.Category,
 		&i.Dir,
 	)
@@ -781,9 +862,7 @@ SELECT
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
-	r.breaks,
-	r.failure_msg
-
+	r.breaks
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
@@ -804,7 +883,6 @@ type getPkgsBrokenByRow struct {
 	BuildStatus   int64
 	FailedDeps    string
 	Breaks        int64
-	FailureMsg    sql.NullString
 }
 
 func (q *Queries) getPkgsBrokenBy(ctx context.Context, arg getPkgsBrokenByParams) ([]getPkgsBrokenByRow, error) {
@@ -824,7 +902,6 @@ func (q *Queries) getPkgsBrokenBy(ctx context.Context, arg getPkgsBrokenByParams
 			&i.BuildStatus,
 			&i.FailedDeps,
 			&i.Breaks,
-			&i.FailureMsg,
 		); err != nil {
 			return nil, err
 		}

@@ -33,6 +33,26 @@ WHERE build_id IN (
 ORDER BY build_ts DESC
 LIMIT 1000;
 
+-- name: GetLatestBuildsWithCounts :many
+
+-- GetLatestBuildsWithCounts returns the 10 latest builds and the number of
+-- results. It is used to find a recent full build.
+SELECT
+	build_id,
+	COUNT(result_id)
+FROM results
+GROUP BY build_id
+ORDER BY build_id DESC
+LIMIT 10;
+
+-- name: GetPkgNamesForMaintainer :many
+SELECT DISTINCT
+	CAST(p.category || p.dir AS TEXT) AS pkgpath
+FROM pkgs p
+JOIN results r on (r.pkg_id == p.pkg_id)
+WHERE r.maintainer_id = ? and r.build_id = ?
+ORDER BY pkgpath;
+
 -- name: getAllPkgsMatching :many
 SELECT pkgpath
 FROM pkgpaths
@@ -136,7 +156,7 @@ SELECT
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
-	r.breaks,
+	r.breaks
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
@@ -164,8 +184,7 @@ SELECT
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
 	r.failed_deps,
-	r.breaks,
-
+	r.breaks
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)

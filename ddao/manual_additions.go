@@ -241,3 +241,20 @@ func (d *DB) GetPkgsBrokenBy(ctx context.Context, resultID int64) ([]getPkgsBrok
 		FailedDeps: fmt.Sprintf("%%%s%%", res.PkgName),
 	})
 }
+
+const atLeastThisTall = 20000
+
+// LatestFullBuild returns the ID of the latest build that had all packages,
+// defined as having more than 20,000.
+func (d *DB) LastFullBuild(ctx context.Context) (int64, error) {
+	builds, err := d.GetLatestBuildsWithCounts(ctx)
+	if err != nil {
+		return 0, err
+	}
+	for _, b := range builds {
+		if b.BuildID.Valid && b.Count > atLeastThisTall {
+			return b.BuildID.Int64, nil
+		}
+	}
+	return 0, errors.New("LastFullBuild: no builds")
+}

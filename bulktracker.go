@@ -127,6 +127,9 @@ func main() {
 	mux.Handle("/pkg/", &pages.PkgDetails{
 		DB: &ddb,
 	})
+	mux.Handle("/maintainer/", &pages.MaintainerDetails{
+		DB: &ddb,
+	})
 
 	h, err := fileHandler("static/favicon.ico")
 	if err != nil {

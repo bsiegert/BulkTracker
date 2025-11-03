@@ -334,3 +334,53 @@ func MetricsLanding(w http.ResponseWriter, r *http.Request) {
 	templates.Heading(w, "Prometheus Metrics")
 	fmt.Fprintf(w, "<ul><li><a href=\"/metrics\">Metrics</a></li></ul>")
 }
+
+// MaintainerDetails is a page with details for a maintainer.
+type MaintainerDetails struct {
+	DB *ddao.DB
+}
+
+func (m *MaintainerDetails) arg(r *http.Request) (string, error) {
+	_, arg, ok := strings.Cut(r.URL.Path, "/maintainer/")
+	if !ok || arg == "" {
+		return "", errNoArg
+	}
+	return arg, nil
+}
+
+func (m *MaintainerDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	arg, err := m.arg(r)
+	if err != nil {
+		w.WriteHeader(404)
+		return
+	}
+	ctx := r.Context()
+
+	// TODO: before outputting anything: m.DB.GetMaintainerID and return 404 if not found
+	if arg == "nosuch" {
+		w.WriteHeader(404)
+		return
+	}
+
+	buildID, err := m.DB.LastFullBuild(ctx)
+	if err != nil {
+		log.Errorf(ctx, "%v", err)
+		w.WriteHeader(500)
+		return
+	}
+	params := ddao.GetPkgNamesForMaintainerParams{
+		MaintainerID: ddao.NullInt64(49),
+		BuildID: ddao.NullInt64(buildID),
+	}
+	pkgs, err := m.DB.GetPkgNamesForMaintainer(ctx, params)
+	if err != nil {
+		log.Errorf(ctx, "%v", err)
+		w.WriteHeader(500)
+		return
+	}
+
+	templates.PageHeader(w)
+	defer templates.PageFooter(w)
+
+	templates.MaintainerInfo(w, arg, 2, pkgs)
+}
