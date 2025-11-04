@@ -356,8 +356,8 @@ func (m *MaintainerDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 
-	// TODO: before outputting anything: m.DB.GetMaintainerID and return 404 if not found
-	if arg == "nosuch" {
+	id, err := m.DB.GetMaintainerID(ctx, arg)
+	if err != nil {
 		w.WriteHeader(404)
 		return
 	}
@@ -369,7 +369,7 @@ func (m *MaintainerDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	params := ddao.GetPkgNamesForMaintainerParams{
-		MaintainerID: ddao.NullInt64(49),
+		MaintainerID: ddao.NullInt64(id),
 		BuildID: ddao.NullInt64(buildID),
 	}
 	pkgs, err := m.DB.GetPkgNamesForMaintainer(ctx, params)
