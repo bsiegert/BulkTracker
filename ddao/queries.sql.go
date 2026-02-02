@@ -361,6 +361,61 @@ func (q *Queries) GetPkgsBreakingMostOthers(ctx context.Context, buildID sql.Nul
 	return items, nil
 }
 
+const getPkgsBrokenBy = `-- name: GetPkgsBrokenBy :many
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
+	r.build_status,
+	r.breaks
+FROM results r
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.result_id IN (
+	SELECT from_result FROM failed_deps WHERE on_result=?
+)
+`
+
+type GetPkgsBrokenByRow struct {
+	ResultID      int64
+	PkgPath       interface{}
+	PkgName       string
+	PkgMaintainer string
+	BuildStatus   int64
+	Breaks        int64
+}
+
+func (q *Queries) GetPkgsBrokenBy(ctx context.Context, onResult int64) ([]GetPkgsBrokenByRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPkgsBrokenBy, onResult)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPkgsBrokenByRow
+	for rows.Next() {
+		var i GetPkgsBrokenByRow
+		if err := rows.Scan(
+			&i.ResultID,
+			&i.PkgPath,
+			&i.PkgName,
+			&i.PkgMaintainer,
+			&i.BuildStatus,
+			&i.Breaks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPkgsInCategory = `-- name: GetPkgsInCategory :many
 SELECT DISTINCT dir
 FROM pkgs
@@ -859,68 +914,6 @@ func (q *Queries) getLatestBuilds(ctx context.Context) ([]Build, error) {
 			&i.NumIndirectFailed,
 			&i.NumIndirectPrefailed,
 			&i.LastError,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPkgsBrokenBy = `-- name: getPkgsBrokenBy :many
-SELECT
-	r.result_id,
-	(p.category || p.dir) AS pkg_path,
-	r.pkg_name,
-	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
-	r.build_status,
-	r.failed_deps,
-	r.breaks
-FROM results r
-LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
-JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-WHERE r.build_id = ? AND
-	r.failed_deps LIKE ?
-`
-
-type getPkgsBrokenByParams struct {
-	BuildID    sql.NullInt64
-	FailedDeps string
-}
-
-type getPkgsBrokenByRow struct {
-	ResultID      int64
-	PkgPath       interface{}
-	PkgName       string
-	PkgMaintainer string
-	BuildStatus   int64
-	FailedDeps    string
-	Breaks        int64
-}
-
-func (q *Queries) getPkgsBrokenBy(ctx context.Context, arg getPkgsBrokenByParams) ([]getPkgsBrokenByRow, error) {
-	rows, err := q.db.QueryContext(ctx, getPkgsBrokenBy, arg.BuildID, arg.FailedDeps)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []getPkgsBrokenByRow
-	for rows.Next() {
-		var i getPkgsBrokenByRow
-		if err := rows.Scan(
-			&i.ResultID,
-			&i.PkgPath,
-			&i.PkgName,
-			&i.PkgMaintainer,
-			&i.BuildStatus,
-			&i.FailedDeps,
-			&i.Breaks,
 		); err != nil {
 			return nil, err
 		}

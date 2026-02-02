@@ -176,20 +176,20 @@ WHERE build_id == ? AND pkg_id IN (
 	WHERE category == 'meta-pkgs/' AND dir LIKE 'bulk-%'
 );
 
--- name: getPkgsBrokenBy :many
+-- name: GetPkgsBrokenBy :many
 SELECT
 	r.result_id,
 	(p.category || p.dir) AS pkg_path,
 	r.pkg_name,
 	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
 	r.build_status,
-	r.failed_deps,
 	r.breaks
 FROM results r
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
-WHERE r.build_id = ? AND
-	r.failed_deps LIKE ?;
+WHERE r.result_id IN (
+	SELECT from_result FROM failed_deps WHERE on_result=?
+);
 
 -- name: PutBuild :one
 

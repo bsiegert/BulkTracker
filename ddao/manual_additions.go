@@ -24,7 +24,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/url"
 	"path"
 	"strings"
@@ -246,27 +245,6 @@ func (d *DB) GetAllPkgResults(ctx context.Context, category, dir string) ([]GetA
 		return nil, err
 	}
 	return q.GetAllPkgResults(ctx, NullInt64(pkgID))
-}
-
-// GetPkgsBrokenBy returns all packages that were broken by the given
-// result ID.
-func (d *DB) GetPkgsBrokenBy(ctx context.Context, resultID int64) ([]getPkgsBrokenByRow, error) {
-	tx, err := d.db.(*sql.DB).BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	q := d.Queries.WithTx(tx)
-
-	res, err := q.GetSingleResult(ctx, resultID)
-	if err != nil {
-		return nil, err
-	}
-	return q.getPkgsBrokenBy(ctx, getPkgsBrokenByParams{
-		BuildID:    NullInt64(res.BuildID),
-		FailedDeps: fmt.Sprintf("%%%s%%", res.PkgName),
-	})
 }
 
 const atLeastThisTall = 20000
