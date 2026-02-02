@@ -95,6 +95,7 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
+	(SELECT COUNT(*) FROM failed_deps WHERE from_result = r.result_id) AS failed_deps_count,
 	r.failure_msg,
 	p.category,
 	p.dir,
@@ -110,6 +111,21 @@ JOIN builds b ON (r.build_id == b.build_id)
 JOIN pkgs p ON (r.pkg_id == p.pkg_id)
 LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
 WHERE r.result_id == ?;
+
+-- name: GetFailedDeps :many
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
+	r.build_status,
+	r.breaks
+FROM results r
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.result_id IN (
+	SELECT on_result FROM failed_deps WHERE from_result=?
+);
 
 -- name: GetSingleResultByPkgName :one
 SELECT

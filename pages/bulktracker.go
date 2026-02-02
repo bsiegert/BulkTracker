@@ -239,8 +239,15 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	templates.PkgInfo(w, res)
 
 	// Failed to build because of dependencies.
-	if res.FailedDeps != "" {
-		p.failedDepsTable(ctx, res, w, db)
+	if res.FailedDepsCount > 0 {
+		id := templates.ID("faileddeps")
+		fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", res.FailedDepsCount)
+		templates.TableBeginID(w, id, "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
+		templates.TableEnd(w)
+
+		templates.LoadScript(w, "bt-common.js")
+		templates.LoadScript(w, "builddetails.js")
+		templates.BuildDetailsInit(w, "#faileddeps", "faileddeps", resultID)
 	}
 
 	// Failed, breaking other packages.
@@ -254,31 +261,6 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		templates.LoadScript(w, "builddetails.js")
 		templates.BuildDetailsInit(w, "#breaking", "pkgsbrokenby", resultID)
 	}
-}
-
-func (*PkgDetails) failedDepsTable(ctx context.Context, res ddao.GetSingleResultRow, w http.ResponseWriter, db *ddao.DB) {
-	failedDeps := strings.Split(res.FailedDeps, " ")
-	fmt.Fprintf(w, "<h2>This package has %d failed dependencies</h2>", len(failedDeps))
-	templates.TableBegin(w, "Location", "Package Name", "Package Maintainer", "Status", "Breaks")
-
-	sqlBuildID := sql.NullInt64{
-		Valid: true,
-		Int64: res.BuildID,
-	}
-	rows := make([]ddao.GetSingleResultByPkgNameRow, 0, len(failedDeps))
-	for _, dep := range failedDeps {
-		row, err := db.GetSingleResultByPkgName(ctx, ddao.GetSingleResultByPkgNameParams{
-			PkgName: dep,
-			BuildID: sqlBuildID,
-		})
-		if err != nil {
-			// Swallow and ignore error.
-			continue
-		}
-		rows = append(rows, row)
-	}
-	templates.TablePkgs(w, rows)
-	templates.TableEnd(w)
 }
 
 // Dirs is a handler for a subpage showing all the package directories for a given category.
@@ -370,7 +352,7 @@ func (m *MaintainerDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	params := ddao.GetPkgNamesForMaintainerParams{
 		MaintainerID: ddao.NullInt64(id),
-		BuildID: ddao.NullInt64(buildID),
+		BuildID:      ddao.NullInt64(buildID),
 	}
 	pkgs, err := m.DB.GetPkgNamesForMaintainer(ctx, params)
 	if err != nil {

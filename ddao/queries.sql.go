@@ -145,6 +145,61 @@ func (q *Queries) GetCategories(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
+const getFailedDeps = `-- name: GetFailedDeps :many
+SELECT
+	r.result_id,
+	(p.category || p.dir) AS pkg_path,
+	r.pkg_name,
+	COALESCE(m.pkg_maintainer, '') AS pkg_maintainer,
+	r.build_status,
+	r.breaks
+FROM results r
+LEFT JOIN maintainers m ON (r.maintainer_id == m.maintainer_id)
+JOIN pkgs p ON (r.pkg_id == p.pkg_id)
+WHERE r.result_id IN (
+	SELECT on_result FROM failed_deps WHERE from_result=?
+)
+`
+
+type GetFailedDepsRow struct {
+	ResultID      int64
+	PkgPath       interface{}
+	PkgName       string
+	PkgMaintainer string
+	BuildStatus   int64
+	Breaks        int64
+}
+
+func (q *Queries) GetFailedDeps(ctx context.Context, fromResult int64) ([]GetFailedDepsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFailedDeps, fromResult)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFailedDepsRow
+	for rows.Next() {
+		var i GetFailedDepsRow
+		if err := rows.Scan(
+			&i.ResultID,
+			&i.PkgPath,
+			&i.PkgName,
+			&i.PkgMaintainer,
+			&i.BuildStatus,
+			&i.Breaks,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLatestBuildsPerPlatform = `-- name: GetLatestBuildsPerPlatform :many
 
 SELECT build_id, platform, build_ts, branch, compiler, build_user, report_url, num_ok, num_prefailed, num_failed, num_indirect_failed, num_indirect_prefailed, last_error FROM builds
@@ -566,6 +621,7 @@ SELECT
 	r.build_status,
 	r.failed_deps,
 	r.breaks,
+	(SELECT COUNT(*) FROM failed_deps WHERE from_result = r.result_id) AS failed_deps_count,
 	r.failure_msg,
 	p.category,
 	p.dir,
@@ -584,22 +640,23 @@ WHERE r.result_id == ?
 `
 
 type GetSingleResultRow struct {
-	ResultID      int64
-	PkgName       string
-	PkgMaintainer string
-	BuildStatus   int64
-	FailedDeps    string
-	Breaks        int64
-	FailureMsg    sql.NullString
-	Category      string
-	Dir           string
-	BuildID       int64
-	Platform      string
-	BuildTs       time.Time
-	Branch        string
-	Compiler      string
-	BuildUser     string
-	ReportUrl     string
+	ResultID        int64
+	PkgName         string
+	PkgMaintainer   string
+	BuildStatus     int64
+	FailedDeps      string
+	Breaks          int64
+	FailedDepsCount int64
+	FailureMsg      sql.NullString
+	Category        string
+	Dir             string
+	BuildID         int64
+	Platform        string
+	BuildTs         time.Time
+	Branch          string
+	Compiler        string
+	BuildUser       string
+	ReportUrl       string
 }
 
 func (q *Queries) GetSingleResult(ctx context.Context, resultID int64) (GetSingleResultRow, error) {
@@ -612,6 +669,7 @@ func (q *Queries) GetSingleResult(ctx context.Context, resultID int64) (GetSingl
 		&i.BuildStatus,
 		&i.FailedDeps,
 		&i.Breaks,
+		&i.FailedDepsCount,
 		&i.FailureMsg,
 		&i.Category,
 		&i.Dir,
