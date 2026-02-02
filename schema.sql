@@ -67,6 +67,17 @@ CREATE TABLE IF NOT EXISTS maintainers (
     pkg_maintainer TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE IF NOT EXISTS failed_deps (
+    from_result INTEGER REFERENCES results NOT NULL,
+    on_result INTEGER REFERENCES results NOT NULL,
+    PRIMARY KEY (from_result, on_result),
+    FOREIGN KEY (from_result) REFERENCES results (result_id) ON DELETE CASCADE,
+    FOREIGN KEY (on_result) REFERENCES results (result_id) ON DELETE CASCADE
+) WITHOUT ROWID;
+
+CREATE INDEX failed_deps_i_from ON failed_deps (from_result);
+CREATE INDEX failed_deps_i_on ON failed_deps (on_result);
+
 CREATE INDEX results_i_build_pkg ON results (build_id, pkg_id);
 CREATE INDEX pkg_id ON results (pkg_id);
 CREATE INDEX maintainer_id ON results (maintainer_id);
