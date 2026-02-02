@@ -214,10 +214,16 @@ VALUES (?);
 SELECT maintainer_id FROM maintainers
 WHERE pkg_maintainer == ?;
 
--- name: PutResult :exec
+-- name: PutResult :one
 INSERT INTO results
 (build_id, pkg_id, pkg_name, build_status, breaks, failed_deps, maintainer_id, failure_msg)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING result_id;
+
+-- name: PutFailedDep :exec
+INSERT INTO failed_deps
+(from_result, on_result)
+VALUES (?, ?);
 
 -- name: SetBuildLastError :exec
 

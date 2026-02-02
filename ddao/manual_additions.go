@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2023, 2025
+ * Copyright (c) 2023, 2025-2026
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -143,6 +143,8 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 		return err
 	}
 
+	nBuildID := NullInt64(buildID)
+
 	l := len(results)
 	for i, result := range results {
 		if i%1000 == 0 || i == l {
@@ -169,18 +171,43 @@ func (d *DB) PutResults(ctx context.Context, results []PkgResult, buildID int64)
 			return err
 		}
 
-		err = q.PutResult(ctx, PutResultParams{
-			BuildID:      NullInt64(buildID),
+		results[i].ResultID, err = q.PutResult(ctx, PutResultParams{
+			BuildID:      nBuildID,
 			PkgID:        NullInt64(pkgID),
 			PkgName:      result.PkgName,
 			BuildStatus:  result.BuildStatus,
 			Breaks:       result.Breaks,
-			FailedDeps:   result.FailedDeps,
+			FailedDeps:   "",
 			MaintainerID: NullInt64(maintainerID),
 			FailureMsg:   result.FailureMsg,
 		})
 		if err != nil {
 			return err
+		}
+	}
+
+	// Add FailedDeps entries.
+	for _, result := range results {
+		if result.FailedDeps == "" {
+			continue
+		}
+		for dep := range strings.SplitSeq(result.FailedDeps, " ") {
+			// For every failed dep, search ID by name ...
+			depResultId, err := q.GetSingleResultIDByPkgName(ctx, GetSingleResultIDByPkgNameParams{
+				BuildID: nBuildID,
+				PkgName: dep,
+			})
+			if err != nil {
+				return err
+			}
+			// ... and add a FailedDep.
+			err = q.PutFailedDep(ctx, PutFailedDepParams{
+				FromResult: result.ResultID,
+				OnResult:   depResultId,
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
