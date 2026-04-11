@@ -4,8 +4,13 @@ $(document).ready(function() {
     $(location).attr('href', `${bt.basePath}${pkg}`);
     return false;
   });
-  
-  $('#results-pkg').select2({
+
+  var $pkg = $('#results-pkg');
+  $pkg.removeAttr('data-select2-id tabindex aria-hidden')
+      .removeClass('select2-hidden-accessible');
+  $pkg.next('.select2-container').remove();
+
+  $pkg.select2({
     theme: 'bootstrap',
     tags: true,
     ajax: {
@@ -17,4 +22,12 @@ $(document).ready(function() {
       data.push(tag);
     }
   });
+
+  setTimeout(function() {
+    $pkg.select2('open');
+    var searchField = document.querySelector('.select2-container--open .select2-search__field');
+    if (searchField) {
+      searchField.focus();
+    }
+  }, 500);
 });
