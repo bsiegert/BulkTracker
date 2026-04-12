@@ -28,6 +28,7 @@ import (
 	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
+	"github.com/klauspost/compress/zstd"
 	ftp "github.com/smira/go-ftp-protocol/protocol"
 	"github.com/ulikunitz/xz"
 
@@ -146,6 +147,8 @@ func decompressingReader(r io.Reader, url string) (io.Reader, error) {
 		return gzip.NewReader(r)
 	case "xz", "lzma":
 		return xz.NewReader(r)
+	case "zst", "zstd":
+		return zstd.NewReader(r)
 	}
 	// Uncompressed, or unknown.
 	return r, nil

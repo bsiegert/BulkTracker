@@ -5,6 +5,7 @@ go 1.26
 require (
 	github.com/TV4/logrus-stackdriver-formatter v0.1.0
 	github.com/google/go-cmp v0.7.0
+	github.com/klauspost/compress v1.18.0
 	github.com/mattn/go-sqlite3 v1.14.42
 	github.com/sirupsen/logrus v1.9.4
 	github.com/smira/go-ftp-protocol v0.0.0-20140829150050-066b75c2b70d
