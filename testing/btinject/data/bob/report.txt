@@ -1,0 +1,1768 @@
+To: pkgsrc-bulk@pkgsrc.org
+Subject: release/macos - Darwin 23.6.0/aarch64 - 2026-04-09 19:32
+From: "Jonathan Perkin" <jperkin@pkgsrc.org>
+Date: Sat, 11 Apr 2026 11:34:47 +0000
+
+URL: https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.html
+
+Total:      28940  Platform:    Darwin 23.6.0/aarch64
+Succeeded:  21361  Compiler:    clang-13.1.6
+Failed:      1753  Repository:  https://github.com/TritonDataCenter/pkgsrc
+UpToDate:    2300  Branch:      release/macos (revision: 296bd21d0a7c)
+Masked:      3526  Duration:    39h 36m 39s
+
+Build Failures                               Breaks  Maintainer
+----------------------------------------------------------------------------
+wayland-1.25.0                                  258  pkgsrc-users@NetBSD.org
+ffmpeg8-8.0.1nb3                                235  pkgsrc-users@NetBSD.org
+py313-numpy-2.4.4                               179  pkgsrc-users@NetBSD.org
+kf6-kglobalaccel-6.18.0nb3                      177  markd@NetBSD.org
+libde265-1.0.18                                 174  ryoon@NetBSD.org
+kf6-sonnet-6.18.0nb3                            171  markd@NetBSD.org
+kf6-solid-6.18.0nb3                             158  markd@NetBSD.org
+py313-pyobjc-core-12.1                          156  pkgsrc-users@NetBSD.org
+qca2-qt6-2.3.10nb3                              156  pkgsrc-users@NetBSD.org
+py312-pyobjc-core-12.1                          153  pkgsrc-users@NetBSD.org
+py314-pyobjc-core-12.1                          153  pkgsrc-users@NetBSD.org
+kf6-kjobwidgets-6.18.0nb4                       152  markd@NetBSD.org
+py311-pyobjc-core-12.1                          152  pkgsrc-users@NetBSD.org
+ffmpeg7-7.1.3nb3                                117  pkgsrc-users@NetBSD.org
+openal-soft-1.25.1                               97  pkgsrc-users@NetBSD.org
+nodejs-25.9.0                                    96  pkgsrc-users@NetBSD.org
+kf6-knewstuff-6.18.0nb3                          95  markd@NetBSD.org
+py312-numpy-2.4.4                                92  pkgsrc-users@NetBSD.org
+py311-numpy-2.4.4                                91  pkgsrc-users@NetBSD.org
+py314-numpy-2.4.4                                89  pkgsrc-users@NetBSD.org
+ocaml-base-0.15.0nb2                             78  pkgsrc-users@NetBSD.org
+qt5-qtx11extras-5.15.18nb1                       71  ryoon@NetBSD.org
+libwnck3-3.36.0nb18                              60  prlw1@cam.ac.uk
+ki18n-5.116.0nb8                                 59  markd@NetBSD.org
+libxfce4ui-4.20.2nb1                             52  youri@NetBSD.org
+net-snmp-5.9.5                                   46  adam@NetBSD.org
+ocaml-num-1.4nb3                                 42  pkgsrc-users@NetBSD.org
+sonnet-5.116.0nb8                                40  markd@NetBSD.org
+knotifications-5.116.0nb13                       38  markd@NetBSD.org
+solid-5.116.0nb8                                 35  markd@NetBSD.org
+zint-2.16.0                                      34  pkgsrc-users@NetBSD.org
+ffmpeg6-6.1.4nb3                                 33  pkgsrc-users@NetBSD.org
+libclucene-2.3.3.4nb28                           32  pkgsrc-users@NetBSD.org
+alsa-lib-1.2.15.3                                30  pkgsrc-users@NetBSD.org
+cross-aarch64-none-elf-gcc-8.2.0nb5              30  port-arm@NetBSD.org
+cogl-1.22.0nb24                                  27  pkgsrc-users@NetBSD.org
+ocaml-lwt-5.7.0nb2                               27  pkgsrc-users@NetBSD.org
+festival-2.5.0nb5                                25  pkgsrc-users@NetBSD.org
+ibus-1.5.33nb1                                   25  tsutsui@NetBSD.org
+mate-desktop-1.26.2nb12                          24  youri@NetBSD.org
+webkit-gtk-2.36.8nb29                            23  pkgsrc-users@NetBSD.org
+gnustep-make-2.9.3                               21  pkgsrc-users@NetBSD.org
+gnustep-objc-2.2.1                               21  pkgsrc-users@NetBSD.org
+xcb-imdkit-1.0.6                                 20  ryoon@NetBSD.org
+deforaos-libdesktop-0.4.1nb16                    19  khorben@defora.org
+scim-1.4.17nb19                                  18  pkgsrc-users@NetBSD.org
+attr-2.5.2                                       17  pkgsrc-users@NetBSD.org
+mono-6.14.1                                      17  pkgsrc-users@NetBSD.org
+gkrellm-2.4.0nb5                                 16  pkgsrc-users@NetBSD.org
+ocaml-intrinsics-0.15.2nb2                       15  pkgsrc-users@NetBSD.org
+consolekit-1.2.6nb1                              13  youri@NetBSD.org
+freeradius-3.2.5nb6                              13  pkgsrc-users@NetBSD.org
+gcr-3.40.0nb8                                    13  pkgsrc-users@NetBSD.org
+ming-0.4.8nb9                                    13  pkgsrc-users@NetBSD.org
+guile30-3.0.11                                   12  pkgsrc-users@NetBSD.org
+libmateweather-1.26.3nb16                        12  youri@NetBSD.org
+libwnck-2.30.7nb15                               12  pkgsrc-users@NetBSD.org
+icoutils-0.32.3nb5                               11  ryoon@NetBSD.org
+kirigami2-5.116.0nb8                             11  markd@NetBSD.org
+libcdr-0.1.7nb21                                 11  ftigeot@wolfpond.org
+ocaml-zarith-1.12nb3                             11  markd@NetBSD.org
+phonon-qt6-4.12.0nb2                             11  markd@NetBSD.org
+mupdf-1.27.2                                     10  leot@NetBSD.org
+ocaml-zip-1.11nb2                                10  pkgsrc-users@NetBSD.org
+uhttpmock-0.11.0nb8                              10  pkgsrc-users@NetBSD.org
+nas-1.9.4nb1                                      9  markd@NetBSD.org
+rubberband-4.0.0                                  9  pkgsrc-users@NetBSD.org
+geocode-glib-3.26.2nb18                           8  pkgsrc-users@NetBSD.org
+libgii-1.0.2nb1                                   8  pkgsrc-users@NetBSD.org
+libnet10-1.0.2anb3                                8  pkgsrc-users@NetBSD.org
+mozjs78-78.15.0nb15                               8  pkgsrc-users@NetBSD.org
+xscreensaver-6.15                                 8  pkgsrc-users@NetBSD.org
+evas-software-x11-1.7.10nb5                       7  pkgsrc-users@NetBSD.org
+ffmpeg5-5.1.8nb3                                  7  pkgsrc-users@NetBSD.org
+geoclue-2.5.7nb20                                 7  pkgsrc-users@NetBSD.org
+guile20-2.0.14nb6                                 7  root@zta.lk
+libcutl-1.10.0nb9                                 7  pkgsrc-users@NetBSD.org
+libftdi1-1.5nb11                                  7  pkgsrc-users@NetBSD.org
+libmatekbd-1.26.1nb19                             7  youri@NetBSD.org
+libmatemixer-1.26.1nb12                           7  youri@NetBSD.org
+libmspub-0.1.4nb36                                7  pkgsrc-users@NetBSD.org
+lsof-4.91nb7                                      7  pkgsrc-users@NetBSD.org
+mongo-c-driver-1.26.0nb6                          7  pkgsrc-users@NetBSD.org
+ocaml-ssl-0.5.10nb3                               7  pkgsrc-users@NetBSD.org
+osg-3.6.5nb79                                     7  pkgsrc-users@NetBSD.org
+pcre-ocaml-7.5.0nb2                               7  pkgsrc-users@NetBSD.org
+php56-intl-5.6.40nb17                             7  pkgsrc-users@NetBSD.org
+poco-1.6.1nb4                                     7  pkgsrc-users@NetBSD.org
+rox-2.11nb28                                      7  rxg@NetBSD.org
+zxcvbn-c-2.6                                      7  ryoon@NetBSD.org
+acpica-utils-20160930nb2                          6  pkgsrc-users@NetBSD.org
+kitemmodels-5.116.0nb8                            6  markd@NetBSD.org
+libe-book-0.1.3nb38                               6  ryoon@NetBSD.org
+libgcroots-0.2.3                                  6  pkgsrc-users@NetBSD.org
+lp_solve-5.5.2.3                                  6  pkgsrc-users@NetBSD.org
+mpich-3.4.3nb1                                    6  asau@inbox.ru
+orcus-0.21.0                                      6  pkgsrc-users@NetBSD.org
+R-terra-1.8.80nb2                                 5  pkgsrc-users@NetBSD.org
+cabocha-0.69                                      5  pkgsrc-users@NetBSD.org
+courier-maildir-1.3.5                             5  pkgsrc-users@NetBSD.org
+cross-freemint-mintlib-20131219nb4                5  ryoon@NetBSD.org
+freeimage-3.18.0nb19                              5  pkgsrc-users@NetBSD.org
+gnome-tracker-3.0.1nb26                           5  pkgsrc-users@NetBSD.org
+gtkglext-1.2.0nb60                                5  pkgsrc-users@NetBSD.org
+ksanecore-25.08.3nb2                              5  markd@NetBSD.org
+libfm-qt-2.3.1nb2                                 5  pkgsrc-users@NetBSD.org
+libv4l-1.32.0nb1                                  5  pkgsrc-users@NetBSD.org
+mate-polkit-1.26.1nb15                            5  youri@NetBSD.org
+mjpegtools-2.1.0nb3                               5  pkgsrc-users@NetBSD.org
+ocaml-cairo-0.6.5nb8                              5  pkgsrc-users@NetBSD.org
+openobex-1.7.2nb5                                 5  pkgsrc-users@NetBSD.org
+plasma6-kdecoration-6.5.2nb2                      5  markd@NetBSD.org
+syntax-highlighting-5.116.0nb8                    5  markd@NetBSD.org
+amanda-common-3.3.9nb14                           4  pkgsrc-users@NetBSD.org
+bmp-0.9.7.1nb79                                   4  pkgsrc-users@NetBSD.org
+botan-1.10.17nb2                                  4  pkgsrc-users@NetBSD.org
+hugs98-200609nb2                                  4  nathanw@mit.edu
+intellij-fsnotifier-20230725                      4  ryoon@NetBSD.org
+keybinder-0.3.0nb27                               4  pkgsrc-users@NetBSD.org
+libparserutils-0.2.5                              4  pkgsrc-users@NetBSD.org
+marco-1.26.2nb13                                  4  youri@NetBSD.org
+ocaml-dbm-1.3nb2                                  4  pkgsrc-users@NetBSD.org
+openblas64_pthread-0.3.31nb1                      4  thomas.orgis@uni-hamburg.de
+php56-imap-5.6.40nb7                              4  pkgsrc-users@NetBSD.org
+py311-qt5-5.15.11nb10                             4  pkgsrc-users@NetBSD.org
+qcoro-0.12.0nb2                                   4  pkgsrc-users@NetBSD.org
+ups-nut-2.8.4nb1                                  4  gdt@NetBSD.org
+yamcha-0.33nb12                                   4  pkgsrc-users@NetBSD.org
+accountsservice-0.6.42nb6                         3  youri@NetBSD.org
+avr-gcc-13.2.0                                    3  micha@NetBSD.org
+deforaos-cpp-0.0.6nb1                             3  khorben@defora.org
+dhcpcd-10.3.1                                     3  roy@NetBSD.org
+dvdauthor-0.7.2nb63                               3  pkgsrc-users@NetBSD.org
+erlang-jose-1.11.12nb1                            3  pkgsrc-users@NetBSD.org
+erlang21-21.3.6nb4                                3  pkgsrc-users@NetBSD.org
+fcitx-4.2.9.6nb39                                 3  rxg@NetBSD.org
+gnet-2.0.8nb7                                     3  pkgsrc-users@NetBSD.org
+jose-14                                           3  pkgsrc-users@NetBSD.org
+kf6-kimageformats-6.18.0nb3                       3  markd@NetBSD.org
+libayatana-indicator-0.9.4nb7                     3  pkgsrc-users@NetBSD.org
+libopensmtpd-1.0                                  3  vins@NetBSD.org
+libticables2-1.3.3nb3                             3  pkgsrc-users@NetBSD.org
+libwapcaplet-0.4.3                                3  pkgsrc-users@NetBSD.org
+mate-calc-1.26.0nb22                              3  youri@NetBSD.org
+mate-session-manager-1.26.1nb13                   3  youri@NetBSD.org
+mojoshader-0.0.20220415nb7                        3  pkgsrc-users@NetBSD.org
+mtx-1.3.12nb1                                     3  bouyer@NetBSD.org
+nethack-lib-3.6.7nb3                              3  pkgsrc-users@NetBSD.org
+php83-imap-8.3.30nb7                              3  pkgsrc-users@NetBSD.org
+quazip-0.9nb23                                    3  ryoon@NetBSD.org
+source-highlight-3.1.9nb10                        3  pkgsrc-users@NetBSD.org
+spidermonkey185-1.8.5nb8                          3  pkgsrc-users@NetBSD.org
+thrift-0.22.0nb1                                  3  pkgsrc-users@NetBSD.org
+wcslib-8.5                                        3  thomas.orgis@uni-hamburg.de
+xarchiver-0.5.4.22nb9                             3  pkgsrc-users@NetBSD.org
+Canna-server-3.7pl3nb1                            2  tsutsui@NetBSD.org
+Gauche-0.9.15                                     2  enami@NetBSD.org
+MoarVM-2025.04                                    2  pkgsrc-users@NetBSD.org
+allegro-4.4.3.1nb8                                2  pkgsrc-users@NetBSD.org
+bacula-15.0.3nb2                                  2  pkgsrc-users@NetBSD.org
+black-hole-solver-1.10.1nb3                       2  pkgsrc-users@NetBSD.org
+blt-2.4znb15                                      2  brook@nmsu.edu
+brasero-3.12.3nb2                                 2  pkgsrc-users@NetBSD.org
+c-icap-0.5.5nb8                                   2  adam@NetBSD.org
+cdrdao-1.2.4                                      2  david@maxwell.net
+classpath-0.93nb8                                 2  pkgsrc-users@NetBSD.org
+deforaos-libdatabase-0.1.0nb9                     2  khorben@defora.org
+ecl-23.9.9                                        2  asau@inbox.ru
+firefox52-52.9.0nb80                              2  ryoon@NetBSD.org
+freecell-solver-6.16.0                            2  pkgsrc-users@NetBSD.org
+freerdist-0.94nb1                                 2  christos@NetBSD.org
+icon-9.4.3nb1                                     2  pkgsrc-users@NetBSD.org
+iniparser-3.1                                     2  ryoon@NetBSD.org
+input-pad-1.0.3nb45                               2  pkgsrc-users@NetBSD.org
+ioquake3-1.36.20200125nb34                        2  pkgsrc-users@NetBSD.org
+kimageannotator-0.7.1nb10                         2  pkgsrc-users@NetBSD.org
+kqtquickcharts-25.08.3nb2                         2  markd@NetBSD.org
+lacheck-1.30nb2                                   2  pkgsrc-users@NetBSD.org
+libcdaudio-0.99.12nb2                             2  pkgsrc-users@NetBSD.org
+libetm-1.09nb1                                    2  pkgsrc-users@NetBSD.org
+libgrapheme-3.0.0                                 2  vins@NetBSD.org
+libkkc-0.3.5nb6                                   2  pkgsrc-users@NetBSD.org
+liblcf-0.7.0nb10                                  2  pkgsrc-users@NetBSD.org
+libpinyin-2.8.1nb1                                2  pkgsrc-users@NetBSD.org
+librep-0.92.7nb3                                  2  pkgsrc-users@NetBSD.org
+libts-1.08nb1                                     2  pkgsrc-users@NetBSD.org
+lua54-linenoise-0.9                               2  pkgsrc-users@NetBSD.org
+lxsession-0.5.5nb14                               2  youri@NetBSD.org
+mingw-binutils-2.18nb3                            2  pkgsrc-users@NetBSD.org
+netbsd-iscsi-lib-20111006nb1                      2  sborrill@NetBSD.org
+ocaml-checkseum-0.3.3nb2                          2  pkgsrc-users@NetBSD.org
+ocaml-graphics-2.0.0nb5                           2  pkgsrc-users@NetBSD.org
+ocaml-lablgtk-2.18.13nb25                         2  pkgsrc-users@NetBSD.org
+ocaml-mirage-clock-4.2.0nb2                       2  pkgsrc-users@kerguelen.org
+php74-imap-7.4.33nb7                              2  pkgsrc-users@NetBSD.org
+php82-imap-8.2.30nb7                              2  pkgsrc-users@NetBSD.org
+prosody-13.0.3                                    2  pkgsrc-users@NetBSD.org
+qtermwidget-2.3.0nb3                              2  pkgsrc-users@NetBSD.org
+sablevm-classpath-1.13nb1                         2  pkgsrc-users@NetBSD.org
+sandboxctl-1.1nb3                                 2  pkgsrc-users@NetBSD.org
+silc-toolkit-1.1.10nb1                            2  salo@NetBSD.org
+smooth-0.9.10nb6                                  2  ryoon@NetBSD.org
+suil-0.10.12nb19                                  2  ryoon@NetBSD.org
+synce-libsynce-0.9.1                              2  pkgsrc-users@NetBSD.org
+tcl90-9.0.2nb1                                    2  pkgsrc-users@NetBSD.org
+tk-Tix-8.4.3nb9                                   2  he@NetBSD.org
+vtk-9.5.2nb2                                      2  thomas.orgis@uni-hamburg.de
+wmakerconf-2.11nb73                               2  pkgsrc-users@NetBSD.org
+wterm-6.2.9nb38                                   2  pkgsrc-users@NetBSD.org
+xylib-1.6nb1                                      2  pkgsrc-users@NetBSD.org
+GMT-4.1.4nb41                                     1  pkgsrc-users@NetBSD.org
+LPRng-core-3.8.28nb5                              1  pkgsrc-users@NetBSD.org
+acunia-jam-1.0nb2                                 1  pkgsrc-users@NetBSD.org
+allegro5-5.2.10.1nb6                              1  pkgsrc-users@NetBSD.org
+asterisk-23.2.2                                   1  jnemeth@NetBSD.org
+audacious-4.1nb29                                 1  pkgsrc-users@NetBSD.org
+cjose-0.6.2.2nb1                                  1  pkgsrc-users@NetBSD.org
+coccinelle-1.3.1nb1                               1  pkgsrc-users@NetBSD.org
+consul-1.2.3nb77                                  1  pkgsrc-users@NetBSD.org
+cppcms-1.2.1nb10                                  1  pkgsrc-users@NetBSD.org
+critcl-3.3.1nb2                                   1  pkgsrc-users@NetBSD.org
+cross-mipsel-none-elf-gcc-13.2.0                  1  port-mips@NetBSD.org
+cyrus-imapd-3.12.1                                1  pkgsrc-users@NetBSD.org
+dino-0.5.0nb9                                     1  ryoon@NetBSD.org
+dnscrypt-proxy2-2.0.45nb55                        1  pkgsrc-users@NetBSD.org
+dwdiff-2.1.4nb3                                   1  ryoon@NetBSD.org
+dynamips-0.2.23                                   1  kefren@NetBSD.org
+efltk-2.0.5nb27                                   1  pkgsrc-users@NetBSD.org
+exult-1.6nb14                                     1  nikkohigashi@gmail.com
+ftgl-2.1.3rc5nb2                                  1  pkgsrc-users@NetBSD.org
+fuse-darling-dmg-1.0.4.20210411nb13               1  pkgsrc-users@NetBSD.org
+gcc13-13.3.0nb1                                   1  pkgsrc-users@NetBSD.org
+gcc15-15.2.0nb1                                   1  pkgsrc-users@NetBSD.org
+gedit-3.36.2nb37                                  1  prlw1@cam.ac.uk
+gimp-ufraw-0.22nb55                               1  gdt@NetBSD.org
+glusterfs-10.4nb12                                1  als@thangorodrim.ch
+gmtk-1.0.9nb57                                    1  pkgsrc-users@NetBSD.org
+gnome-screenshot-3.38.0nb18                       1  pkgsrc-users@NetBSD.org
+gnome-terminal-3.36.2nb18                         1  pkgsrc-users@NetBSD.org
+go-dnstap-0.4.0nb53                               1  pkgsrc-users@NetBSD.org
+goom-2004.0                                       1  pkgsrc-users@NetBSD.org
+gpick-0.3nb9                                      1  ryoon@NetBSD.org
+gpicview-0.2.5nb26                                1  youri@NetBSD.org
+gplcver-2.12a                                     1  pkgsrc-users@NetBSD.org
+gtkglarea2-2.1.0nb13                              1  pkgsrc-users@NetBSD.org
+heimdal-7.8.0nb14                                 1  pkgsrc-users@NetBSD.org
+heyu-1.35nb1                                      1  damon@brodiefamily.org
+hfstospell-0.5.4nb7                               1  bsiegert@NetBSD.org
+hugin-2025.0.1nb2                                 1  pkgsrc-users@NetBSD.org
+hylafax-6.0.7nb5                                  1  pkgsrc-users@NetBSD.org
+i3lock-2.16                                       1  pkgsrc-users@NetBSD.org
+janet-1.41.2                                      1  charlotte@NetBSD.org
+jitsi-srtp-1.1nb2                                 1  khorben@defora.org
+keybinder3-0.3.2nb23                              1  youri@NetBSD.org
+kholidays-5.116.0nb8                              1  markd@NetBSD.org
+kitty-0.46.2nb1                                   1  pkgsrc-users@NetBSD.org
+kquickcharts-5.116.0nb7                           1  markd@NetBSD.org
+ksh93-1.0.10nb2                                   1  vins@NetBSD.org
+libbegemot-1.11                                   1  packages@grumpf.hope-2000.org
+libdnsres-0.1anb16                                1  pkgsrc-users@NetBSD.org
+libecap-1.0.1nb2                                  1  prlw1@cam.ac.uk
+libflash-0.4.10nb10                               1  pkgsrc-users@NetBSD.org
+libgnome-games-support1-1.8.2nb10                 1  pkgsrc-users@NetBSD.org
+libgnt-2.14.0nb17                                 1  pkgsrc-users@NetBSD.org
+libinfinity-0.7.2nb16                             1  pkgsrc-users@NetBSD.org
+libite-1.6.0                                      1  pkgsrc-users@NetBSD.org
+libjaylink-0.3.1                                  1  pkgsrc-users@NetBSD.org
+libpe-0.81nb2                                     1  khorben@defora.org
+libquic-0.0.3nb34                                 1  agc@NetBSD.org
+librecad-2.2.0.2nb5                               1  ryoon@NetBSD.org
+librelp-1.2.16nb18                                1  pkgsrc-users@NetBSD.org
+libtheoraplay-0.0.20210704nb1                     1  pkgsrc-users@NetBSD.org
+libvideogfx-1.0.3nb11                             1  pkgsrc-users@NetBSD.org
+libvirt-1.2.9nb61                                 1  pkgsrc-users@NetBSD.org
+lua51-system-0.2.1                                1  pkgsrc-users@NetBSD.org
+lua52-system-0.2.1                                1  pkgsrc-users@NetBSD.org
+lua53-system-0.2.1                                1  pkgsrc-users@NetBSD.org
+lua54-system-0.2.1                                1  pkgsrc-users@NetBSD.org
+lua55-system-0.2.1                                1  pkgsrc-users@NetBSD.org
+lxappearance-0.6.3nb20                            1  youri@NetBSD.org
+lxinput-0.3.5nb25                                 1  youri@NetBSD.org
+lxlauncher-0.2.5nb25                              1  youri@NetBSD.org
+maim-5.8.0nb6                                     1  pkgsrc-users@NetBSD.org
+mariadb-embedded-10.11.14nb5                      1  pkgsrc-users@NetBSD.org
+matchbox-panel-manager-0.1nb50                    1  pkgsrc-users@NetBSD.org
+megaglest-data-3.13.0                             1  pkgsrc-users@NetBSD.org
+metakit-lib-2.4.9.7                               1  pkgsrc-users@NetBSD.org
+mingw-w64-x86_64-gcc-ucrt-14.2.0                  1  pkgsrc-users@NetBSD.org
+mongodb-3.4.24nb23                                1  pkgsrc-users@NetBSD.org
+moodle-5.0.1nb1                                   1  wen@NetBSD.org
+moscow_ml-2.10.1                                  1  pkgsrc-users@NetBSD.org
+mygui-3.2.3.20190707nb14                          1  pkgsrc-users@NetBSD.org
+nagios-plugin-dnsrbl-0.6                          1  manu@NetBSD.org
+nagios-plugin-dumpdates-0.3                       1  manu@NetBSD.org
+nagios-plugin-pgsql-2.4.11                        1  pkgsrc-users@NetBSD.org
+ncmpc-0.46nb2                                     1  pkgsrc-users@NetBSD.org
+nextpnr-ice40-0.9                                 1  thorpej@NetBSD.org
+nuclei-3.6.2nb4                                   1  leot@NetBSD.org
+nx-libs-3.5.99.26.0x2go1nb1                       1  hauke@NetBSD.org
+obconf-2.0.4nb40                                  1  pkgsrc-users@NetBSD.org
+obconf-qt-0.16.6nb4                               1  pkgsrc-users@NetBSD.org
+ocaml-digestif-1.1.0nb4                           1  pkgsrc-users@NetBSD.org
+ocaml-mtime-1.1.0nb4                              1  pkgsrc-users@NetBSD.org
+ocaml-safepass-3.1nb2                             1  pkgsrc-users@NetBSD.org
+open-vm-tools-12.5.4nb2                           1  agc@NetBSD.org
+openbabel-3.1.1nb41                               1  pkgsrc-users@NetBSD.org
+openblas-0.3.31nb1                                1  thomas.orgis@uni-hamburg.de
+openrct2-0.4.31nb1                                1  pkgsrc-users@NetBSD.org
+openscad-2021.01nb42                              1  reinoud@NetBSD.org
+opentimelineio-0.18.1                             1  pkgsrc-users@NetBSD.org
+openttd-15.2                                      1  pkgsrc-users@NetBSD.org
+p5-DBD-Sybase-1.15nb35                            1  pkgsrc-users@NetBSD.org
+p5-Test-Harness-Straps-0.30nb2                    1  pkgsrc-users@NetBSD.org
+pam-pwauth_suid-1.2nb1                            1  pkgsrc-users@NetBSD.org
+pcmanfm-1.3.2nb15                                 1  youri@NetBSD.org
+php56-phrasea2-3.1.4nb4                           1  pkgsrc-users@NetBSD.org
+podman-5.0.3nb16                                  1  pkgsrc-users@NetBSD.org
+poedit-2.3nb44                                    1  pkgsrc-users@NetBSD.org
+poxml-25.08.3nb2                                  1  markd@NetBSD.org
+py27-dbus-1.2.18nb3                               1  pkgsrc-users@NetBSD.org
+py311-game_sdl2-2.1.0.8.3.7nb1                    1  ryoon@NetBSD.org
+py312-game_sdl2-2.1.0.8.3.7nb1                    1  ryoon@NetBSD.org
+py313-game_sdl2-2.1.0.8.3.7nb1                    1  ryoon@NetBSD.org
+py313-keystone-0.9.2nb1                           1  pkgsrc-users@NetBSD.org
+qcad-3.32.3.4nb3                                  1  pkgsrc-users@NetBSD.org
+qpopper-4.1.0nb7                                  1  mellon@fugue.com
+qtools-0.56nb1                                    1  schmonz@NetBSD.org
+radare2-5.9.6nb4                                  1  pkgsrc-users@NetBSD.org
+rpm-4.20.1nb1                                     1  pkgsrc-users@NetBSD.org
+ruby33-ferret-0.11.8.7nb1                         1  minskim@NetBSD.org
+ruby33-passenger-5.3.7nb27                        1  pkgsrc-users@NetBSD.org
+ruby33-pdf-core-0.10.0                            1  pkgsrc-users@NetBSD.org
+ruby34-ferret-0.11.8.7nb1                         1  minskim@NetBSD.org
+ruby34-passenger-5.3.7nb27                        1  pkgsrc-users@NetBSD.org
+ruby40-airbrussh-1.6.1                            1  pkgsrc-users@NetBSD.org
+ruby40-ferret-0.11.8.7nb1                         1  minskim@NetBSD.org
+ruby40-passenger-5.3.7nb27                        1  pkgsrc-users@NetBSD.org
+spread-3.17.3nb13                                 1  pkgsrc-users@NetBSD.org
+st-term-0.9.3                                     1  leot@NetBSD.org
+stfl-0.24nb8                                      1  pkgsrc-users@NetBSD.org
+stratagus-2.1nb24                                 1  pkgsrc-users@NetBSD.org
+tcl-scotty-2.1.11nb19                             1  pkgsrc-users@NetBSD.org
+tcl-snack-2.2.10nb9                               1  gson@NetBSD.org
+tclx-8.6.3                                        1  pkgsrc-users@NetBSD.org
+terraform-provider-kubernetes-1.11.4nb60          1  pkgsrc-users@NetBSD.org
+tokyotyrant-1.1.41nb4                             1  pkgsrc-users@NetBSD.org
+trufflehog-3.90.5nb8                              1  leot@NetBSD.org
+unac-1.7.0                                        1  pkgsrc-users@NetBSD.org
+unicon-im-1.2nb5                                  1  rxg@NetBSD.org
+usbutil-0.5nb6                                    1  pkgsrc-users@NetBSD.org
+varnish-7.7.1nb1                                  1  pkgsrc-users@NetBSD.org
+vault-1.6.6nb49                                   1  pkgsrc-users@NetBSD.org
+vim-gtk3-9.2.0319nb9                              1  morr@NetBSD.org
+widelands-1.2.1nb4                                1  pkgsrc-users@NetBSD.org
+wsoundserver-0.4.0nb39                            1  pkgsrc-users@NetBSD.org
+xcb-2.4nb2                                        1  pkgsrc-users@NetBSD.org
+xdotool-3.20211022.1nb1                           1  rga@sdf.lonestar.org
+xemacs-nox11-21.5.36                              1  hauke@NetBSD.org
+xlispstat-3.52.20                                 1  pkgsrc-users@NetBSD.org
+xournalpp-1.3.3                                   1  pkgsrc-users@NetBSD.org
+xteddy-2.2                                        1  johnam@mail.kemper.org
+2vcard-0.6nb3                                        pkgsrc-users@NetBSD.org
+3ddesktop-0.2.9nb16                                  pkgsrc-users@NetBSD.org
+3dpong-0.5                                           pkgsrc-users@NetBSD.org
+7plus-225nb2                                         pkgsrc-users@NetBSD.org
+9base-20100604nb3                                    pkgsrc-users@NetBSD.org
+BasiliskII-20190405nb19                              pkgsrc-users@NetBSD.org
+DWB-20150517nb1                                      carsten.kunze@arcor.de
+DarwinStreamingServer-5.5.5nb19                      adam@NetBSD.org
+FSViewer-0.2.5nb32                                   johnam@mail.kemper.org
+Guitar-1.3.1nb2                                      pkgsrc-users@NetBSD.org
+InterLOGIC-0.30nb11                                  pkgsrc-users@NetBSD.org
+LostPixels-0.5.3nb12                                 pkgsrc-users@NetBSD.org
+OmegaT-6.0.1                                         ryoon@NetBSD.org
+STk-4.0.1nb3                                         pkgsrc-users@NetBSD.org
+TeXmacs-2.1.2nb15                                    pkgsrc-users@NetBSD.org
+Xaw-Xpm-1.1nb4                                       pkgsrc-users@NetBSD.org
+abuse-2.0nb2                                         pkgsrc-users@NetBSD.org
+adplay-1.8.1nb11                                     pkgsrc-users@NetBSD.org
+afl++-4.35c                                          pkgsrc-users@NetBSD.org
+afl-2.57bnb1                                         pkgsrc-users@NetBSD.org
+afterstep-2.2.12nb19                                 pkgsrc-users@NetBSD.org
+agedu-20200705.2a7d4a2                               pkgsrc-users@NetBSD.org
+aget-0.4.1                                           eeg@e3labs.ath.cx
+aide-0.15.1nb2                                       pkgsrc-users@NetBSD.org
+aide-0.6nb1                                          pkgsrc-users@NetBSD.org
+ait-1.13                                             ktnb@NetBSD.org
+algae-4.3.6nb2                                       pkgsrc-users@NetBSD.org
+alpine-2.26nb6                                       vins@NetBSD.org
+amavisd-milter-1.6.1nb1                              kivinen@iki.fi
+amoebax-0.2.1                                        pkgsrc-users@NetBSD.org
+amp-0.7.6nb1                                         pkgsrc-users@NetBSD.org
+amsynth-1.12.2nb22                                   pkgsrc-users@NetBSD.org
+and-1.2.2                                            hauke@NetBSD.org
+android-tools-adb-5.1.1.29                           pkgsrc-users@NetBSD.org
+anjuta-3.34.0nb41                                    pkgsrc-users@NetBSD.org
+anymeal-1.18nb15                                     pkgsrc-users@NetBSD.org
+ap24-authnz-crowd-2.2.2nb51                          pkgsrc-users@NetBSD.org
+ap24-evasive-2.4.0nb1                                jschauma@NetBSD.org
+apache-tomcat-6.0.53                                 pkgsrc-users@NetBSD.org
+apcupsd-3.14.14nb9                                   bouyer@NetBSD.org
+apngasm-3.1.10nb4                                    tsutsui@NetBSD.org
+arandr-0.1.11nb2                                     rga@sdf.lonestar.org
+aranym-1.1.0nb16                                     pkgsrc-users@NetBSD.org
+armagetronad-0.2.9.0.1nb15                           pkgsrc-users@NetBSD.org
+armagetronad-server-0.2.9.0.1nb12                    pkgsrc-users@NetBSD.org
+arpd-1.0nb1                                          pkgsrc-users@NetBSD.org
+artha-1.0.5nb14                                      pkgsrc-users@NetBSD.org
+asnap-1.0nb2                                         he@NetBSD.org
+aspell-fo-0.4.2nb9                                   pkgsrc-users@NetBSD.org
+aspell-is-0.51.1.0                                   pkgsrc-users@NetBSD.org
+aspell-nb-0.50.1.0                                   pkgsrc-users@NetBSD.org
+aspic-2.00                                           prlw1@cam.ac.uk
+assaultcube-1.3.0.2nb15                              pkgsrc-users@NetBSD.org
+ast-ksh-20120801nb2                                  pkgsrc-users@NetBSD.org
+asterisk-16.29.1nb30                                 ryoon@NetBSD.org
+asterisk-18.26.4nb3                                  jnemeth@NetBSD.org
+asterisk-19.8.1nb19                                  jnemeth@NetBSD.org
+asterisk-20.10.0nb16                                 ryoon@NetBSD.org
+asterisk-21.12.2                                     jnemeth@NetBSD.org
+asterisk-22.8.2                                      jnemeth@NetBSD.org
+asunder-3.0.1nb8                                     dtyson@anduin.org.uk
+aterm-1.0.1nb18                                      pkgsrc-users@NetBSD.org
+atheme-7.2.12nb1                                     pkgsrc-users@NetBSD.org
+aumix-2.9.1nb1                                       trevor@jpj.net
+aumix-gtk-2.9.1nb36                                  trevor@jpj.net
+autoconvert-0.3.13nb2                                rxg@NetBSD.org
+autopano-sift-C-2.5.1nb27                            pkgsrc-users@NetBSD.org
+avidemux-2.5.4nb89                                   pkgsrc-users@NetBSD.org
+baci-20000725                                        pkgsrc-users@NetBSD.org
+bacula-clientonly-15.0.3nb1                          pkgsrc-users@NetBSD.org
+bareos-20.0.2nb15                                    kardel@NetBSD.org
+bareos-clientonly-20.0.2nb1                          kardel@NetBSD.org
+barnyard-0.2.0nb5                                    pkgsrc-users@NetBSD.org
+bastet-0.43.2nb12                                    pkgsrc-users@NetBSD.org
+batchftp-1.02nb1                                     pkgsrc-users@NetBSD.org
+battalion-1.4nb8                                     pkgsrc-users@NetBSD.org
+bbsload-0.2.6nb1                                     pino@dohd.org
+bbweather-0.6.3nb9                                   pkgsrc-users@NetBSD.org
+bcc-95.3.12nb3                                       pkgsrc-users@NetBSD.org
+beaver-0.4.1nb18                                     vincent.derrien@ahoup.net
+beecrypt-4.1.1nb2                                    pkgsrc-users@NetBSD.org
+benchfft-2.0nb5                                      pkgsrc-users@NetBSD.org
+bfd-crunchide-1.2nb1                                 pkgsrc-users@NetBSD.org
+bftpd-6.1                                            pkgsrc-users@NetBSD.org
+bg5pdf-1.0.0nb23                                     rxg@NetBSD.org
+bib2xml-20021006nb4                                  pkgsrc-users@NetBSD.org
+biew-6.1.0nb1                                        pkgsrc-users@NetBSD.org
+bigloo-4.6anb2                                       ktnb@NetBSD.org
+bincimap-2.0.16                                      schmonz@NetBSD.org
+binkd-0.9.8nb2                                       pkgsrc-users@NetBSD.org
+bkedit-0.6.23nb18                                    pkgsrc-users@NetBSD.org
+bladeenc-0.94.2nb3                                   pkgsrc-users@NetBSD.org
+blame-1.3.1                                          asau@inbox.ru
+blinkentools-2.2nb54                                 salo@NetBSD.org
+blop-0.2.8nb1                                        pkgsrc-users@NetBSD.org
+bluefish-2.2.14nb17                                  pkgsrc-users@NetBSD.org
+bmon-4.0                                             hsaliak@gmail.com
+bmpanel2-2.1pre1nb40                                 pkgsrc-users@NetBSD.org
+bochs-2.7nb12                                        pkgsrc-users@NetBSD.org
+bridged-20010701                                     pkgsrc-users@NetBSD.org
+bropages-1.41.0                                      pkgsrc-users@NetBSD.org
+bsddip-1.02                                          pkgsrc-users@NetBSD.org
+bsdiff-4.3nb1                                        pkgsrc-users@NetBSD.org
+bsign-0.4.5                                          pkgsrc-users@NetBSD.org
+bsnes-115nb38                                        pkgsrc-users@NetBSD.org
+btget-1.05nb42                                       reinoud@NetBSD.org
+btop-1.4.6                                           pkgsrc-users@NetBSD.org
+bubblemon-1.46nb48                                   pkgsrc-users@NetBSD.org
+bugdom-1.3.4nb1                                      charlotte@NetBSD.org
+bugdom2-4.0.0nb4                                     charlotte@NetBSD.org
+bup-0.33.10                                          gdt@NetBSD.org
+burgerspace-1.10.0                                   pkgsrc-users@NetBSD.org
+bython-0.8nb1                                        pkgsrc-users@NetBSD.org
+cam-1.02nb2                                          hubertf@NetBSD.org
+caml-light-0.74nb2                                   bouyer@NetBSD.org
+carbons-purple-0.2.1nb21                             pkgsrc-users@NetBSD.org
+cataclysm-dda-0.F.2nb1                               pkgsrc-users@NetBSD.org
+cataclysm-dda-sdl-0.F.2nb13                          pkgsrc-users@NetBSD.org
+catclock-0.0nb6                                      pkgsrc-users@NetBSD.org
+ccze-0.2.1nb5                                        pkgsrc-users@NetBSD.org
+cdbkup-1.0nb17                                       mishka@NetBSD.org
+cdrkit-1.1.9nb10                                     pkgsrc-users@NetBSD.org
+cfengine-3.24.1nb6                                   pkgsrc-users@NetBSD.org
+cfs-1.5.0                                            gdt@NetBSD.org
+cgen-20131001nb1                                     ryoon@NetBSD.org
+cgit-1.3                                             pkgsrc-users@NetBSD.org
+chemtool-1.6.14nb29                                  pkgsrc-users@NetBSD.org
+chibi-scheme-0.11.0                                  pkgsrc-users@NetBSD.org
+chicken-4.13.0                                       asau@inbox.ru
+chipmunk-1.4nb2                                      pkgsrc-users@NetBSD.org
+chromium-bsu-0.9.16.1nb13                            pkgsrc-users@NetBSD.org
+chrpath-0.13                                         pkgsrc-users@NetBSD.org
+cia-20030922nb1                                      pkgsrc-users@NetBSD.org
+cinepaint-1.0.4nb30                                  adam@NetBSD.org
+citron-0.15.0                                        pkgsrc-users@NetBSD.org
+classicube-1.3.6nb10                                 pkgsrc-users@NetBSD.org
+claws-mail-dillo-4.3.1nb7                            pkgsrc-users@NetBSD.org
+claws-mail-notification-4.3.1nb7                     pkgsrc-users@NetBSD.org
+clipit-1.4.5nb16                                     khorben@NetBSD.org
+cmp3-2.0.p6nb4                                       rxg@NetBSD.org
+cmu-dhcpd-3.3.7.9                                    pkgsrc-users@NetBSD.org
+cnxtview-0.00anb21                                   pkgsrc-users@NetBSD.org
+codeblocks-20.03nb18                                 pkgsrc-users@NetBSD.org
+codecrypt-1.8nb1                                     agc@NetBSD.org
+collectd-gmond-5.12.0                                pkgsrc-users@NetBSD.org
+collectd-memcachec-5.12.0                            pkgsrc-users@NetBSD.org
+collectd-web-0.11.10                                 kethzer.dr@gmail.com
+collectd-xen-5.12.0                                  pkgsrc-users@NetBSD.org
+cone-0.90nb46                                        pkgsrc-users@NetBSD.org
+conky-1.9.0nb72                                      imil@NetBSD.org
+converse.js-10.1.8                                   pkgsrc-users@NetBSD.org
+cook-2.26nb12                                        groo@NetBSD.org
+cool-retro-term-1.2.0nb9                             pkgsrc-users@NetBSD.org
+coolkey-1.1.0nb1                                     pkgsrc-users@NetBSD.org
+coturn-4.9.0                                         gdt@NetBSD.org
+cpia2view-0.03nb22                                   pkgsrc-users@NetBSD.org
+cpuinfo-0.0.20250724                                 pkgsrc-users@NetBSD.org
+cqcam-0.91nb13                                       pkgsrc-users@NetBSD.org
+crack-attack-1.1.14nb54                              pkgsrc-users@NetBSD.org
+craft-3.5nb5                                         pkgsrc-users@NetBSD.org
+cre2-0.3.6nb6                                        pkgsrc-users@NetBSD.org
+crimsonfields-0.5.3nb3                               pkgsrc-users@NetBSD.org
+criticalmass-1.0.2nb41                               pkgsrc-users@NetBSD.org
+cromagrally-3.0.1nb4                                 charlotte@NetBSD.org
+cross-h8300-elf-gcc-6.2.0nb4                         pkgsrc-users@NetBSD.org
+cross-or1k-none-elf-gcc-9.1.0nb4                     pkgsrc-users@NetBSD.org
+cross-pdp11-aout-gcc-12.2.0                          ryoon@NetBSD.org
+cross-powerpc-none-elf-gcc-8.3.0nb3                  port-powerpc@NetBSD.org
+crossfire-client-1.75.3nb16                          adam@NetBSD.org
+csound6-6.15.0nb49                                   mrg@eterna.com.au
+ctrlproxy-3.0.8nb29                                  pkgsrc-users@NetBSD.org
+cucipop-1.31nb3                                      pkgsrc-users@NetBSD.org
+cue-20180813                                         pkgsrc-users@NetBSD.org
+cups-drivers-Magicolor5440DL-1.2.1nb50               pkgsrc-users@NetBSD.org
+cvsync-0.24.19nb11                                   pkgsrc-users@NetBSD.org
+cxref-1.6d                                           pkgsrc-users@NetBSD.org
+cy2-saml-1.11nb19                                    manu@NetBSD.org
+cyrus-imapd-2.4.20nb35                               pkgsrc-users@NetBSD.org
+cyrus-imapd-3.10.2                                   pkgsrc-users@NetBSD.org
+cyrus-imapd-3.2.12                                   pkgsrc-users@NetBSD.org
+cyrus-imapd-3.8.6                                    pkgsrc-users@NetBSD.org
+dap-2.1.5nb9                                         pkgsrc-users@NetBSD.org
+darcs-2.18.5nb4                                      pkgsrc-users@NetBSD.org
+dasher-5.0.0.b20200225nb18                           pkgsrc-users@NetBSD.org
+dbeacon-0.3.9.1nb5                                   pkgsrc-users@NetBSD.org
+delegate-9.9.1nb3                                    pkgsrc-users@NetBSD.org
+depot-5.14                                           pkgsrc-users@NetBSD.org
+deskmenu-1.4.5nb4                                    pkgsrc-users@NetBSD.org
+dfc-3.1.1nb1                                         mcy@lm7.fr
+dhcpsd-0.0.6                                         roy@NetBSD.org
+dia-0.97.3nb49                                       pkgsrc-users@NetBSD.org
+dieharder-3.31.1nb1                                  gson@NetBSD.org
+diffbreaker-0.6                                      nat@NetBSD.org
+din-60                                               fox@NetBSD.org
+dinit-0.19.3nb2                                      pkgsrc-users@NetBSD.org
+direwolf-1.7nb4                                      jmcneill@NetBSD.org
+dit-0.7nb1                                           pkgsrc-users@NetBSD.org
+djview4-4.12nb35                                     pkgsrc-users@NetBSD.org
+dk-milter-1.0.2nb3                                   pkgsrc-users@NetBSD.org
+dmsdos-0.9.2.3pre2alt2                               pkgsrc-users@NetBSD.org
+dnsbl-milter-6.45                                    pkgsrc-users@NetBSD.org
+dnscap-141                                           agc@NetBSD.org
+dnssec-tools-2.2.3nb6                                pkgsrc-users@NetBSD.org
+doc2html-3.0nb15                                     pkgsrc-users@NetBSD.org
+docbook2mdoc-1.1.0                                   pkgsrc-users@NetBSD.org
+doomlegacy-1.48.18                                   micha@NetBSD.org
+dopewars-1.6.2nb25                                   pkgsrc-users@NetBSD.org
+dot-forward-0.71nb3                                  schmonz@NetBSD.org
+dpbox-6.00.00nb3                                     pkgsrc-users@NetBSD.org
+dqs-3.3.2nb2                                         pkgsrc-users@NetBSD.org
+drac-1.12nb1                                         pkgsrc-users@NetBSD.org
+drawpile-2.1.17nb32                                  pkgsrc-users@NetBSD.org
+dspdfviewer-1.15.1nb79                               fox@NetBSD.org
+duckstation-qt-0.1.5624nb15                          pkgsrc-users@NetBSD.org
+dunelegacy-0.96.4nb12                                pkgsrc-users@NetBSD.org
+dunst-1.13.2                                         pkgsrc-users@NetBSD.org
+dupd-1.7.3nb2                                        hauke@NetBSD.org
+dvb-apps-20110713nb11                                pkgsrc-users@NetBSD.org
+dvtm-0.15                                            pkgsrc-users@NetBSD.org
+e-uae-0.8.28.99.4nb19                                adam@NetBSD.org
+e16menuedit2-0.0.3nb63                               chriswareham@chriswareham.demon.co.uk
+e2guardian-5.5.6r                                    prlw1@cam.ac.uk
+ebview-0.3.6nb46                                     yamajun@ofug.net
+ecwolf-1.4.1nb3                                      pkgsrc-users@NetBSD.org
+ee-1.5.2nb1                                          vins@NetBSD.org
+eekboard-1.0.8nb64                                   pkgsrc-users@NetBSD.org
+eggdrop-1.9.2nb1                                     pkgsrc-users@NetBSD.org
+einstein-puzzle-2.5                                  wiz@NetBSD.org
+electric-7.00nb4                                     pkgsrc-users@NetBSD.org
+electric-fence-2.1.13.0.1nb2                         pkgsrc-users@NetBSD.org
+electrix-0.2.0nb112                                  ryoon@NetBSD.org
+elfsh-0.51b3nb4                                      pkgsrc-users@NetBSD.org
+elm-2.5.8nb5                                         pkgsrc-users@NetBSD.org
+elm-lang-0.19.1nb1                                   pkgsrc-users@NetBSD.org
+elm-me-2.4.93nb8                                     pkgsrc-users@NetBSD.org
+elvis-2.2.0nb11                                      airhead@users.sourceforge.net
+elvis-x11-2.2.0nb4                                   airhead@users.sourceforge.net
+emacs26-26.3nb57                                     pkgsrc-users@NetBSD.org
+emacs26-nox11-26.3nb1                                pkgsrc-users@NetBSD.org
+emiclock-2.0.2nb7                                    minoura@NetBSD.org
+emixer-0.5.5nb4                                      pkgsrc-users@NetBSD.org
+emwm-utils-1.3.2                                     vins@NetBSD.org
+error-0.0                                            christos@NetBSD.org
+es-0.9a1nb5                                          pkgsrc-users@NetBSD.org
+etherape-0.9.20nb16                                  pkgsrc-users@NetBSD.org
+ettercap-0.8.4                                       pkgsrc-users@NetBSD.org
+ettercap-gtk-0.8.4                                   pkgsrc-users@NetBSD.org
+eukleides-1.5.4nb3                                   ryoon@NetBSD.org
+eureka-2.0.2nb6                                      micha@NetBSD.org
+exim-3.36nb24                                        pkgsrc-users@NetBSD.org
+exmh-2.9.0                                           pkgsrc-users@NetBSD.org
+expatobjc-1.0nb5                                     pkgsrc-users@NetBSD.org
+falcons-eye-1.9.3nb17                                pkgsrc-users@NetBSD.org
+fallingtime-1.0.2nb15                                charlotte@NetBSD.org
+fastd-22nb2                                          pkgsrc-users@NetBSD.org
+fastforward-0.51nb3                                  schmonz@NetBSD.org
+fbneo-1.0.0.2nb4                                     nia@NetBSD.org
+fcitx5-gtk-5.1.1nb13                                 ryoon@NetBSD.org
+fd-3.01bnb2                                          pkgsrc-users@NetBSD.org
+feathernotes-1.4.0nb1                                pin@NetBSD.org
+featherpad-1.6.3nb2                                  pin@NetBSD.org
+felt-3.05nb5                                         pkgsrc-users@NetBSD.org
+fep-1.0nb3                                           nobu@psrc.isac.co.jp
+ffmpeg2theora-0.30nb17                               pkgsrc-users@NetBSD.org
+ficl-4.1.0                                           asau@inbox.ru
+filerunner-2.5.1nb11                                 pkgsrc-users@NetBSD.org
+filezilla-3.69.1nb6                                  pkgsrc-users@NetBSD.org
+filter_audio-0.0.1                                   pkgsrc-users@NetBSD.org
+fish-4.3.2                                           pkgsrc-users@NetBSD.org
+fix4SA110rev2-1.0nb2                                 abs@NetBSD.org
+fl_logbook-2.5nb8                                    pkgsrc-users@NetBSD.org
+flang-20.1.8                                         pkgsrc-users@NetBSD.org
+flodo-5.0                                            pkgsrc-users@NetBSD.org
+flowerysong-openarc-1.3.0                            pkgsrc-users@NetBSD.org
+flpsed-0.7.3nb4                                      pkgsrc-users@NetBSD.org
+fluxbox-1.3.7nb9                                     sborrill@NetBSD.org
+flwm-1.16nb4                                         pkgsrc-users@NetBSD.org
+flycast-2.5nb2                                       pkgsrc-users@NetBSD.org
+fml-7.99.1nb4                                        pkgsrc-users@NetBSD.org
+fntsample-5.4nb9                                     pkgsrc-users@NetBSD.org
+foobillardplus-3.42bnb3                              pkgsrc-users@NetBSD.org
+frankenwm-1.0.23                                     pkgsrc-users@NetBSD.org
+free42-3.3.11nb3                                     pkgsrc-users@NetBSD.org
+freefonts-0.10nb3                                    reed@reedmedia.net
+freesci-0.3.5nb16                                    pkgsrc-users@NetBSD.org
+frotz-2.54nb3                                        seebs@plethora.net
+frr-9.1nb11                                          kardel@NetBSD.org
+fs-uae-qemu-uae-3.8.6nb1                             ryoon@NetBSD.org
+fscd-1.1nb1                                          jdf@NetBSD.org
+fstl-0.11.1nb2                                       pkgsrc-users@NetBSD.org
+fswebcam-20200725nb9                                 pkgsrc-users@NetBSD.org
+ftmenu-0.3nb46                                       pkgsrc-users@NetBSD.org
+ftnchek-3.3.1                                        pkgsrc-users@NetBSD.org
+ftplibpp-1.0.1nb7                                    pkgsrc-users@NetBSD.org
+fujiplay-1.33nb1                                     pkgsrc-users@NetBSD.org
+furnace-0.6.7nb2                                     pkgsrc-users@NetBSD.org
+fuse-afpfs-ng-0.8.1nb5                               pkgsrc-users@NetBSD.org
+fuse-cddfs-0.2                                       pkgsrc-users@NetBSD.org
+fuse-chironfs-1.1.1nb1                               pkgsrc-users@NetBSD.org
+fuse-curlftpfs-0.9.2nb21                             pkgsrc-users@NetBSD.org
+fuse-encfs-1.9.5nb3                                  pkgsrc-users@NetBSD.org
+fuse-ext2-0.0.10                                     pkgsrc-users@NetBSD.org
+fuse-httpfs-2.06.08.26nb1                            pkgsrc-users@NetBSD.org
+fuse-loggedfs-0.4nb17                                pkgsrc-users@NetBSD.org
+fuse-lzofs-20060306nb2                               pkgsrc-users@NetBSD.org
+fuse-mp3fs-1.1.1nb2                                  pkgsrc-users@NetBSD.org
+fuse-sshfs-3.7.4anb1                                 pkgsrc-users@NetBSD.org
+fxtv-1.03nb27                                        pkgsrc-users@NetBSD.org
+galera-26.4.13nb7                                    pkgsrc-users@NetBSD.org
+gambc-4.9.7                                          pkgsrc-users@NetBSD.org
+gargoyle-2019.1nb20                                  wes.frazier@members.fsf.org
+gbdfed-1.6nb33                                       pkgsrc-users@NetBSD.org
+gcc-mips-4.9.2nb8                                    martin@NetBSD.org
+gcc13-libjit-13.3.0                                  pkgsrc-users@NetBSD.org
+gcc15-libjit-15.2.0                                  pkgsrc-users@NetBSD.org
+gcin-1.1.7nb43                                       rxg@NetBSD.org
+gcompris-qt-3.1nb18                                  pkgsrc-users@NetBSD.org
+gcvs-1.0nb17                                         pkgsrc-users@NetBSD.org
+gdb-7.11nb12                                         pkgsrc-users@NetBSD.org
+gdmap-0.8.1nb44                                      dhowland@users.sourceforge.net
+gelemental-2.0.1nb13                                 pkgsrc-users@NetBSD.org
+genius-1.0.27nb18                                    pkgsrc-users@NetBSD.org
+gentoo-0.20.7nb19                                    dunse@goa.nu
+geomview-1.8.1nb8                                    pkgsrc-users@NetBSD.org
+gerbv-2.6.2nb22                                      pkgsrc-users@NetBSD.org
+gforth-0.7.3nb10                                     simonb@NetBSD.org
+gfract-0.32nb48                                      pkgsrc-users@NetBSD.org
+ghc-9.8.2nb3                                         pkgsrc-users@NetBSD.org
+gice-0.6.2nb49                                       pkgsrc-users@NetBSD.org
+giftcurs-0.6.2nb13                                   pkgsrc-users@NetBSD.org
+gigabase-3.82                                        gpr@mail.ru
+gipfel-0.4.1nb4                                      johannes.hofmann@gmx.de
+giram-0.3.5nb54                                      pkgsrc-users@NetBSD.org
+git-credential-osxkeychain-2.53.0                    pkgsrc-users@NetBSD.org
+gitolite-3.6.12                                      pkgsrc-users@NetBSD.org
+gltron-0.70nb18                                      pkgsrc-users@NetBSD.org
+glurp-0.12.3nb51                                     pkgsrc-users@NetBSD.org
+glusterfs-8.2nb22                                    pkgsrc-users@NetBSD.org
+gnome-nettool-3.8.1nb22                              pkgsrc-users@NetBSD.org
+gnuboy-1.0.4                                         njl@sdf.lonestar.org
+gnucobol-3.2nb8                                      pkgsrc-users@NetBSD.org
+golem-0.0.5nb7                                       pkgsrc-users@NetBSD.org
+gopchop-1.1.8nb62                                    pkgsrc-users@NetBSD.org
+gpart-0.1hnb1                                        pkgsrc-users@NetBSD.org
+gprolog-1.4.5                                        brook@nmsu.edu
+gpxsee-13.26nb8                                      pkgsrc-users@NetBSD.org
+grafx2-2.8.3132nb7                                   ryoon@NetBSD.org
+gramofile-1.6P                                       pkgsrc-users@NetBSD.org
+grip-4.2.4nb21                                       pkgsrc-users@NetBSD.org
+gromit-20041213nb49                                  pkgsrc-users@NetBSD.org
+grun-0.9.3nb46                                       pkgsrc-users@NetBSD.org
+gst-plugins1-cdparanoia-1.28.1                       pkgsrc-users@NetBSD.org
+gst123-0.3.5nb22                                     ryoon@NetBSD.org
+gthumb-3.12.2nb20                                    pkgsrc-users@NetBSD.org
+gtick-0.5.5nb21                                      pkgsrc-users@NetBSD.org
+gtk-send-pr-0.4.9nb53                                mmendez@energyhq.be
+gtk3-nocsd-3.0.8nb16                                 pkgsrc-users@NetBSD.org
+gtklife-5.1nb46                                      pkgsrc-users@NetBSD.org
+gtkterm2-0.2.3nb52                                   yui@yui.pe.kr
+gtranslator-3.32.1nb36                               pkgsrc-users@NetBSD.org
+gucharmap-15.1.2nb12                                 pkgsrc-users@NetBSD.org
+gummi-0.8.3nb19                                      int21h@pirosfeketefa.hu
+handbrake-1.10.0nb5                                  pkgsrc-users@NetBSD.org
+handy_sdl-0.5nb3                                     pkgsrc-users@NetBSD.org
+hanterm-3.1.6nb6                                     pkgsrc-users@NetBSD.org
+hbench-1.1nb11                                       pkgsrc-users@NetBSD.org
+heirloom-date-070715                                 cheusov@NetBSD.org
+heirloom-dd-070715                                   cheusov@NetBSD.org
+heirloom-du-070715                                   cheusov@NetBSD.org
+heirloom-find-070715                                 cheusov@NetBSD.org
+heirloom-mknod-070715                                cheusov@NetBSD.org
+heirloom-pgrep-070715                                cheusov@NetBSD.org
+heirloom-rm-070715                                   cheusov@NetBSD.org
+heirloom-sh-050706nb2                                cheusov@NetBSD.org
+heirloom-shl-070715                                  cheusov@NetBSD.org
+heirloom-su-070715                                   cheusov@NetBSD.org
+heirloom-tapecntl-070715                             cheusov@NetBSD.org
+heirloom-tar-070715                                  cheusov@NetBSD.org
+heirloom-tcopy-070715                                cheusov@NetBSD.org
+heirloom-who-070715                                  cheusov@NetBSD.org
+hercules4sdl-4.9.1                                   rhialto@NetBSD.org
+hesiod-3.0.2                                         kpneal@pobox.org
+hex-a-hop-1.1.0nb8                                   pkgsrc-users@NetBSD.org
+hexer-1.0.6nb1                                       pkgsrc-users@NetBSD.org
+highway-1.1.0                                        nonakap@gmail.com
+hivex-1.3.18nb29                                     pkgsrc-users@NetBSD.org
+honggfuzz-2.3.1                                      kamil@NetBSD.org
+host-20070128nb1                                     pkgsrc-users@NetBSD.org
+hot-babe-0.2.2nb48                                   pkgsrc-users@NetBSD.org
+howl-1.0.0                                           nathanw@NetBSD.org
+ht-2.1.0nb3                                          pkgsrc-users@NetBSD.org
+htdig-3.2.0b6nb1                                     pkgsrc-users@NetBSD.org
+htmldoc-x11-1.9.16nb4                                pkgsrc-users@NetBSD.org
+hydra-7.5nb65                                        pkgsrc-users@NetBSD.org
+hydrogen-1.0.2nb37                                   mrg@eterna.com.au
+hypermail-2.3.0nb2                                   pkgsrc-users@NetBSD.org
+i2cbd-2.0_BETA5nb6                                   pkgsrc-users@NetBSD.org
+i3-4.25.1                                            pkgsrc-users@NetBSD.org
+i3lock-color-2.13.c.5nb5                             pkgsrc-users@NetBSD.org
+i3status-2.15nb1                                     pkgsrc-users@NetBSD.org
+ia64sim-0.5                                          pkgsrc-users@NetBSD.org
+iana-etc-2.30nb5                                     christos@NetBSD.org
+ibniz-1.18nb3                                        pkgsrc-users@NetBSD.org
+ibutton-pdkit-2.00nb2                                damon@brodiefamily.org
+icecast-1.3.12nb18                                   pkgsrc-users@NetBSD.org
+icewm-4.0.0                                          pkgsrc-users@NetBSD.org
+icinga-base-1.9.4nb34                                ryoon@NetBSD.org
+idris2-0.7.0                                         pkgsrc-users@NetBSD.org
+ile-2.0                                              pkgsrc-users@NetBSD.org
+im-ja-1.5nb97                                        pkgsrc-users@NetBSD.org
+imaze-1.3nb4                                         pkgsrc-users@NetBSD.org
+imposter-0.3nb49                                     pkgsrc-users@NetBSD.org
+ingo-1.2.6nb3                                        pkgsrc-users@NetBSD.org
+intel2gas-1.3.3nb1                                   ccatrian@eml.cc
+iortcw-1.51cnb40                                     pkgsrc-users@NetBSD.org
+ipe-7.2.7nb44                                        pkgsrc-users@NetBSD.org
+ipmitool-1.8.19nb1                                   pkgsrc-users@NetBSD.org
+iroffer-1.3.11                                       pkgsrc-users@NetBSD.org
+ironwail-0.8.0nb4                                    charlotte@NetBSD.org
+irrd-2.3.9nb11                                       pkgsrc-users@NetBSD.org
+irrlicht-1.8.4nb1                                    pkgsrc-users@NetBSD.org
+ispell-british-3.4.06nb2                             pkgsrc-users@NetBSD.org
+ivtools-2.0.4a1nb4                                   pkgsrc-users@NetBSD.org
+ja-mh6-3.05nb1                                       tech-pkg-ja@jp.NetBSD.org
+jack-keyboard-2.7.2nb18                              pkgsrc-users@NetBSD.org
+java-jna-5.15.0                                      nonakap@gmail.com
+java-mecab-0.996                                     pkgsrc-users@NetBSD.org
+java-native-hyperestraier-1.0.0.1.4.13               pkgsrc-users@NetBSD.org
+java-pure-hyperestraier-1.0.0.1.4.13                 pkgsrc-users@NetBSD.org
+java-subversion-1.14.5nb2                            pkgsrc-users@NetBSD.org
+jdebp-redo-1.5nb1                                    schmonz@NetBSD.org
+jgenesis-0.11.4                                      pkgsrc-users@NetBSD.org
+jhd-2.3                                              tech-pkg-ja@jp.NetBSD.org
+jicofo-2.0.10431                                     khorben@defora.org
+jigdo-0.8.2nb3                                       pkgsrc-users@NetBSD.org
+joos-0.2nb1                                          pkgsrc-users@NetBSD.org
+jove-4.16.0.74                                       pkgsrc-users@NetBSD.org
+jpeg_ls-2.2nb1                                       pkgsrc-users@NetBSD.org
+jsonnet-0.13.0                                       pkgsrc-users@NetBSD.org
+julius-1.7.0nb5                                      pkgsrc-users@NetBSD.org
+kalibrate-rtl-20131215nb1                            pkgsrc-users@NetBSD.org
+kannel-1.4.0nb27                                     pkgsrc-users@NetBSD.org
+kbuild-0.1.9998.8.r3127nb5                           pkgsrc-users@NetBSD.org
+kdrill-6.5                                           pkgsrc-users@NetBSD.org
+kea-3.1.4nb1                                         pkgsrc-users@NetBSD.org
+kegs-0.91nb12                                        christtrekker@users.sourceforge.net
+kermit-9.0.302nb14                                   gdt@NetBSD.org
+ketm-0.0.6nb9                                        pkgsrc-users@NetBSD.org
+kicad-footprints-8.0.6                               pkgsrc-users@NetBSD.org
+kicad-packages3d-8.0.6                               pkgsrc-users@NetBSD.org
+kicad-symbols-8.0.6                                  pkgsrc-users@NetBSD.org
+kicad-templates-8.0.6                                pkgsrc-users@NetBSD.org
+kinput2-3.1nb4                                       tech-pkg-ja@jp.NetBSD.org
+kismet-2008.05.01nb58                                pkgsrc-users@NetBSD.org
+klayout-0.29.12nb5                                   pkgsrc-users@NetBSD.org
+klh10-2.0h                                           ryoon@NetBSD.org
+knews-1.0nb18                                        pkgsrc-users@NetBSD.org
+konoha-1.0.0.952nb62                                 ryoon@NetBSD.org
+kstart-4.2nb2                                        jakllsch@NetBSD.org
+kterm-6.2.0nb24                                      pkgsrc-users@NetBSD.org
+kuserfeedback-1.3.0nb10                              markd@NetBSD.org
+kyotocabinet-1.2.79                                  pkgsrc-users@NetBSD.org
+labltk-8.06.12nb4                                    pkgsrc-users@NetBSD.org
+lagrange-1.20.3                                      pkgsrc-users@NetBSD.org
+lambdamoo-1.8.1nb2                                   pkgsrc-users@NetBSD.org
+larswm-7.5.3nb1                                      pkgsrc-users@NetBSD.org
+latd-1.21                                            fredette@theory.lcs.mit.edu
+latex2rtf-2.3.10nb2                                  brook@nmsu.edu
+ldapsdk-12311998nb12                                 pkgsrc-users@NetBSD.org
+le-1.16.8nb2                                         pkgsrc-users@NetBSD.org
+lemonbar-1.5nb1                                      hopkinsza@gmail.com
+lhs-0.1nb11                                          dawszy@arhea.net
+libadapta-1.5.0nb8                                   pkgsrc-users@NetBSD.org
+libasyncns-0.8                                       pkgsrc-users@NetBSD.org
+libbpg-0.9.2nb1                                      agc@NetBSD.org
+libcomprex-0.3.3nb42                                 pkgsrc-users@NetBSD.org
+libcurl-gnutls-8.19.0                                leot@NetBSD.org
+libcyaml-1.3.1                                       charlotte@NetBSD.org
+libdbh2-5.0.16                                       pkgsrc-users@NetBSD.org
+libdivecomputer-0.9.0                                charlotte@NetBSD.org
+libdlna-0.2.4nb17                                    pkgsrc-users@NetBSD.org
+libdv-tools-1.0.0nb1                                 tech-pkg-ja@jp.NetBSD.org
+libdvdcss-1.4.3                                      pkgsrc-users@NetBSD.org
+libfpx-1.3.1nb2                                      nros@NetBSD.org
+libhdhomerun-20140121                                jmcneill@NetBSD.org
+libifp-1.0.0.2nb1                                    pkgsrc-users@NetBSD.org
+libjit-0.1.2nb1                                      pkgsrc-users@NetBSD.org
+liblive-20141211                                     pkgsrc-users@NetBSD.org
+libmesode-0.10.1nb1                                  pkgsrc-users@NetBSD.org
+libmicro-0.4.0                                       pkgsrc-users@NetBSD.org
+libmpeg3-1.8nb1                                      pkgsrc-users@NetBSD.org
+libobjc2-2.0                                         pkgsrc-users@NetBSD.org
+libpgm-5.1.118nb10                                   agc@NetBSD.org
+libredwg-0.12.4nb12                                  pkgsrc-users@NetBSD.org
+libretro-2048-20181229                               pkgsrc-users@NetBSD.org
+libretro-bsnes-mercury-20180803                      pkgsrc-users@NetBSD.org
+libretro-bsnes-mercury-accuracy-20180803             pkgsrc-users@NetBSD.org
+libretro-bsnes-mercury-performance-20180803          pkgsrc-users@NetBSD.org
+libretro-mame2010-20200525                           pkgsrc-users@NetBSD.org
+libretro-mgba-0.10.5                                 nia@NetBSD.org
+libretro-np2kai-0.86.18                              pkgsrc-users@NetBSD.org
+libretro-parallel-n64-20200528                       pkgsrc-users@NetBSD.org
+libretro-pcsx-rearmed-20200526nb3                    pkgsrc-users@NetBSD.org
+libretro-picodrive-20200527nb2                       pkgsrc-users@NetBSD.org
+libretro-vecx-20200517                               pkgsrc-users@NetBSD.org
+libsafec-10052013                                    agc@NetBSD.org
+libshorttext-1.1nb4                                  cheusov@NetBSD.org
+libstree-0.4.2                                       gson@NetBSD.org
+libunique3-3.0.2nb43                                 ryoon@NetBSD.org
+libunit-1.35.0                                       pkgsrc-users@NetBSD.org
+libxenserver-6.2.0nb41                               sborrill@NetBSD.org
+libyang-1.0.240                                      kardel@NetBSD.org
+libykneomgr-0.1.8nb16                                pkgsrc-users@NetBSD.org
+lightspark-0.8.5nb37                                 pkgsrc-users@NetBSD.org
+linc-1.1.1nb19                                       pkgsrc-users@NetBSD.org
+lincity-ng-2.0nb23                                   ryoon@NetBSD.org
+liveice-0.20001121nb3                                pkgsrc-users@NetBSD.org
+llnlxdir-2.1.2nb4                                    tor@stormwall.org
+llnlxftp-2.1nb4                                      tor@stormwall.org
+lmclock-1.2nb1                                       is@NetBSD.org
+lmms-1.2.2nb40                                       nia@NetBSD.org
+lnl-3.4.19nb2                                        pkgsrc-users@NetBSD.org
+logrot-1.7                                           pkgsrc-users@NetBSD.org
+lpe-1.2.6nb5                                         pkgsrc-users@NetBSD.org
+lua51-ldap-1.4.0                                     pkgsrc-users@NetBSD.org
+lua51-linenoise-0.9                                  pkgsrc-users@NetBSD.org
+lua51-rings-1.3.0                                    pkgsrc-users@NetBSD.org
+lua51-sqlite3-0.4.1nb31                              pkgsrc-users@NetBSD.org
+lua51-tokyocabinet-1.10nb2                           pkgsrc-users@NetBSD.org
+lua52-ldap-1.4.0                                     pkgsrc-users@NetBSD.org
+lua52-linenoise-0.9                                  pkgsrc-users@NetBSD.org
+lua52-rings-1.3.0                                    pkgsrc-users@NetBSD.org
+lua52-slnunicode-1.1apl1nb2                          ryoon@NetBSD.org
+lua52-sqlite3-0.4.1nb31                              pkgsrc-users@NetBSD.org
+lua52-tokyocabinet-1.10nb2                           pkgsrc-users@NetBSD.org
+lua53-ldap-1.4.0                                     pkgsrc-users@NetBSD.org
+lua53-linenoise-0.9                                  pkgsrc-users@NetBSD.org
+lua53-rings-1.3.0                                    pkgsrc-users@NetBSD.org
+lua53-sqlite3-0.4.1nb31                              pkgsrc-users@NetBSD.org
+lua53-tokyocabinet-1.10nb2                           pkgsrc-users@NetBSD.org
+lua54-ldap-1.4.0                                     pkgsrc-users@NetBSD.org
+lua54-rings-1.3.0                                    pkgsrc-users@NetBSD.org
+lua54-sqlite3-0.4.1nb31                              pkgsrc-users@NetBSD.org
+lua54-tokyocabinet-1.10nb2                           pkgsrc-users@NetBSD.org
+lua55-linenoise-0.9                                  pkgsrc-users@NetBSD.org
+lua55-rings-1.3.0                                    pkgsrc-users@NetBSD.org
+lua55-sqlite3-0.4.1nb31                              pkgsrc-users@NetBSD.org
+lua55-tokyocabinet-1.10nb2                           pkgsrc-users@NetBSD.org
+lumina-calculator-1.6.0nb22                          pkgsrc-users@NetBSD.org
+lurch-purple-0.7.0nb11                               pkgsrc-users@NetBSD.org
+lush-1.2.1nb6                                        dauphin@enst.fr
+luv-icon-theme-0.4.9.31                              pkgsrc-users@NetBSD.org
+macfork-1.0nb1                                       pkgsrc-users@NetBSD.org
+mad-flute-1.7nb37                                    agc@NetBSD.org
+mad123-0.8.5nb50                                     pkgsrc-users@NetBSD.org
+magicpoint-1.13anb39                                 pkgsrc-users@NetBSD.org
+mailagent-3.0.73nb12                                 pkgsrc-users@NetBSD.org
+mailfront-2.22nb19                                   schmonz@NetBSD.org
+mailman2-python3-20251123                            pkgsrc-users@NetBSD.org
+mailwrapper-19990412nb4                              pkgsrc-users@NetBSD.org
+majordomo-1.94.5nb28                                 spz@NetBSD.org
+makeztxt-1.40                                        pkgsrc-users@NetBSD.org
+manaplus-2.1.3.17nb30                                pkgsrc-users@NetBSD.org
+mandelbulber-1.13.1nb33                              ryoon@NetBSD.org
+manedit-0.8.1nb1                                     pkgsrc-users@NetBSD.org
+mapcode-2.5.5                                        pkgsrc-users@NetBSD.org
+maplay-1.2nb1                                        pkgsrc-users@NetBSD.org
+mapm-4.9.5a                                          pkgsrc-users@NetBSD.org
+maradns-2.0.17                                       ddeus.pkgsrc@mailnull.com
+materia-gtk-theme-20200320                           pkgsrc-users@NetBSD.org
+maude-2.6nb1                                         pkgsrc-users@NetBSD.org
+mbedtls4-4.0.0nb1                                    pkgsrc-users@NetBSD.org
+mbuffer-20250429nb1                                  pkgsrc-users@NetBSD.org
+mcast-tools-20061214nb1                              is@NetBSD.org
+md-whois-5.5.4nb4                                    reed@reedmedia.net
+medit-1.2.0nb43                                      pkgsrc-users@NetBSD.org
+megacmd-2.5.1                                        kikadf.01@gmail.com
+mercury-14.01.1nb14                                  pkgsrc-users@NetBSD.org
+mesure-0.5nb3                                        pkgsrc-users@NetBSD.org
+mgetty-1.1.37nb21                                    pkgsrc-users@NetBSD.org
+mightymike-3.0.2nb5                                  charlotte@NetBSD.org
+milkytracker-1.04.00nb4                              pkgsrc-users@NetBSD.org
+milter-manager-2.2.7nb3                              pkgsrc-users@NetBSD.org
+milter-regex-1.7nb2                                  pkgsrc-users@NetBSD.org
+minami-1.0.2nb11                                     pkgsrc-users@NetBSD.org
+mined-2022.27nb1                                     pkgsrc-users@NetBSD.org
+minisat-2.2.0                                        pkgsrc-users@NetBSD.org
+miniupnpd-2.1                                        pkgsrc-users@NetBSD.org
+mirmake-20141220                                     vins@NetBSD.org
+mixer.app-1.8.0nb1                                   ptiJo@noos.fr
+mkspiffs-0.2.3                                       bouyer@NetBSD.org
+mlterm-3.9.4nb6                                      tsutsui@NetBSD.org
+mlvwm-0.9.4                                          pkgsrc-users@NetBSD.org
+mm-0.96.0.14                                         pkgsrc-users@NetBSD.org
+monocypher-3.1.1nb1                                  pkgsrc-users@NetBSD.org
+moonlight-qt-4.3.1nb22                               charlotte@NetBSD.org
+mosquitto-2.1.2                                      gdt@NetBSD.org
+mousetar-20021217nb1                                 pkgsrc-users@NetBSD.org
+mousetweaks-3.32.0nb19                               pkgsrc-users@NetBSD.org
+moxfm-1.0.1                                          pkgsrc-users@NetBSD.org
+mozc-elisp-2.26.4282.100nb45                         ryoon@NetBSD.org
+mozc-server-2.26.4282.100nb44                        ryoon@NetBSD.org
+mozc-tool-2.26.4282.100nb43                          ryoon@NetBSD.org
+mozjs128-128.14.0nb1                                 pkgsrc-users@NetBSD.org
+mp3_check-1.98                                       pkgsrc-users@NetBSD.org
+mpc-0.35nb1                                          simonb@NetBSD.org
+mpeg_encode-1.5bnb7                                  pkgsrc-users@NetBSD.org
+mpeg_play-2.4patchednb2                              pkgsrc-users@NetBSD.org
+mpg321-0.3.2nb2                                      rxg@NetBSD.org
+mrstat-1.21                                          abs@absd.org
+mt-daapd-0.2.4.2nb5                                  pkgsrc-users@NetBSD.org
+mtftpd-20080229                                      pkgsrc-users@NetBSD.org
+mtoolsfm-1.9.3nb6                                    pkgsrc-users@NetBSD.org
+mtpaint-3.50.11nb7                                   pkgsrc-users@NetBSD.org
+mtscan-20050129nb2                                   pkgsrc-users@NetBSD.org
+multimarkdown-6.5.2nb18                              ryoon@NetBSD.org
+multisync-gui-0.91.0nb85                             pkgsrc-users@NetBSD.org
+munin-node-2.0.69nb4                                 tm@NetBSD.org
+muse-0.9nb61                                         pkgsrc-users@NetBSD.org
+mush-7.2.6.b4.pl1nb6                                 christos@NetBSD.org
+mydns-mysql-1.1.0nb14                                pkgsrc-users@NetBSD.org
+mydns-pgsql-1.1.0nb19                                pkgsrc-users@NetBSD.org
+mysql-cluster-8.0.45                                 pkgsrc-users@NetBSD.org
+mysql-connector-c++-9.5.0                            pkgsrc-users@NetBSD.org
+nabi-0.99.9nb40                                      minskim@NetBSD.org
+nagi-20021114nb7                                     pkgsrc-users@NetBSD.org
+nagios-plugin-apachecerts-0.7                        pkgsrc-users@NetBSD.org
+nagios-plugin-dnsmaster-0.1                          pkgsrc-users@NetBSD.org
+nagios-plugin-x509-0.1nb2                            manu@NetBSD.org
+nagstamon-3.16.2nb1                                  imil@gcu.info
+nam-1.15nb9                                          minskim@NetBSD.org
+nanomsgxx-0.2                                        pkgsrc-users@NetBSD.org
+nanosaur-1.4.4nb7                                    charlotte@NetBSD.org
+nanosaur2-2.1.0nb7                                   charlotte@NetBSD.org
+nap-1.4.4nb5                                         pkgsrc-users@NetBSD.org
+nbase-9.3.0.2                                        cheusov@NetBSD.org
+nchat-5.14.44                                        pkgsrc-users@NetBSD.org
+neko-2.3.0nb34                                       charlotte@NetBSD.org
+nestopia-1.50nb26                                    pkgsrc-users@NetBSD.org
+netmaj-2.0.7nb15                                     pkgsrc-users@NetBSD.org
+netmaze-0.81nb4                                      jdc@NetBSD.org
+netsurf-3.11nb37                                     pkgsrc-users@NetBSD.org
+nettest-92.11.09                                     ginsbach@cray.com
+nextcloud-client-3.17.4nb1                           pkgsrc-users@NetBSD.org
+nfsshell-1.0nb1                                      pkgsrc-users@NetBSD.org
+ng-1.4.4                                             fk200329@fsinet.or.jp
+ngrep-1.45nb1                                        pkgsrc-users@NetBSD.org
+nicotine-plus-2.2.2nb19                              pkgsrc-users@NetBSD.org
+nighthawk-2.1nb5                                     pkgsrc-users@NetBSD.org
+nitro-0.5                                            imil@NetBSD.org
+nltk_data-punkt-20230502                             pkgsrc-users@NetBSD.org
+nng-1.4.0nb1                                         pkgsrc-users@NetBSD.org
+nntpcache-3.0.2nb20                                  pkgsrc-users@NetBSD.org
+nodejs-24.14.1                                       pkgsrc-users@NetBSD.org
+nono-1.7.0                                           pkgsrc-users@NetBSD.org
+nosefart-2.9                                         dgriffi@cs.csubak.edu
+notification-daemon-0.7.6nb34                        pkgsrc-users@NetBSD.org
+notion-3.2017050501nb1                               pkgsrc-users@NetBSD.org
+nprobe-1.3.1nb4                                      pkgsrc-users@NetBSD.org
+ns-2.35nb14                                          minskim@NetBSD.org
+nspmod-0.1                                           pkgsrc-users@NetBSD.org
+nss-pgsql-1.5.0bnb1                                  pkgsrc-users@NetBSD.org
+nss_wrapper-1.1.16                                   pkgsrc-users@NetBSD.org
+nstx-1.1beta6nb1                                     pkgsrc-users@NetBSD.org
+ntopng-6.4nb5                                        adam@NetBSD.org
+ntp-4.2.8p15nb4                                      pkgsrc-users@NetBSD.org
+ntvcm-20250704                                       hauke@NetBSD.org
+nvi-m17n-1.79.20040608nb11                           pkgsrc-users@NetBSD.org
+nvi2-2.2.0                                           pkgsrc-users@NetBSD.org
+nvidia-texture-tools-2.1.0nb14                       pkgsrc-users@NetBSD.org
+oatbar-0.2.0nb1                                      pkgsrc-users@NetBSD.org
+objc-3.2.10                                          pkgsrc-users@NetBSD.org
+ocaml-bz2-0.7.0nb2                                   pkgsrc-users@NetBSD.org
+ocaml-expat-1.0.0nb9                                 pkgsrc-users@NetBSD.org
+ocaml-mysql-1.2.4nb2                                 pkgsrc-users@NetBSD.org
+ocaml-text-0.8nb13                                   pkgsrc-users@NetBSD.org
+ocp-0.2.109nb3                                       pkgsrc-users@NetBSD.org
+oculante-0.9.2nb4                                    pin@NetBSD.org
+oidentd-2.0.7nb4                                     pkgsrc-users@NetBSD.org
+omniNotify-2.1nb1                                    pkgsrc-users@NetBSD.org
+oneko-1.2nb2                                         johnam@mail.kemper.org
+oorexx-5.0.0nb1                                      pkgsrc-users@NetBSD.org
+open-cobol-ce-1.1.59nb1                              ryoon@NetBSD.org
+openafs-1.8.13                                       gendalia@NetBSD.org
+openarc-20180921nb5                                  pkgsrc-users@NetBSD.org
+openbfdd-0.5.3                                       pkgsrc-users@NetBSD.org
+openblas64-0.3.31nb1                                 thomas.orgis@uni-hamburg.de
+openblas64_openmp-0.3.31nb1                          thomas.orgis@uni-hamburg.de
+openblas_openmp-0.3.31nb1                            thomas.orgis@uni-hamburg.de
+openblas_pthread-0.3.31nb1                           thomas.orgis@uni-hamburg.de
+opencpn-5.0.0nb50                                    bouyer@NetBSD.org
+opencpn-plugin-debugger-20170414nb28                 bouyer@NetBSD.org
+opencpn-plugin-draw-1.6.8nb19                        bouyer@NetBSD.org
+opencpn-plugin-plots-2.2.12nb17                      bouyer@NetBSD.org
+opencpn-plugin-statusbar-20180405nb26                bouyer@NetBSD.org
+opencpn-plugin-watchdog-2.4.6nb20                    bouyer@NetBSD.org
+opencpn-plugin-weather_routing-20180827nb22          bouyer@NetBSD.org
+openct-0.6.20nb1                                     pkgsrc-users@NetBSD.org
+opendkim-2.10.3nb12                                  pkgsrc-users@NetBSD.org
+opendoas-6.8.2nb3                                    sunil@nimmagadda.net
+openmpi-4.1.8                                        thor@NetBSD.org
+openmsx-17.0nb15                                     pkgsrc-users@NetBSD.org
+openquicktime-1.0nb16                                pkgsrc-users@NetBSD.org
+openrrcp-0.2.1                                       pkgsrc-users@NetBSD.org
+openvmps-1.3nb2                                      bouyer@NetBSD.org
+openvpn-acct-wtmpx-20130210nb8                       manu@NetBSD.org
+openvpn-nagios-20130210nb8                           manu@NetBSD.org
+openwv-1.1.3nb3                                      ryoon@NetBSD.org
+oqs-provider-0.10.0nb1                               jschauma@NetBSD.org
+orbital_eunuchs_sniper-1.30nb7                       pkgsrc-users@NetBSD.org
+oricutron-1.2.14                                     pkgsrc-users@NetBSD.org
+osbf-lua-2.0.4nb6                                    pkgsrc-users@NetBSD.org
+oto-0.5                                              rxg@NetBSD.org
+ottomatic-4.0.1nb7                                   charlotte@NetBSD.org
+p5-Image-JpegTran-AutoRotate-0.04nb9                 pkgsrc-users@NetBSD.org
+p5-MARC-1.15nb18                                     pkgsrc-users@NetBSD.org
+p5-Net-Interface-1.016nb9                            pkgsrc-users@NetBSD.org
+p5-Netpgp-Verify-20160814nb9                         agc@NetBSD.org
+p5-Quota-1.8.1nb6                                    pkgsrc-users@NetBSD.org
+p5-Time-Format_XS-1.03nb16                           pkgsrc-users@NetBSD.org
+p5-cdk-20250526nb1                                   pkgsrc-users@NetBSD.org
+pam-af-1.0.2nb5                                      pkgsrc-users@NetBSD.org
+pam-fprint-0.2nb2                                    pkgsrc-users@NetBSD.org
+pam-passwdqc-1.1.4                                   pkgsrc-users@NetBSD.org
+pam-radius-1.4.0                                     pkgsrc-users@NetBSD.org
+pam-saml-1.11nb19                                    manu@NetBSD.org
+pan-0.164nb5                                         rhialto@NetBSD.org
+panomatic-0.9.4nb10                                  pkgsrc-users@NetBSD.org
+paris-traceroute-0.92                                imil@NetBSD.org
+parlatype-4.0nb8                                     pkgsrc-users@NetBSD.org
+parpd-2.3.0                                          roy@NetBSD.org
+partysip-2.2.3nb1                                    pkgsrc-users@NetBSD.org
+pax-utils-1.3.7nb2                                   pkgsrc-users@NetBSD.org
+pc-lisp-6.0                                          pkgsrc-users@NetBSD.org
+pcc-current-20230506                                 he@NetBSD.org
+pcemu-1.01anb3                                       eric@fox.phoenix.az.us
+pcsc-tools-1.7.4                                     pkgsrc-users@NetBSD.org
+pcsx-rearmed-23nb3                                   pkgsrc-users@NetBSD.org
+pdmenu-1.3.6nb2                                      pkgsrc-users@NetBSD.org
+pekwm-0.4.3                                          gls@NetBSD.org
+pfe-0.33.71nb17                                      asau@inbox.ru
+pg_top-4.0.0                                         pkgsrc-users@NetBSD.org
+pgpool-3.4.1                                         pkgsrc-users@NetBSD.org
+pgtcl-1.5nb9                                         pkgsrc-users@NetBSD.org
+pgtclng-1.5.3nb8                                     pkgsrc-users@NetBSD.org
+phone-2.0nb4                                         christos@NetBSD.org
+php56-mongo-1.6.16nb1                                bartosz.kuzma@gmail.com
+php56-phalcon-3.4.5nb1                               pkgsrc-users@NetBSD.org
+php56-phpmyadmin-4.9.10nb1                           tm@NetBSD.org
+php56-sqlrelay-1.9.3nb14                             pkgsrc-users@NetBSD.org
+php56-squirrelmail-locales-1.4.18                    pkgsrc-users@NetBSD.org
+php74-avideo-encoder-network-20240118                pkgsrc-users@NetBSD.org
+php74-matomo-5.2.2                                   pkgsrc-users@NetBSD.org
+php74-mecab-0.6.0nb2                                 taca@NetBSD.org
+php74-memcached-3.4.0                                pkgsrc-users@NetBSD.org
+php74-phpmyadmin-4.9.10nb1                           tm@NetBSD.org
+php74-phpmyadmin-5.1.3nb1                            tm@NetBSD.org
+php74-roundcube-plugin-enigma-1.6.15                 taca@NetBSD.org
+php74-roundcube-plugin-password-1.6.15               taca@NetBSD.org
+php74-roundcube-plugin-zipdownload-1.6.15            taca@NetBSD.org
+php74-sqlrelay-1.9.3nb14                             pkgsrc-users@NetBSD.org
+php74-squirrelmail-locales-1.4.18                    pkgsrc-users@NetBSD.org
+php82-avideo-encoder-network-20240118                pkgsrc-users@NetBSD.org
+php82-matomo-5.2.2                                   pkgsrc-users@NetBSD.org
+php82-memcached-3.4.0                                pkgsrc-users@NetBSD.org
+php82-phpmyadmin-4.9.10nb1                           tm@NetBSD.org
+php82-phpmyadmin-5.1.3nb1                            tm@NetBSD.org
+php82-roundcube-plugin-enigma-1.6.15                 taca@NetBSD.org
+php82-roundcube-plugin-password-1.6.15               taca@NetBSD.org
+php82-roundcube-plugin-zipdownload-1.6.15            taca@NetBSD.org
+php82-sqlrelay-1.9.3nb14                             pkgsrc-users@NetBSD.org
+php82-squirrelmail-locales-1.4.18                    pkgsrc-users@NetBSD.org
+php82-typo3-13.4.27                                  wen@NetBSD.org
+php83-avideo-encoder-network-20240118                pkgsrc-users@NetBSD.org
+php83-matomo-5.2.2                                   pkgsrc-users@NetBSD.org
+php83-memcached-3.4.0                                pkgsrc-users@NetBSD.org
+php83-phpmyadmin-4.9.10nb1                           tm@NetBSD.org
+php83-phpmyadmin-5.1.3nb1                            tm@NetBSD.org
+php83-roundcube-plugin-enigma-1.6.15                 taca@NetBSD.org
+php83-roundcube-plugin-password-1.6.15               taca@NetBSD.org
+php83-roundcube-plugin-zipdownload-1.6.15            taca@NetBSD.org
+php83-sqlrelay-1.9.3nb14                             pkgsrc-users@NetBSD.org
+php83-squirrelmail-locales-1.4.18                    pkgsrc-users@NetBSD.org
+php83-typo3-13.4.27                                  wen@NetBSD.org
+php84-imap-1.0.3nb2                                  pkgsrc-users@NetBSD.org
+php84-memcached-3.4.0                                pkgsrc-users@NetBSD.org
+php84-phpmyadmin-4.9.10nb1                           tm@NetBSD.org
+php84-phpmyadmin-5.1.3nb1                            tm@NetBSD.org
+php84-roundcube-plugin-enigma-1.6.15                 taca@NetBSD.org
+php84-roundcube-plugin-password-1.6.15               taca@NetBSD.org
+php84-roundcube-plugin-zipdownload-1.6.15            taca@NetBSD.org
+php84-sqlrelay-1.9.3nb14                             pkgsrc-users@NetBSD.org
+php84-squirrelmail-locales-1.4.18                    pkgsrc-users@NetBSD.org
+php84-typo3-13.4.27                                  wen@NetBSD.org
+php85-imap-1.0.3nb2                                  pkgsrc-users@NetBSD.org
+php85-memcached-3.4.0                                pkgsrc-users@NetBSD.org
+php85-phpmyadmin-4.9.10nb1                           tm@NetBSD.org
+php85-phpmyadmin-5.1.3nb1                            tm@NetBSD.org
+php85-roundcube-plugin-enigma-1.6.15                 taca@NetBSD.org
+php85-roundcube-plugin-password-1.6.15               taca@NetBSD.org
+php85-roundcube-plugin-zipdownload-1.6.15            taca@NetBSD.org
+php85-squirrelmail-locales-1.4.18                    pkgsrc-users@NetBSD.org
+php85-typo3-13.4.27                                  wen@NetBSD.org
+picoc-2.1nb1                                         agc@NetBSD.org
+picodrive-1.93nb4                                    pkgsrc-users@NetBSD.org
+picom-11.2nb1                                        pkgsrc-users@NetBSD.org
+pidgin-facebookchat-1.69nb36                         pkgsrc-users@NetBSD.org
+piewm-1.04                                           pkgsrc-users@NetBSD.org
+pim6dd-20031021anb1                                  pkgsrc-users@NetBSD.org
+pim6sd-20031021anb1                                  pkgsrc-users@NetBSD.org
+pinball-0.3.20201218nb1                              pkgsrc-users@NetBSD.org
+pine-4.64nb17                                        pkgsrc-users@NetBSD.org
+pinentry-mac-0.9.4nb1                                pkgsrc-users@NetBSD.org
+pinfo-0.6.1nb8                                       pkgsrc-users@NetBSD.org
+pioneers-15.6nb23                                    pkgsrc-users@NetBSD.org
+pixmap-2.6.4nb9                                      pkgsrc-users@NetBSD.org
+pkg-1.10.99.7nb1                                     khorben@defora.org
+pkg_select-20090308nb8                               imil@gcu.info
+plan-1.9nb1                                          pkgsrc-users@NetBSD.org
+plan9port-20251109                                   vins@NetBSD.org
+plasma6-knighttime-6.5.2nb3                          markd@NetBSD.org
+plasma6-kwrited-6.5.2nb3                             markd@NetBSD.org
+plinkseq-0.08nb17                                    bacon@NetBSD.org
+pload-0.9.5nb3                                       pkgsrc-users@NetBSD.org
+plotmtv-1.4.1nb3                                     pkgsrc-users@NetBSD.org
+plp-1.8nb2                                           pkgsrc-users@NetBSD.org
+pluged-0.1                                           pkgsrc-users@NetBSD.org
+poke-3.3                                             pkgsrc-users@NetBSD.org
+polclock-1.11nb2                                     pkgsrc-users@NetBSD.org
+polyml-5.9                                           asau@inbox.ru
+popa3d-1.0.3                                         pkgsrc-users@NetBSD.org
+poptop-1.3.4nb1                                      pkgsrc-users@NetBSD.org
+portmap-4nb3                                         reed@reedmedia.net
+portsentry-1.2                                       pkgsrc-users@NetBSD.org
+postfix-cdb-3.11.1                                   pkgsrc-users@NetBSD.org
+postfix-ldap-3.11.1                                  pkgsrc-users@NetBSD.org
+postfix-lmdb-3.11.1                                  pkgsrc-users@NetBSD.org
+postfix-mysql-3.11.1                                 pkgsrc-users@NetBSD.org
+postfix-pcre-3.11.1                                  pkgsrc-users@NetBSD.org
+postfix-pgsql-3.11.1                                 pkgsrc-users@NetBSD.org
+postfix-sqlite-3.11.1                                pkgsrc-users@NetBSD.org
+postgresql14-pg_repack-1.5.3                         pkgsrc-users@NetBSD.org
+postgresql14-pgpool2-4.3.2nb1                        pkgsrc-users@NetBSD.org
+postgresql14-redislog-0.2                            pkgsrc-users@NetBSD.org
+postgresql14-repmgr-5.5.0nb5                         pkgsrc-users@NetBSD.org
+postgresql15-pg_repack-1.5.3                         pkgsrc-users@NetBSD.org
+postgresql15-pgpool2-4.3.2nb1                        pkgsrc-users@NetBSD.org
+postgresql15-repmgr-5.5.0nb5                         pkgsrc-users@NetBSD.org
+postgresql15-timescaledb-2.25.2                      otis@NetBSD.org
+postgresql16-pg_repack-1.5.3                         pkgsrc-users@NetBSD.org
+postgresql16-pgpool2-4.3.2nb1                        pkgsrc-users@NetBSD.org
+postgresql16-wal2json-2.6                            otis@NetBSD.org
+postgresql17-pg_repack-1.5.3                         pkgsrc-users@NetBSD.org
+postgresql17-pgpool2-4.3.2nb1                        pkgsrc-users@NetBSD.org
+postgresql17-wal2json-2.6                            otis@NetBSD.org
+postgresql18-pg_repack-1.5.3                         pkgsrc-users@NetBSD.org
+postgresql18-pgpool2-4.3.2nb1                        pkgsrc-users@NetBSD.org
+postgresql18-wal2json-2.6                            otis@NetBSD.org
+powder-118nb1                                        pkgsrc-users@NetBSD.org
+powder-toy-95.0nb28                                  pkgsrc-users@NetBSD.org
+prboom-2.5.0nb3                                      pkgsrc-users@NetBSD.org
+prcs-1.3.3nb17                                       pkgsrc-users@NetBSD.org
+primer3-2.3.6                                        pkgsrc-users@NetBSD.org
+prngd-0.9.29nb1                                      pkgsrc-users@NetBSD.org
+profanity-0.14.0nb23                                 pkgsrc-users@NetBSD.org
+proftpd-memcache-1.3.8b                              pkgsrc-users@NetBSD.org
+proxytunnel-1.9.0nb7                                 pkgsrc-users@NetBSD.org
+pscpug-0.3.5nb3                                      bartosz.kuzma@gmail.com
+psybnc-2.4.3                                         pkgsrc-users@NetBSD.org
+pxz-4.999.9beta                                      ryoon@NetBSD.org
+py27-cdecimal-2.3nb1                                 pkgsrc-users@NetBSD.org
+py27-gdchart-0.6nb31                                 pkgsrc-users@NetBSD.org
+py311-cxfreeze-6.13.1                                helgoman@users.sourceforge.net
+py311-djangocms-file-3.0.1                           adam@NetBSD.org
+py311-grpcio-tools-1.76.0nb1                         minskim@NetBSD.org
+py311-hy-1.2.0                                       pkgsrc-users@NetBSD.org
+py311-keystone-0.9.2nb1                              pkgsrc-users@NetBSD.org
+py311-kivy-2.3.1nb3                                  kamel.derouiche@gmail.com
+py311-lasso-2.8.2nb2                                 manu@NetBSD.org
+py311-libixion-0.20.0nb2                             pkgsrc-users@NetBSD.org
+py311-pyinotify-0.9.6nb1                             youri@NetBSD.org
+py311-pysvn-1.9.22nb8                                helgoman@users.sourceforge.net
+py311-terminator-2.1.4nb1                            pkgsrc-users@NetBSD.org
+py312-cxfreeze-6.13.1                                helgoman@users.sourceforge.net
+py312-grpcio-tools-1.76.0nb1                         minskim@NetBSD.org
+py312-hy-1.2.0                                       pkgsrc-users@NetBSD.org
+py312-keystone-0.9.2nb1                              pkgsrc-users@NetBSD.org
+py312-lasso-2.8.2nb2                                 manu@NetBSD.org
+py312-libixion-0.20.0nb2                             pkgsrc-users@NetBSD.org
+py312-pyinotify-0.9.6nb1                             youri@NetBSD.org
+py312-pysvn-1.9.22nb8                                helgoman@users.sourceforge.net
+py312-terminator-2.1.4nb1                            pkgsrc-users@NetBSD.org
+py313-cxfreeze-6.13.1                                helgoman@users.sourceforge.net
+py313-grpcio-tools-1.76.0nb1                         minskim@NetBSD.org
+py313-hy-1.2.0                                       pkgsrc-users@NetBSD.org
+py313-lasso-2.8.2nb2                                 manu@NetBSD.org
+py313-libixion-0.20.0nb2                             pkgsrc-users@NetBSD.org
+py313-pyinotify-0.9.6nb1                             youri@NetBSD.org
+py313-pysvn-1.9.22nb8                                helgoman@users.sourceforge.net
+py313-terminator-2.1.4nb1                            pkgsrc-users@NetBSD.org
+py314-cxfreeze-6.13.1                                helgoman@users.sourceforge.net
+py314-game_sdl2-2.1.0.8.3.7nb1                       ryoon@NetBSD.org
+py314-grpcio-tools-1.76.0nb1                         minskim@NetBSD.org
+py314-hy-1.2.0                                       pkgsrc-users@NetBSD.org
+py314-keystone-0.9.2nb1                              pkgsrc-users@NetBSD.org
+py314-lasso-2.8.2nb2                                 manu@NetBSD.org
+py314-libixion-0.20.0nb2                             pkgsrc-users@NetBSD.org
+py314-pyinotify-0.9.6nb1                             youri@NetBSD.org
+py314-pysvn-1.9.22nb8                                helgoman@users.sourceforge.net
+py314-terminator-2.1.4nb1                            pkgsrc-users@NetBSD.org
+qalculate-gtk-5.0.0nb17                              pkgsrc-users@NetBSD.org
+qconfirm-0.14.3                                      schmonz@NetBSD.org
+qdbm-plus-1.0.0.1.8.78                               pkgsrc-users@NetBSD.org
+qemacs-6.4.1                                         ktnb@NetBSD.org
+qgreylist-0.3nb13                                    schmonz@NetBSD.org
+qjackctl-0.4.2nb60                                   pkgsrc-users@NetBSD.org
+qmail-conf-0.60nb6                                   schmonz@NetBSD.org
+qmediamanager-0.1.1.2nb13                            bacon@NetBSD.org
+qonk-0.3.1nb14                                       pkgsrc-users@NetBSD.org
+qpdfview-0.4.18nb60                                  ryoon@NetBSD.org
+qr-code-generator-1.6.0                              ryoon@NetBSD.org
+qr-code-generator-1.8.0                              ryoon@NetBSD.org
+qsynth-0.6.3nb28                                     adam@NetBSD.org
+qt5-styleplugins-5.0.0.20170112nb26                  pkgsrc-users@NetBSD.org
+qt5ct-1.9nb2                                         pkgsrc-users@NetBSD.org
+qt6ct-0.11nb3                                        vins@NetBSD.org
+qt6gtk2-0.7nb2                                       vins@NetBSD.org
+quadrupleback-0.2.0                                  pkgsrc-users@NetBSD.org
+quagga-1.2.4nb6                                      gdt@NetBSD.org
+quake2forge-0.3nb6                                   pkgsrc-users@NetBSD.org
+quake6-0.0nb4                                        pkgsrc-users@NetBSD.org
+quakeforge-0.7.2nb34                                 snj@NetBSD.org
+quarry-0.2.0nb62                                     pkgsrc-users@NetBSD.org
+quassel-core-0.14.0                                  pkgsrc-users@NetBSD.org
+queryperf-2.1                                        pkgsrc-users@NetBSD.org
+ra-rtsp-proxy-1.0.0.0nb2                             pkgsrc-users@NetBSD.org
+racket-9.1                                           pkgsrc-users@NetBSD.org
+racon-1.4.3                                          pkgsrc-users@NetBSD.org
+radsecproxy-1.10.0nb2                                pkgsrc-users@NetBSD.org
+raine-0.96.7nb13                                     pkgsrc-users@NetBSD.org
+rasmol-2.7.3nb2                                      pkgsrc-users@NetBSD.org
+rat-3.0.28nb12                                       pkgsrc-users@NetBSD.org
+ratmen-2.2.3                                         lkundrak@skosi.org
+rawtherapee-5.11nb4                                  ryoon@NetBSD.org
+rayshade-4.0.6nb9                                    pkgsrc-users@NetBSD.org
+rblcheck-1.5nb1                                      pkgsrc-users@NetBSD.org
+rdfind-1.5.0nb1                                      pkgsrc-users@NetBSD.org
+rdp-1.5nb2                                           pkgsrc-users@NetBSD.org
+realboy-0.2.2nb2                                     pkgsrc-users@NetBSD.org
+redeclipse-2.0.0nb15                                 charlotte@NetBSD.org
+redeclipse16-1.6.0nb6                                charlotte@NetBSD.org
+redshift-1.12nb5                                     snj@NetBSD.org
+reed-5.4nb14                                         pkgsrc-users@NetBSD.org
+renameutils-0.12.0                                   mcy@lm7.fr
+retroarch-1.9.0nb36                                  pkgsrc-users@NetBSD.org
+rexima-1.4nb3                                        pkgsrc-users@NetBSD.org
+rexx-regina-3.9.5nb1                                 pkgsrc-users@NetBSD.org
+rftg-0.9.5nb7                                        pkgsrc-users@NetBSD.org
+rofi-2.0.0nb1                                        pkgsrc-users@NetBSD.org
+root-tail-0.0.10nb3                                  pkgsrc-users@NetBSD.org
+rootprobe-200301                                     pkgsrc-users@NetBSD.org
+rosegarden-2.1.4nb7                                  pkgsrc-users@NetBSD.org
+rp-l2tp-0.3nb1                                       pkgsrc-users@NetBSD.org
+rsftch-0.7.7                                         pkgsrc-users@NetBSD.org
+rsyslog-libgcrypt-8.38.0nb27                         pkgsrc-users@NetBSD.org
+rt-mysql-2.0.15nb21                                  pkgsrc-users@NetBSD.org
+rt-pgsql-2.0.15nb11                                  pkgsrc-users@NetBSD.org
+rtty-3.2nb4                                          pkgsrc-users@NetBSD.org
+rtunes-0.8nb2                                        pkgsrc-users@NetBSD.org
+ruby33-llhttp-ffi-0.5.1                              ryoon@NetBSD.org
+ruby33-metasploit_payloads-mettle-1.0.46             minskim@NetBSD.org
+ruby33-native-hyperestraier-1.0.0.1.4.13nb2          pkgsrc-users@NetBSD.org
+ruby33-opengl-0.60.1nb6                              taca@NetBSD.org
+ruby33-quota-0.5.1nb11                               taca@NetBSD.org
+ruby33-rb-appscript-0.6.1nb1                         pkgsrc-users@NetBSD.org
+ruby33-sqlrelay-1.9.3nb13                            pkgsrc-users@NetBSD.org
+ruby34-daemon_controller-3.0.2                       pkgsrc-users@NetBSD.org
+ruby34-html-proofer-5.2.0                            ryoon@NetBSD.org
+ruby34-llhttp-ffi-0.5.1                              ryoon@NetBSD.org
+ruby34-metasploit_payloads-mettle-1.0.46             minskim@NetBSD.org
+ruby34-native-hyperestraier-1.0.0.1.4.13nb2          pkgsrc-users@NetBSD.org
+ruby34-opengl-0.60.1nb6                              taca@NetBSD.org
+ruby34-quota-0.5.1nb11                               taca@NetBSD.org
+ruby34-rb-appscript-0.6.1nb1                         pkgsrc-users@NetBSD.org
+ruby34-rb-kqueue-0.2.8                               pkgsrc-users@NetBSD.org
+ruby34-sass-rails-6.0.0                              pkgsrc-users@NetBSD.org
+ruby34-sqlrelay-1.9.3nb13                            pkgsrc-users@NetBSD.org
+ruby40-llhttp-ffi-0.5.1                              ryoon@NetBSD.org
+ruby40-metasploit_payloads-mettle-1.0.46             minskim@NetBSD.org
+ruby40-native-hyperestraier-1.0.0.1.4.13nb2          pkgsrc-users@NetBSD.org
+ruby40-opengl-0.60.1nb6                              taca@NetBSD.org
+ruby40-quota-0.5.1nb11                               taca@NetBSD.org
+ruby40-rb-appscript-0.6.1nb1                         pkgsrc-users@NetBSD.org
+ruby40-sqlrelay-1.9.3nb13                            pkgsrc-users@NetBSD.org
+rvault-0.3nb21                                       pkgsrc-users@NetBSD.org
+rxvt-2.7.10nb11                                      gcw@rxvt.org
+s10sh-0.2.0nb3                                       pkgsrc-users@NetBSD.org
+sacc-1.07nb1                                         leot@NetBSD.org
+sais-1.6.3nb5                                        pkgsrc-users@NetBSD.org
+sakura-3.8.9nb4                                      ryoon@NetBSD.org
+sane-airscan-0.99.36nb4                              ryoon@NetBSD.org
+saturn-cli-0.4.5                                     pkgsrc-users@NetBSD.org
+sauerbraten-2020_12_27nb10                           pkgsrc-users@NetBSD.org
+sauerbraten-server-2020_12_27                        pkgsrc-users@NetBSD.org
+sayaka-3.8.6                                         tsutsui@NetBSD.org
+sci-0.5.6nb2                                         pkgsrc-users@NetBSD.org
+scite-3.3.9nb27                                      pkgsrc-users@NetBSD.org
+scm-5.5.3nb2                                         pkgsrc-users@NetBSD.org
+screws-0.56nb29                                      pkgsrc-users@NetBSD.org
+sdcc-4.5.0                                           bouyer@NetBSD.org
+sddm-0.21.0nb3                                       pkgsrc-users@NetBSD.org
+sdlpop-1.22nb10                                      pkgsrc-users@NetBSD.org
+sdorfehs-1.7                                         pkgsrc-users@NetBSD.org
+see-3.0.1376nb16                                     pkgsrc-users@NetBSD.org
+sendfile-2.1bnb4                                     pkgsrc-users@NetBSD.org
+sendmail-8.18.0.2nb7                                 pkgsrc-users@NetBSD.org
+ser-0.8.14nb5                                        pkgsrc-users@NetBSD.org
+serialmail-0.75nb3                                   schmonz@NetBSD.org
+sfeed-2.3                                            leot@NetBSD.org
+sharity-light-1.3                                    pkgsrc-users@NetBSD.org
+siag-3.6.1nb9                                        pkgsrc-users@NetBSD.org
+sid-milter-1.0.0nb7                                  pkgsrc-users@NetBSD.org
+sidplay-1.0.9nb3                                     pkgsrc-users@NetBSD.org
+sidplay2-2.0.9                                       pkgsrc-users@NetBSD.org
+signify-20250520                                     vins@NetBSD.org
+simutrans-121.0nb12                                  pkgsrc-users@NetBSD.org
+siod-3.0nb2                                          pkgsrc-users@NetBSD.org
+siproxd-0.8.3nb11                                    schwarz@NetBSD.org
+skaffold-2.16.1nb7                                   pkgsrc-users@NetBSD.org
+skf-2.00.4nb6                                        pkgsrc-users@NetBSD.org
+ski-1.3.2nb37                                        cherry@zyx.in
+skkfep-0.86cnb2                                      pkgsrc-users@NetBSD.org
+skkinput-2.06.4                                      uebayasi@NetBSD.org
+sleepto-1.1                                          simonb@NetBSD.org
+slim-1.4.0nb7                                        youri@NetBSD.org
+slock-1.6                                            reed@reedmedia.net
+slurm-wlm-25.11.1nb1                                 pkgsrc-users@NetBSD.org
+smtp-vilter-1.3.8nb4                                 marc@msys.ch
+smtpfeed-1.23nb1                                     pkgsrc-users@NetBSD.org
+snes9x-gtk-1.63nb13                                  pkgsrc-users@NetBSD.org
+snobol-1.3nb1                                        pkgsrc-users@NetBSD.org
+soci-4.0.3nb13                                       pkgsrc-users@NetBSD.org
+socket++-1.12.10nb2                                  mchittur@cs.nmsu.edu
+socket_wrapper-1.5.0                                 pkgsrc-users@NetBSD.org
+socks4-2.2nb1                                        pkgsrc-users@NetBSD.org
+solvespace-3.1nb5                                    pkgsrc-users@NetBSD.org
+sparse-0.6.4                                         reed@reedmedia.net
+spcaview-0.6bnb18                                    pkgsrc-users@NetBSD.org
+spectrwm-3.7.0                                       pkgsrc-users@NetBSD.org
+speedcrunch-0.12.0nb38                               pkgsrc-users@NetBSD.org
+spegla-1.1p4nb1                                      jnilsson@ludd.luth.se
+spice-3f5.1nb6                                       pkgsrc-users@NetBSD.org
+spider-1.1nb3                                        pkgsrc-users@NetBSD.org
+spim-8.0nb2                                          pkgsrc-users@NetBSD.org
+spiralloops-2.0.0nb15                                pkgsrc-users@NetBSD.org
+spiralsynth-2.0.0nb13                                pkgsrc-users@NetBSD.org
+spl-1.0pre3nb38                                      pkgsrc-users@NetBSD.org
+splay-0.8.2                                          pkgsrc-users@NetBSD.org
+splitvt-1.6.6                                        pkgsrc-users@NetBSD.org
+spotify-qt-4.0.3                                     pin@NetBSD.org
+sr-2.3.3nb10                                         is@NetBSD.org
+srb2-2.2.4nb11                                       pkgsrc-users@NetBSD.org
+ssmping-0.9                                          is@NetBSD.org
+st-1.9nb1                                            gson@NetBSD.org
+static-ast-ksh-20120801nb1                           pkgsrc-users@NetBSD.org
+static-tcsh-6.24.16                                  agc@NetBSD.org
+stockfish-9                                          pkgsrc-users@NetBSD.org
+stone-soup-0.31.0nb5                                 pkgsrc-users@NetBSD.org
+stone-soup-sdl-0.31.0nb7                             pkgsrc-users@NetBSD.org
+strace-4.5.15nb16                                    christos@NetBSD.org
+su2-1.3                                              pkgsrc-users@NetBSD.org
+sunwait-0.8nb1                                       martin@NetBSD.org
+sup-0.3                                              christos@NetBSD.org
+supermodel-0.2anb1                                   pkgsrc-users@NetBSD.org
+svnfs-0.4nb60                                        pkgsrc-users@NetBSD.org
+swarm-0.61                                           agc@NetBSD.org
+sweep-0.9.3nb55                                      pkgsrc-users@NetBSD.org
+swirc-3.4.7nb10                                      pkgsrc-users@NetBSD.org
+swisswatch-0.06nb2                                   sanpei@yy.cs.keio.ac.jp
+swt-4.21nb12                                         pkgsrc-users@NetBSD.org
+swtpm-0.10.0nb4                                      ryoon@NetBSD.org
+syncthing-gtk-0.9.4.5nb14                            pkgsrc-users@NetBSD.org
+synergy-1.14.6.19nb16                                pkgsrc-users@NetBSD.org
+tads-3.0.8nb5                                        pkgsrc-users@NetBSD.org
+tagainijisho-1.2.2nb18                               pkgsrc-users@NetBSD.org
+taisei-1.4.2nb5                                      pkgsrc-users@NetBSD.org
+tap-plugins-0.7.2                                    pkgsrc-users@NetBSD.org
+tarsnap-gui-1.0.2nb40                                pkgsrc-users@NetBSD.org
+tasp-vsipl-20030710nb2                               pkgsrc-users@NetBSD.org
+tcl-expat-1.1nb7                                     pkgsrc-users@NetBSD.org
+tcl-tDOM-0.9.1                                       pho@cielonegro.org
+tcl-tls-1.7.16nb2                                    pkgsrc-users@NetBSD.org
+tclreadline-2.1.0nb4                                 pkgsrc-users@NetBSD.org
+tcpdpriv-0.8nb1                                      pkgsrc-users@NetBSD.org
+tcpillust-1.0anb14                                   pkgsrc-users@NetBSD.org
+tcptraceroute6-1.0.4                                 he@NetBSD.org
+tct-1.09nb14                                         frazee.23@osu.edu
+teapop-0.3.8nb24                                     dawszy@arhea.net
+telegram-purple-1.3.1nb20                            khorben@defora.org
+telepathy-idle-0.1.8nb33                             pkgsrc-users@NetBSD.org
+terminatorx-4.2.0nb24                                pkgsrc-users@NetBSD.org
+tet3-3.7nb12                                         pkgsrc-users@NetBSD.org
+texmaker-5.1.4nb13                                   pkgsrc-users@NetBSD.org
+texstudio-4.4.0nb35                                  pkgsrc-users@NetBSD.org
+texworks-0.6.9nb16                                   markd@NetBSD.org
+tfkiss-1.2.4nb1                                      pkgsrc-users@NetBSD.org
+tfmxplay-0.6                                         pkgsrc-users@NetBSD.org
+tgif-4.2.5nb2                                        pkgsrc-users@NetBSD.org
+tightvnc-1.3.10nb23                                  pkgsrc-users@NetBSD.org
+tint2-17.0.2nb26                                     fernandotcl@gmail.com
+tinydyndns-run-20250425                              schmonz@NetBSD.org
+tinyscheme-1.40nb1                                   pkgsrc-users@NetBSD.org
+tiramisu-2.0.20240610nb1                             pkgsrc-users@NetBSD.org
+tirc-1.2nb4                                          pkgsrc-users@NetBSD.org
+titrax-1.98nb18                                      pkgsrc-users@NetBSD.org
+tits-1.3.0                                           pkgsrc-users@NetBSD.org
+tkcon-2.7.2nb1                                       pkgsrc-users@NetBSD.org
+tkimg-2.0.1                                          pkgsrc-users@NetBSD.org
+tktable-2.10nb10                                     pkgsrc-users@NetBSD.org
+tlf-0.9.31.2nb1                                      pkgsrc-users@NetBSD.org
+tme-0.8nb64                                          pkgsrc-users@NetBSD.org
+tn3270-0.20100116nb2                                 pkgsrc-users@NetBSD.org
+tn5250-0.12.51nb5                                    pkgsrc-users@NetBSD.org
+tnt-1.9.2nb1                                         pkgsrc-users@NetBSD.org
+toppler-1.1.6nb3                                     pkgsrc-users@NetBSD.org
+tqsl-2.8.1nb6                                        makoto@ki.nu
+traceroute-as-991603nb1                              pkgsrc-users@NetBSD.org
+traceroute-nanog-6.4.2nb1                            schwarz@NetBSD.org
+tracker-5.3nb1                                       pkgsrc-users@NetBSD.org
+transmission-4.0.6nb10                               pkgsrc-users@NetBSD.org
+transmission-gtk-4.0.6nb13                           pkgsrc-users@NetBSD.org
+transmission-qt-4.0.6nb11                            pkgsrc-users@NetBSD.org
+traverso-0.49.6nb43                                  pkgsrc-users@NetBSD.org
+trayer-1.1.8nb15                                     cheusov@NetBSD.org
+trickle-1.06nb17                                     pkgsrc-users@NetBSD.org
+trn-4.77nb7                                          pkgsrc-users@NetBSD.org
+tscrape-0.6                                          leot@NetBSD.org
+tstools-1.11nb1                                      tech-multimedia@NetBSD.org
+turba-2.3.6nb13                                      pkgsrc-users@NetBSD.org
+tuxpaint-config-0.0.25nb4                            pkgsrc-users@NetBSD.org
+tuxracer-0.61nb17                                    pkgsrc-users@NetBSD.org
+tvision-0.8nb3                                       pkgsrc-users@NetBSD.org
+tvtwm-11nb3                                          pkgsrc-users@NetBSD.org
+twin-3.1.14nb4                                       pkgsrc-users@NetBSD.org
+tyrquake-0.71                                        snj@NetBSD.org
+u-boot-a10-olinuxino-lime-2018.11nb4                 port-arm@NetBSD.org
+u-boot-a20-olinuxino-lime2-2018.11nb1                port-arm@NetBSD.org
+u-boot-a20-olinuxino-lime2-emmc-2018.11nb3           port-arm@NetBSD.org
+u-boot-a20-olinuxino-micro-2018.11                   port-arm@NetBSD.org
+u-boot-a20-olinuxino-micro-emmc-2018.11              port-arm@NetBSD.org
+u-boot-bananapi-2018.11nb4                           port-arm@NetBSD.org
+u-boot-bananapi-m2-zero-2018.11                      port-arm@NetBSD.org
+u-boot-bananapi-m3-2018.11nb4                        port-arm@NetBSD.org
+u-boot-bananapi-p2-zero-2018.11                      port-arm@NetBSD.org
+u-boot-bananapi-r2-2020.04                           port-arm@NetBSD.org
+u-boot-bananapro-2018.11                             port-arm@NetBSD.org
+u-boot-beagleboard-2018.11nb4                        port-arm@NetBSD.org
+u-boot-beaglebonewhite-2018.11nb4                    port-arm@NetBSD.org
+u-boot-chip-2018.11nb4                               port-arm@NetBSD.org
+u-boot-chip-pro-2018.11nb4                           port-arm@NetBSD.org
+u-boot-cubieboard2-2018.11nb4                        port-arm@NetBSD.org
+u-boot-cubieboard4-2018.11nb4                        port-arm@NetBSD.org
+u-boot-cubietruck-2018.11nb4                         port-arm@NetBSD.org
+u-boot-cubietruck-plus-2018.11nb2                    port-arm@NetBSD.org
+u-boot-d1-nezha-2024.1nb2                            port-riscv@NetBSD.org
+u-boot-de0-nanosoc-2018.11nb3                        port-arm@NetBSD.org
+u-boot-hifive-unleashed-2024.04                      port-riscv@NetBSD.org
+u-boot-hummingbird-a31-2018.11nb4                    port-arm@NetBSD.org
+u-boot-jetson-tk1-2018.11nb3                         port-arm@NetBSD.org
+u-boot-lamobo-r1-2018.11                             port-arm@NetBSD.org
+u-boot-libretech-all-h3-cc-h2-plus-2018.11           port-arm@NetBSD.org
+u-boot-libretech-all-h3-cc-h3-2018.11                port-arm@NetBSD.org
+u-boot-licheepi-zero-2018.11                         port-arm@NetBSD.org
+u-boot-marsboard-2021.01                             port-arm@NetBSD.org
+u-boot-nanopi-duo2-2018.11                           port-arm@NetBSD.org
+u-boot-nanopi-m1-2018.11nb4                          port-arm@NetBSD.org
+u-boot-nanopi-neo-2018.11nb4                         port-arm@NetBSD.org
+u-boot-nanopi-r1-2018.11nb1                          port-arm@NetBSD.org
+u-boot-orangepi-2-2018.11nb4                         port-arm@NetBSD.org
+u-boot-orangepi-lite-2018.11nb4                      port-arm@NetBSD.org
+u-boot-orangepi-one-2018.11nb4                       port-arm@NetBSD.org
+u-boot-orangepi-pc-2018.11                           port-arm@NetBSD.org
+u-boot-orangepi-plus2e-2018.11nb4                    port-arm@NetBSD.org
+u-boot-orangepi-zero-2018.11nb4                      port-arm@NetBSD.org
+u-boot-pandaboard-2018.11                            port-arm@NetBSD.org
+u-boot-pico-pi-imx7d-2021.01                         port-arm@NetBSD.org
+u-boot-pinecube-2022.04nb1                           port-arm@NetBSD.org
+u-boot-pocketchip-2018.11nb4                         port-arm@NetBSD.org
+u-boot-riotboard-2021.01                             port-arm@NetBSD.org
+u-boot-tinker-2018.11                                port-arm@NetBSD.org
+u-boot-udoo-neo-imx6sx-2021.01                       port-arm@NetBSD.org
+u-boot-visionfive2-2024.10nb4                        port-riscv@NetBSD.org
+u-boot-zynq-zturn-2022.10                            port-arm@NetBSD.org
+u-boot-zynq-zybo-2018.11                             port-arm@NetBSD.org
+u-boot-zynq-zybo-z7-2018.11                          port-arm@NetBSD.org
+uacme-1.7.5nb11                                      hauke@NetBSD.org
+uae-0.8.25nb49                                       pkgsrc-users@NetBSD.org
+ubench-0.32nb1                                       pkgsrc-users@NetBSD.org
+udfclient-0.8.21                                     reinoud@13thmonkey.org
+udpcast-20060619nb10                                 pkgsrc-users@NetBSD.org
+ufdbguard-1.35.5nb2                                  sborrill@NetBSD.org
+ufoai-2.2.1nb53                                      pkgsrc-users@NetBSD.org
+unclutter-8nb1                                       pkgsrc-users@NetBSD.org
+unit-1.35.0nb1                                       pkgsrc-users@NetBSD.org
+unit-perl-1.35.0                                     pkgsrc-users@NetBSD.org
+unit-python3.11-1.35.0                               pkgsrc-users@NetBSD.org
+unit-python3.12-1.35.0                               pkgsrc-users@NetBSD.org
+unit-python3.13-1.35.0                               pkgsrc-users@NetBSD.org
+unit-python3.14-1.35.0                               pkgsrc-users@NetBSD.org
+unit-ruby33-1.35.0                                   pkgsrc-users@NetBSD.org
+unit-ruby34-1.35.0                                   pkgsrc-users@NetBSD.org
+unit-ruby40-1.35.0                                   pkgsrc-users@NetBSD.org
+uno-2.13nb1                                          pkgsrc-users@NetBSD.org
+unroff-1.0.2nb1                                      pkgsrc-users@NetBSD.org
+unworkable-0.53nb4                                   agc@NetBSD.org
+upclient-4.2.1.23nb4                                 pkgsrc-users@NetBSD.org
+uqm-0.7.0nb3                                         pkgsrc-users@NetBSD.org
+usenet_reborn-0.2.2nb1                               vins@NetBSD.org
+uwm-19881027nb2                                      pkgsrc-users@NetBSD.org
+vat-4.0b2nb12                                        pkgsrc-users@NetBSD.org
+vcf-0.0.5                                            pkgsrc-users@NetBSD.org
+vcg-1.30nb1                                          pkgsrc-users@NetBSD.org
+ve-1.0                                               rxg@NetBSD.org
+veriwell-2.8.7                                       pkgsrc-users@NetBSD.org
+vfu-3.04nb16                                         pkgsrc-users@NetBSD.org
+vic-2.8nb12                                          is@NetBSD.org
+vic-devel-2.8.1.4.0beta.4337nb22                     sborrill@NetBSD.org
+vice-3.10nb2                                         rhialto@NetBSD.org
+vid-1.0.1nb18                                        pkgsrc-users@NetBSD.org
+viewfax-2.4nb2                                       pkgsrc-users@NetBSD.org
+viewnior-1.7nb18                                     ryoon@NetBSD.org
+vim-gtk2-9.2.0319nb8                                 morr@NetBSD.org
+vim-motif-9.2.0319nb1                                morr@NetBSD.org
+vinagre-3.22.0nb16                                   pkgsrc-users@NetBSD.org
+vino-2.32.2nb87                                      pkgsrc-users@NetBSD.org
+violetland-0.5nb26                                   pkgsrc-users@NetBSD.org
+vnc-3.3.3.2nb15                                      pkgsrc-users@NetBSD.org
+vowpal_wabbit-8.2.0nb23                              cheusov@NetBSD.org
+vsqlite++-0.3.13nb27                                 pkgsrc-users@NetBSD.org
+vym-2.9.31nb10                                       pkgsrc-users@NetBSD.org
+w3c-httpd-3.0Anb1                                    pkgsrc-users@NetBSD.org
+w9wm-0.4.2nb1                                        pkgsrc-users@NetBSD.org
+wap-utils-1.3.2nb11                                  wojtek@tensor.3miasto.net
+warmux-11.04.1nb24                                   pkgsrc-users@NetBSD.org
+waste-1.0                                            pkgsrc-users@NetBSD.org
+wide-dhcpv6-20080615nb1                              pkgsrc-users@NetBSD.org
+window-20260407                                      pkgsrc-users@NetBSD.org
+wired-notify-0.10.6nb3                               pkgsrc-users@NetBSD.org
+wistumbler-20020816.0nb4                             pkgsrc-users@NetBSD.org
+wkhtmltopdf-0.12.4nb16                               pkgsrc-users@NetBSD.org
+wmSMPmon-2.3nb1                                      joel@carnat.net
+wmavgload-0.7.0nb1                                   pkgsrc-users@NetBSD.org
+wmii-3.9.2nb6                                        rares.aioanei@gmail.com
+wminet-1.2nb1                                        coto@core.de
+wmitime-0.5nb1                                       poff@sixbit.org
+wmnet-1.06nb5                                        pkgsrc-users@NetBSD.org
+wmpload-0.9.5nb1                                     abs@NetBSD.org
+wmsmixer-0.5.1nb2                                    pkgsrc-users@NetBSD.org
+wmtime-1.4                                           pkgsrc-users@NetBSD.org
+wmutils-core-1.7                                     pkgsrc-users@NetBSD.org
+wordtsar-0.3.719nb7                                  ryoon@NetBSD.org
+wormz-1.0b5nb2                                       pkgsrc-users@NetBSD.org
+wpa_supplicant-2.6nb3                                reed@reedmedia.net
+wsjtx-2.5.4                                          pkgsrc-users@NetBSD.org
+x2x-1.27nb2                                          pkgsrc-users@NetBSD.org
+xalarm-3.06nb5                                       pkgsrc-users@NetBSD.org
+xanalyser-1.32                                       pkgsrc-users@NetBSD.org
+xaniroc-1.02nb4                                      pkgsrc-users@NetBSD.org
+xaos-4.2.1nb27                                       pkgsrc-users@NetBSD.org
+xart-19980415nb23                                    pkgsrc-users@NetBSD.org
+xautolock-1.15nb3                                    pkgsrc-users@NetBSD.org
+xawtv-3.95nb31                                       pkgsrc-users@NetBSD.org
+xbanish-1.8                                          pho@cielonegro.org
+xbeats-0.4nb2                                        pkgsrc-users@NetBSD.org
+xbl-1.1.6nb1                                         pkgsrc-users@NetBSD.org
+xblast-2.10.4nb1                                     dsainty@NetBSD.org
+xbmbrowser-5.1nb5                                    pkgsrc-users@NetBSD.org
+xboing-2.4nb4                                        pkgsrc-users@NetBSD.org
+xbreaky-0.0.5nb2                                     pkgsrc-users@NetBSD.org
+xca-2.8.0nb5                                         pkgsrc-users@NetBSD.org
+xcdroast-1.18nb22                                    pkgsrc-users@NetBSD.org
+xcin-2.5.3rc2nb31                                    rxg@NetBSD.org
+xcircuit-3.10.30nb6                                  pkgsrc-users@NetBSD.org
+xclannad-0.07hcnb5                                   tsutsui@NetBSD.org
+xcolors-1.3nb5                                       pkgsrc-users@NetBSD.org
+xcolorsel-1.1anb5                                    pkgsrc-users@NetBSD.org
+xdemineur-2.1.1nb3                                   bouyer@NetBSD.org
+xdeview-0.5.20nb11                                   pkgsrc-users@NetBSD.org
+xdg-ninja-0.2.0.2                                    pkgsrc-users@NetBSD.org
+xdu-3.0nb8                                           hubertf@NetBSD.org
+xemacs-21.4.25                                       hauke@NetBSD.org
+xemacs-21.5.36                                       hauke@NetBSD.org
+xemacs-nox11-21.4.25                                 hauke@NetBSD.org
+xengine-1.0.1nb4                                     pkgsrc-users@NetBSD.org
+xephem-4.2.0                                         gdt@NetBSD.org
+xfm-1.4.3nb9                                         rxg@NetBSD.org
+xfsprogs-2.7.3nb3                                    pkgsrc-users@NetBSD.org
+xgalaga-2.1.1.0                                      pkgsrc-users@NetBSD.org
+xgas-1.0nb3                                          nakai@mlab.t.u-tokyo.ac.jp
+xgospel-1.12dnb4                                     pkgsrc-users@NetBSD.org
+xgraph-11.3.2.9nb2                                   pkgsrc-users@NetBSD.org
+ximaging-1.9nb2                                      vins@NetBSD.org
+xinvest-2.6.9nb3                                     pkgsrc-users@NetBSD.org
+xisp-2.7p4nb8                                        pkgsrc-users@NetBSD.org
+xjadeo-0.8.9nb14                                     pkgsrc-users@NetBSD.org
+xjdic-2.4                                            pkgsrc-users@NetBSD.org
+xjewel-1.6nb3                                        jdc@NetBSD.org
+xjig-2.4nb3                                          pkgsrc-users@NetBSD.org
+xkanon-090830nb17                                    tsutsui@NetBSD.org
+xkeycaps-2.46nb3                                     pkgsrc-users@NetBSD.org
+xkobo-1.11nb5                                        pkgsrc-users@NetBSD.org
+xl2tpd-20171013                                      christos@NetBSD.org
+xless-1.7nb4                                         pkgsrc-users@NetBSD.org
+xli-1.17.0nb15                                       pkgsrc-users@NetBSD.org
+xlife-5.0nb6                                         pkgsrc-users@NetBSD.org
+xlog-2.0.25nb9                                       pkgsrc-users@NetBSD.org
+xlogout-19891129nb4                                  pkgsrc-users@NetBSD.org
+xm8-1.70nb13                                         tsutsui@NetBSD.org
+xmagv-1.11                                           ryoon@NetBSD.org
+xmailbox-2.5nb3                                      bouyer@NetBSD.org
+xmailwatcher-1.6nb3                                  pkgsrc-users@NetBSD.org
+xmascot-2.6anb2                                      Nakai@Mlab.t.u-tokyo.ac.jp
+xmem-1.29                                            pkgsrc-users@NetBSD.org
+xmeter-1.15nb4                                       pkgsrc-users@NetBSD.org
+xmftp-1.0.4nb4                                       rxg@NetBSD.org
+xmgr-4.1.2nb52                                       pkgsrc-users@NetBSD.org
+xmix-2.1nb4                                          pkgsrc-users@NetBSD.org
+xmlindent-0.2.16nb1                                  pkgsrc-users@NetBSD.org
+xmmix-1.2nb6                                         augustss@cs.chalmers.se
+xmms-cdread-0.14anb4                                 cheusov@NetBSD.org
+xmoji-0.8nb1                                         pkgsrc-users@NetBSD.org
+xmon-1.5.6                                           pkgsrc-users@NetBSD.org
+xmorph-20060817nb6                                   pkgsrc-users@NetBSD.org
+xmountains-2.7nb2                                    pkgsrc-users@NetBSD.org
+xmove-2.0b2nb1                                       pkgsrc-users@NetBSD.org
+xmx-2.1a7nb9                                         pkgsrc-users@NetBSD.org
+xnc-5.0.4nb17                                        pkgsrc-users@NetBSD.org
+xnec2c-4.2.3nb9                                      pkgsrc-users@NetBSD.org
+xnibbles-1.0b4nb4                                    pkgsrc-users@NetBSD.org
+xnp2-0.86nb34                                        tsutsui@NetBSD.org
+xonclock-0.0.9.4nb15                                 pkgsrc-users@NetBSD.org
+xonotic-0.8.6nb3                                     charlotte@NetBSD.org
+xorp-1.6nb9                                          pkgsrc-users@NetBSD.org
+xosview-1.23                                         pkgsrc-users@NetBSD.org
+xpad-4.8.0nb41                                       pkgsrc-users@NetBSD.org
+xpaint-3.1.4nb7                                      adam@NetBSD.org
+xpaste-1.1nb4                                        pkgsrc-users@NetBSD.org
+xpilot-4.5.4nb3                                      pkgsrc-users@NetBSD.org
+xpostit-3.3.1nb4                                     pkgsrc-users@NetBSD.org
+xpp-1.5nb56                                          pkgsrc-users@NetBSD.org
+xps-4.2nb13                                          pkgsrc-users@NetBSD.org
+xquote-2.6.10nb4                                     pkgsrc-users@NetBSD.org
+xroar-1.4.2nb4                                       ryoon@NetBSD.org
+xrolodex-1.5nb6                                      pkgsrc-users@NetBSD.org
+xscavenger-1.4.4nb3                                  pkgsrc-users@NetBSD.org
+xscript-19930228nb2                                  pkgsrc-users@NetBSD.org
+xskat-4.0                                            pkgsrc-users@NetBSD.org
+xsnow-3.2.2nb27                                      is@NetBSD.org
+xsol-0.31                                            pkgsrc-users@NetBSD.org
+xsoldier-1.8                                         pkgsrc-users@NetBSD.org
+xst-0.10.0                                           pkgsrc-users@NetBSD.org
+xtacy-1.14                                           pkgsrc-users@NetBSD.org
+xtar-1.4                                             pkgsrc-users@NetBSD.org
+xtel-3.3.0nb15                                       bouyer@NetBSD.org
+xtensa-lx106-elf-gcc-4.8.2nb3                        bouyer@NetBSD.org
+xtimer-0.8089nb4                                     candy@fct.kgc.co.jp
+xtoolwait-1.3nb2                                     minoura@NetBSD.org
+xtrlock-2.18                                         vins@NetBSD.org
+xv-3.10anb33                                         tsutsui@NetBSD.org
+xvidcap-1.1.7nb33                                    reed@reedmedia.net
+xvkbd-4.1                                            ryoon@NetBSD.org
+xwatchwin-1.1.1nb2                                   pkgsrc-users@NetBSD.org
+xwave-2.0nb2                                         pkgsrc-users@NetBSD.org
+xwit-3.4nb3                                          pkgsrc-users@NetBSD.org
+xzgv-0.9.1nb43                                       pkgsrc-users@NetBSD.org
+yabause-0.9.15nb50                                   pkgsrc-users@NetBSD.org
+yad-10.1nb27                                         pkgsrc-users@NetBSD.org
+yap-6.3.3nb5                                         pkgsrc-users@NetBSD.org
+yasr-0.0.0.144nb1                                    pkgsrc-users@NetBSD.org
+ykchorus-0.2.2nb6                                    pkgsrc-users@NetBSD.org
+yorick-1.6.02nb2                                     pkgsrc-users@NetBSD.org
+yrolo-1.1nb6                                         pkgsrc-users@NetBSD.org
+yubikey-manager-qt-1.2.5nb16                         pkgsrc-users@NetBSD.org
+ywho-1.3                                             pkgsrc-users@NetBSD.org
+zam-plugins-3.14nb3                                  pkgsrc-users@NetBSD.org
+zelibm-0nb29                                         pkgsrc-users@NetBSD.org
+zenmap-7.99                                          pkgsrc-users@NetBSD.org
+zircon-1.18.256nb1                                   pkgsrc-users@NetBSD.org
+zkt-1.1.6nb1                                         pkgsrc-users@NetBSD.org
+zoom-1.1.5nb12                                       pkgsrc-users@NetBSD.org
+zutty-0.15                                           pkgsrc-users@NetBSD.org
+zynaddsubfx-3.0.5nb11                                pkgsrc-users@NetBSD.org

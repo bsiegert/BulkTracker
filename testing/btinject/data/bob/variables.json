@@ -1,0 +1,42 @@
+{
+  "counts": {
+    "failed": 1753,
+    "indirect-failed": 2610,
+    "indirect-pre-failed": 75,
+    "indirect-pre-skipped": 115,
+    "indirect-unresolved": 0,
+    "pending": 0,
+    "pre-failed": 130,
+    "pre-skipped": 596,
+    "success": 21361,
+    "unresolved": 0,
+    "up-to-date": 2300
+  },
+  "pkgsrc": {
+    "ABI": "64",
+    "CC_VERSION": "clang-13.1.6",
+    "MACHINE_ARCH": "aarch64",
+    "OPSYS": "Darwin",
+    "OS_VERSION": "23.6.0",
+    "PKGINFODIR": "info",
+    "PKGMANDIR": "share/man",
+    "PKGSRC_COMPILER": "clang",
+    "PREFIX": "/opt/pkg",
+    "SYSCONFBASE": "/opt/pkg/etc",
+    "VARBASE": "/var"
+  },
+  "report": {
+    "date": "20260409T193201Z",
+    "duration": 142599,
+    "raw": "https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.zst",
+    "url": "https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.html"
+  },
+  "vcs": {
+    "format": "git",
+    "local_branch": "release/macos",
+    "remote_branch": "release/macos",
+    "remote_url": "https://github.com/TritonDataCenter/pkgsrc",
+    "revision": "296bd21d0a7c",
+    "revision_full": "296bd21d0a7c1529a73e8cc1910cfcb252458f0c"
+  }
+}
