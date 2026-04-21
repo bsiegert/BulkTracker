@@ -23,8 +23,10 @@ package ingest
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"io"
+	"net/url"
 	"path"
 	"slices"
 	"strconv"
@@ -61,17 +63,24 @@ var ErrParse = errors.New("bulk: parse error")
 
 // BuildFromReport parses the start of a bulk report email to fill in the
 // fields.
-func BuildFromReport(from string, r io.Reader) (*ddao.Build, error) {
-	b := &ddao.Build{BuildUser: from}
+func BuildFromReport(ctx context.Context, from string, r io.Reader) (*ddao.Build, error) {
 	s := bufio.NewScanner(r)
 	for {
 		if !s.Scan() {
 			return nil, s.Err()
 		}
 		if s.Text() == "pkgsrc bulk build report" {
-			break
+			return fromPBulkReport(from, s)
+		}
+		if url, ok := strings.CutPrefix(s.Text(), "URL: "); ok {
+			return fromBobReport(ctx, from, url)
 		}
 	}
+}
+
+// fromPBulkReport parses a bulk report as produced by pbulk.
+func fromPBulkReport(from string, s *bufio.Scanner) (*ddao.Build, error) {
+	b := &ddao.Build{BuildUser: from}
 	if !s.Scan() {
 		return nil, s.Err()
 	}
@@ -121,6 +130,34 @@ func BuildFromReport(from string, r io.Reader) (*ddao.Build, error) {
 		}
 	}
 	return b, s.Err()
+}
+
+// fromBobReport parses a bulk build report as produced by bob.
+// It tries fetching the variables.json file for machine-readable metadata.
+func fromBobReport(ctx context.Context, from, reportURL string) (*ddao.Build, error) {
+	v, err := variablesJSONpath(reportURL)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := httpGet(ctx, v)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	vars, err := ParseVariables(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return vars.ToBulkBuild(from)
+}
+
+func variablesJSONpath(reportURL string) (string, error) {
+	u, err := url.Parse(reportURL)
+	if err != nil {
+		return "", err
+	}
+	u.Path = path.Join(path.Dir(u.Path), "variables.json")
+	return u.String(), nil
 }
 
 func ResultsFromReport(r io.Reader) ([]ddao.PkgResult, error) {

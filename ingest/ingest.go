@@ -89,7 +89,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	if fromName == "" {
 		fromName = strings.SplitN(from.Address, "@", 2)[0]
 	}
-	build, err := BuildFromReport(fromName, body)
+	build, err := BuildFromReport(ctx, fromName, body)
 
 	if build == nil {
 		log.Errorf(ctx, "BuildFromReport failed: %v", err)

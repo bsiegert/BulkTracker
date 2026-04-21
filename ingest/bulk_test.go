@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2023-2025
+ * Copyright (c) 2014-2018, 2023-2026
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -258,5 +258,32 @@ func TestResultsFromReport(t *testing.T) {
 				t.Errorf("ResultsFromReport(): unexpected diff (+got -want)\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestVariablesJSONPath(t *testing.T) {
+	tests := []struct {
+		url  string
+		want string
+	}{
+		{
+			"http://localhost:9876/report.txt",
+			"http://localhost:9876/variables.json",
+		},
+		{
+			"https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.html",
+			"https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/variables.json",
+		},
+	}
+
+	for _, tc := range tests {
+		got, err := variablesJSONpath(tc.url)
+		if err != nil {
+			t.Errorf("variablesJSONPath(%q): %v", tc.url, err)
+			continue
+		}
+		if got != tc.want {
+			t.Errorf("variablesJSONPath(%q) = %q, want %q", tc.url, got, tc.want)
+		}
 	}
 }
