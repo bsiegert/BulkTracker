@@ -3,7 +3,7 @@ Subject: release/macos - Darwin 23.6.0/aarch64 - 2026-04-09 19:32
 From: "Jonathan Perkin" <jperkin@pkgsrc.org>
 Date: Sat, 11 Apr 2026 11:34:47 +0000
 
-URL: https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.html
+URL: http://localhost:9876/report.html
 
 Total:      28940  Platform:    Darwin 23.6.0/aarch64
 Succeeded:  21361  Compiler:    clang-13.1.6
