@@ -18,9 +18,7 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-// Package bulk contains data types for handling bulk build reports and their
-// metadata. It is not supposed to depend on any App Engine package.
-package bulk
+package ingest
 
 import (
 	"bufio"

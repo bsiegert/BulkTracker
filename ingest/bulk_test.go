@@ -18,7 +18,7 @@
  * of said person's immediate fault when using the work as intended.
  */
 
-package bulk
+package ingest
 
 import (
 	"database/sql"

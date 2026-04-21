@@ -25,7 +25,6 @@ package ingest
 import (
 	"database/sql"
 
-	"github.com/bsiegert/BulkTracker/bulk"
 	"github.com/bsiegert/BulkTracker/ddao"
 	"github.com/bsiegert/BulkTracker/log"
 	"github.com/klauspost/compress/zstd"
@@ -90,7 +89,7 @@ func (i *IncomingMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	if fromName == "" {
 		fromName = strings.SplitN(from.Address, "@", 2)[0]
 	}
-	build, err := bulk.BuildFromReport(fromName, body)
+	build, err := BuildFromReport(fromName, body)
 
 	if build == nil {
 		log.Errorf(ctx, "BuildFromReport failed: %v", err)
@@ -196,7 +195,7 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		})
 		return
 	}
-	results, err := bulk.ResultsFromReport(r)
+	results, err := ResultsFromReport(r)
 	if err != nil {
 		log.Errorf(ctx, "failed to parse report at %q: %s", url, err)
 		i.DB.SetBuildLastError(ctx, ddao.SetBuildLastErrorParams{
@@ -208,7 +207,7 @@ func (i *IncomingMailHandler) FetchReport(ctx context.Context, buildID int64, ur
 		})
 		return
 	}
-	bulk.FixUpDependencies(results)
+	FixUpDependencies(results)
 
 	if err = i.DB.PutResults(ctx, results, buildID); err != nil {
 		log.Warningf(ctx, "%s", err)
