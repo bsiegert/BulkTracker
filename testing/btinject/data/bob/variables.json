@@ -28,7 +28,7 @@
   "report": {
     "date": "20260409T193201Z",
     "duration": 142599,
-    "raw": "https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.zst",
+    "raw": "http://localhost:9876/report.zst",
     "url": "https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.html"
   },
   "vcs": {
