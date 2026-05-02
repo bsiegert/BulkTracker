@@ -63,16 +63,16 @@ func TestToBulkBuild(t *testing.T) {
 
 	want := &ddao.Build{
 		BuildUser:            "user@host",
-		Platform:             "Darwin 23.6.0/aarch64",
-		BuildTs:              time.Date(2026, 4, 9, 19, 32, 01, 0, time.UTC),
-		Branch:               "release/macos",
-		Compiler:             "clang",
-		ReportUrl:            "https://reports.pkgci.org/Darwin/14.5/arm64/20260409T193201Z/report.zst",
-		NumOk:                23661,
-		NumPrefailed:         726,
-		NumFailed:            1753,
-		NumIndirectFailed:    2610,
-		NumIndirectPrefailed: 190,
+		Platform:             "SunOS 5.11/x86_64",
+		BuildTs:              time.Date(2026, 5, 1, 1, 11, 40, 0, time.UTC),
+		Branch:               "trunk",
+		Compiler:             "gcc",
+		ReportUrl:            "http://localhost:9876/report.zst",
+		NumOk:                23247,
+		NumPrefailed:         1324,
+		NumFailed:            2547,
+		NumIndirectFailed:    1537,
+		NumIndirectPrefailed: 355,
 	}
 
 	if diff := cmp.Diff(want, got); diff != "" {
