@@ -339,6 +339,7 @@ func (a *API) SentinelStatus(ctx context.Context, params []string, _ url.Values)
 		items[i].ResultID = res.ResultID
 		items[i].PkgName = res.PkgName
 		items[i].BuildStatus = res.BuildStatus
+		items[i].FailedDeps = []FailedDep{}
 		deps, err := a.DB.GetFailedDeps(ctx, res.ResultID)
 		if err != nil {
 			log.Warningf(ctx, "failed to get failed deps for result %d: %v", res.ResultID, err)
