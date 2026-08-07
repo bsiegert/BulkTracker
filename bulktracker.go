@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2025
+ * Copyright (c) 2014-2026
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -46,9 +46,10 @@ import (
 )
 
 var (
-	port        = flag.Int("port", 8080, "The port to use.")
+	port        = flag.Int("port", 8080, "The port to use")
 	metricsAddr = flag.String("metrics_addr", "", "host:port for serving Prometheus metrics, or 'main' to serve them on the main port")
-	dbPath      = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file.")
+	dbPath      = flag.String("db_path", "BulkTracker.db", "The path to the SQLite database file")
+	logViewer   = flag.Bool("logviewer", false, "Enable integrated bulk log viewer")
 )
 
 //go:embed VERSION
@@ -126,6 +127,7 @@ func main() {
 	})
 	mux.Handle("/pkg/", &pages.PkgDetails{
 		DB: &ddb,
+		LogViewer: *logViewer,
 	})
 	mux.Handle("/maintainer/", &pages.MaintainerDetails{
 		DB: &ddb,

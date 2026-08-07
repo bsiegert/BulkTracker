@@ -40,6 +40,7 @@
       {{end}}
       {{if eq .Res.BuildStatus 2}}
         <dt>Build Logs</dt>
+	{{if .LogViewer}}
         <script>
           // URLData is used by pkg_info.js to load the logs
           var urlData = {{.URLDataJSON}};
@@ -66,6 +67,19 @@
         </div>
         <link href="{{.BasePath}}static/pkg_info.css" rel="stylesheet">
         <script src="{{.BasePath}}static/pkg_info.js"></script>
+	{{else}}
+	<dd>
+	  <div class="btn-group btn-group-sm">
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/work.log" class="btn btn-default">work</a>
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/pre-clean.log" class="btn btn-default">pre-clean</a>
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/checksum.log" class="btn btn-default">checksum</a>
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/depends.log" class="btn btn-default">depends</a>
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/configure.log" class="btn btn-default">configure</a>
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/build.log" class="btn btn-default">build</a>
+	    <a href="{{.Res.BaseURL}}/{{.Res.PkgName}}/install.log" class="btn btn-default">install</a>
+	  </div>
+	</dd>
+	{{end}}
       {{end}}
       <dt>Platform</dt>
       <dd>{{.Res.Platform}}</dd>

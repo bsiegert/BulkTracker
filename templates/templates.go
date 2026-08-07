@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2018, 2021-2025
+ * Copyright (c) 2014-2018, 2021-2026
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -45,6 +45,18 @@ var BasePath = "/"
 
 // Varsion is the current version string for this app. It is set from the main package.
 var Version string
+
+// Define what to fetch - these represent the stages of the build process
+// and are used to fetch the corresponding log files.
+var stages = []string{
+	"work.log",
+	"pre-clean.log",
+	"checksum.log",
+	"depends.log",
+	"configure.log",
+	"build.log",
+	"install.log",
+}
 
 // bp is a shim type that avoids allocations in common templates.
 type bp struct{}
@@ -144,10 +156,16 @@ func BulkBuildInfo(w io.Writer, b *ddao.Build) {
 	t.ExecuteTemplate(w, "bulk_build_info.html", b)
 }
 
-// marshalToJSON marshals the given data to a JSON string that can be used in JavaScript.
+// marshalURLDataToJSON marshals the given data to a JSON string that can be used in JavaScript.
 // Returns a template.JS value to prevent HTML escaping of the JSON.
-func marshalToJSON(data interface{}) (template.JS, error) {
-	jsonBytes, err := json.Marshal(data)
+func marshalURLDataToJSON(results []URLRequestResult) (template.JS, error) {
+	// Create a map of URL results for JSON marshalling
+	urlDataMap := make(map[string]URLRequestResult)
+	for _, result := range results {
+		urlDataMap[result.ID] = result
+	}
+
+	jsonBytes, err := json.Marshal(urlDataMap)
 	if err != nil {
 		return "", err
 	}
@@ -164,19 +182,7 @@ func errorString(err error) string {
 	return err.Error()
 }
 
-func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
-	// Define what to fetch - these represent the stages of the build process
-	// and are used to fetch the corresponding log files.
-	stages := []string{
-		"work.log",
-		"pre-clean.log",
-		"checksum.log",
-		"depends.log",
-		"configure.log",
-		"build.log",
-		"install.log",
-	}
-
+func fetchURLData(res ddao.GetSingleResultRow) []URLRequestResult {
 	// Create results slice
 	results := make([]URLRequestResult, len(stages))
 
@@ -236,33 +242,35 @@ func PkgInfo(w io.Writer, res ddao.GetSingleResultRow) {
 
 	// Wait for all requests to complete
 	wg.Wait()
+	return results
+}
 
-	// Create a map of URL results for JSON marshalling
-	urlDataMap := make(map[string]URLRequestResult)
-	for _, result := range results {
-		urlDataMap[result.ID] = result
-	}
-
-	// Marshal URL data to JSON
-	jsonData, err := marshalToJSON(urlDataMap)
-	if err != nil {
-		log.Errorf(ctx, "templates.PkgInfo: Error marshalling URL data: %v", err)
-	}
+func PkgInfo(w io.Writer, res ddao.GetSingleResultRow, logViewer bool) {
+	ctx := context.TODO()
 
 	// Create the structure to pass to the template
 	s := struct {
 		Res         *ddao.GetSingleResultRow
 		URLData     []URLRequestResult
 		URLDataJSON template.JS
+		LogViewer   bool
 		bp
 	}{
 		Res:         &res,
-		URLData:     results,
-		URLDataJSON: jsonData,
+		LogViewer:   logViewer,
+	}
+
+	if logViewer {
+		var err error
+		s.URLData = fetchURLData(res)
+		s.URLDataJSON, err = marshalURLDataToJSON(s.URLData)
+		if err != nil {
+			log.Errorf(ctx, "templates.PkgInfo: Error marshalling URL data: %v", err)
+		}
 	}
 
 	// Execute the template
-	err = t.ExecuteTemplate(w, "pkg_info.html", s)
+	err := t.ExecuteTemplate(w, "pkg_info.html", s)
 	if err != nil {
 		log.Errorf(ctx, "templates.PkgInfo: %v", err)
 	}

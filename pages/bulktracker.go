@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2014-2023, 2025
+ * Copyright (c) 2014-2023, 2025-2026
  *      Benny Siegert <bsiegert@gmail.com>
  *
  * Provided that these terms and disclaimer and all copyright notices
@@ -193,6 +193,9 @@ func (b *BuildDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type PkgDetails struct {
 	DB *ddao.DB
+	// Enable or disable the integrated log viewer. If disabled, only
+	// provide links to build logs.
+	LogViewer bool
 }
 
 func (PkgDetails) arg(r *http.Request) (int64, error) {
@@ -236,7 +239,7 @@ func (p *PkgDetails) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.PkgInfo(w, res)
+	templates.PkgInfo(w, res, p.LogViewer)
 
 	// Failed to build because of dependencies.
 	if res.FailedDepsCount > 0 {
