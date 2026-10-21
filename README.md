@@ -7,9 +7,10 @@ uses SQLite3 as its database. The production instance is running at
 https://releng.netbsd.org/bulktracker/
 
 The application is subscribed to the pkgsrc-bulk mailing list and receives
-build reports via email. It parses the email and tries to fetch the machine-readable
-report from the given URL. The report is split into records and saved in the
-database. The web UI allows examining aggregate and per-package results.
+build reports via email. It parses the email and tries to fetch the
+machine-readable report from the given URL. The report is split into records
+and saved in the database. The web UI allows examining aggregate and
+per-package results.
 
 This is an open project. Drop me a line if you are interested in participating!
 
